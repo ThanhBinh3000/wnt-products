@@ -4,5 +4,6 @@ import lombok.Data;
 
 @Data
 public class BaseRequest {
-	PaggingReq paggingReq;
+	private Long id;
+	private PaggingReq paggingReq;
 }

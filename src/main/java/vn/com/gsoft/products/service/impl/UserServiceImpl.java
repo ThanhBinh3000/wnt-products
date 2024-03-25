@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @Service
 @Slf4j
-public class UserServiceImpl extends BaseServiceImpl implements UserService, UserDetailsService {
+public class UserServiceImpl implements UserService, UserDetailsService {
     @Autowired
     private UserProfileFeign userProfileFeign;
 
