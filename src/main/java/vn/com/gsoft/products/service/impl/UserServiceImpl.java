@@ -1,5 +1,6 @@
 package vn.com.gsoft.products.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,7 +21,9 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService, Use
 
     @Override
     public Optional<Profile> findUserByToken(String token) {
-        return Optional.of(userProfileFeign.getProfile());
+        ObjectMapper objectMapper = new ObjectMapper();
+        Profile profile = objectMapper.convertValue(userProfileFeign.getProfile().getData(), Profile.class);
+        return Optional.of(profile);
     }
 
     @Override
