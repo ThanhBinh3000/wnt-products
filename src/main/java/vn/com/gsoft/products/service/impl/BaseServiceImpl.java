@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
+import vn.com.gsoft.products.entity.BaseEntity;
 import vn.com.gsoft.products.model.system.BaseRequest;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.BaseRepository;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-public class BaseServiceImpl<E,R extends BaseRequest, PK extends Serializable> implements BaseService<E,R, PK> {
+public class BaseServiceImpl<E extends BaseEntity,R extends BaseRequest, PK extends Serializable> implements BaseService<E,R, PK> {
     private BaseRepository repository;
 
     public BaseServiceImpl(BaseRepository repository) {
@@ -94,7 +95,8 @@ public class BaseServiceImpl<E,R extends BaseRequest, PK extends Serializable> i
         if (optional.isEmpty()) {
             throw new Exception("Không tìm thấy dữ liệu.");
         }
-        repository.delete(optional.get());
+        optional.get().setRecordStatusId(2l);
+        repository.save(optional.get());
         return true;
     }
 }
