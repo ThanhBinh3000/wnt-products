@@ -1,9 +1,6 @@
 package vn.com.gsoft.products.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
@@ -16,6 +13,7 @@ import lombok.*;
 public class WarehouseLocation extends BaseEntity {
     @Id
     @Column(name = "Id")
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
     @Column(name = "Code")
     private String code;

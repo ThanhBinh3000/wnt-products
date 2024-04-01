@@ -51,6 +51,9 @@ public class BaseServiceImpl<E extends BaseEntity,R extends BaseRequest, PK exte
         E e = (E) ((Class)((ParameterizedType)this.getClass().
                 getGenericSuperclass()).getActualTypeArguments()[0]).newInstance();
         BeanUtils.copyProperties(req, e, "id");
+        if(e.getRecordStatusId() == null){
+            e.setRecordStatusId(0L);
+        }
         repository.save(e);
         return e;
     }

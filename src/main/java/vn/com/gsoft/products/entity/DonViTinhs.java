@@ -1,9 +1,6 @@
 package vn.com.gsoft.products.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 
@@ -17,6 +14,7 @@ import lombok.*;
 public class DonViTinhs extends BaseEntity{
     @Id
     @Column(name="id")
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
     @Column(name = "TenDonViTinh")
     private String tenDonViTinh;

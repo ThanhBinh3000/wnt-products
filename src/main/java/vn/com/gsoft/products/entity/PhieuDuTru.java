@@ -1,9 +1,6 @@
 package vn.com.gsoft.products.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +18,7 @@ import java.util.Date;
 public class PhieuDuTru extends BaseEntity{
     @Id
     @Column(name = "id")
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
     @Column(name = "SoPhieu")
     private Integer soPhieu;
