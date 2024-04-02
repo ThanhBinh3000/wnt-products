@@ -8,13 +8,13 @@ import java.util.Date;
 
 @Data
 public class SampleNoteDetailReq extends BaseRequest {
-    private Integer noteID;
-    private Integer drugID;
-    private Integer drugUnitID;
+    private Long noteID;
+    private Long drugID;
+    private Long drugUnitID;
     private String comment;
     private String drugStoreID;
     private BigDecimal quantity;
-    private Integer storeId;
+    private Long storeId;
     private Integer batch;
     private Date fromDate;
     private Date toDate;

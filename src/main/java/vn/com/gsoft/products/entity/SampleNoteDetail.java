@@ -21,11 +21,11 @@ public class SampleNoteDetail extends BaseEntity{
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
     @Column(name = "NoteID")
-    private Integer noteID;
+    private Long noteID;
     @Column(name = "DrugID")
-    private Integer drugID;
+    private Long drugID;
     @Column(name = "DrugUnitID")
-    private Integer drugUnitID;
+    private Long drugUnitID;
     @Column(name = "Comment")
     private String comment;
     @Column(name = "DrugStoreID")
@@ -33,7 +33,7 @@ public class SampleNoteDetail extends BaseEntity{
     @Column(name = "Quantity")
     private BigDecimal quantity;
     @Column(name = "StoreId")
-    private Integer storeId;
+    private Long storeId;
     @Column(name = "Batch")
     private Integer batch;
     @Column(name = "FromDate")

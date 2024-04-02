@@ -27,31 +27,31 @@ public class SampleNote extends BaseEntity{
     @Column(name = "Description")
     private String description;
     @Column(name = "RecordStatusID")
-    private Integer recordStatusID;
+    private Long recordStatusID;
     @Column(name = "CreatedDateTime")
     private Date createdDateTime;
     @Column(name = "CreatedByUserID")
-    private Integer createdByUserID;
+    private Long createdByUserID;
     @Column(name = "ModifiedDateTime")
     private Date modifiedDateTime;
     @Column(name = "ModifiedByUserID")
-    private Integer modifiedByUserID;
+    private Long modifiedByUserID;
     @Column(name = "DrugStoreID")
     private String drugStoreID;
     @Column(name = "StoreId")
-    private Integer storeId;
+    private Long storeId;
     @Column(name = "Amount")
     private BigDecimal amount;
     @Column(name = "PatientId")
-    private Integer patientId;
+    private Long patientId;
     @Column(name = "DoctorId")
-    private Integer doctorId;
+    private Long doctorId;
     @Column(name = "DoctorComments")
     private String doctorComments;
     @Column(name = "NoteDate")
     private Date noteDate;
     @Column(name = "IdExamination")
-    private Integer idExamination;
+    private Long idExamination;
     @Column(name = "TypeId")
     private String typeId;
     @Column(name = "IsConnect")
@@ -73,6 +73,6 @@ public class SampleNote extends BaseEntity{
     @Column(name = "TypeSampleNote")
     private Integer typeSampleNote;
     @Column(name = "ReferenceId")
-    private Integer referenceId;
+    private Long referenceId;
 }
 
