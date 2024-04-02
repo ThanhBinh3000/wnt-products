@@ -37,6 +37,7 @@ public interface SampleNoteRepository extends BaseRepository<SampleNote, SampleN
             + " AND (:#{#param.formOfTreatment} IS NULL OR c.formOfTreatment = :#{#param.formOfTreatment}) "
             + " AND (:#{#param.typeSampleNote} IS NULL OR c.typeSampleNote = :#{#param.typeSampleNote}) "
             + " AND (:#{#param.referenceId} IS NULL OR c.referenceId = :#{#param.referenceId}) "
+            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
             + " ORDER BY c.id desc"
     )
     Page<SampleNote> searchPage(@Param("param") SampleNoteReq param, Pageable pageable);
@@ -67,6 +68,7 @@ public interface SampleNoteRepository extends BaseRepository<SampleNote, SampleN
             + " AND (:#{#param.formOfTreatment} IS NULL OR c.formOfTreatment = :#{#param.formOfTreatment}) "
             + " AND (:#{#param.typeSampleNote} IS NULL OR c.typeSampleNote = :#{#param.typeSampleNote}) "
             + " AND (:#{#param.referenceId} IS NULL OR c.referenceId = :#{#param.referenceId}) "
+            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
             + " ORDER BY c.id desc"
     )
     List<SampleNote> searchList(@Param("param") SampleNoteReq param);

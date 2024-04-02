@@ -24,6 +24,7 @@ public interface NhomThuocsRepository extends BaseRepository<NhomThuocs, NhomThu
             + " AND (:#{#param.archivedId} IS NULL OR c.archivedId = :#{#param.archivedId}) "
             + " AND (:#{#param.storeId} IS NULL OR c.storeId = :#{#param.storeId}) "
             + " AND (:#{#param.typeGroupProduct} IS NULL OR c.typeGroupProduct = :#{#param.typeGroupProduct}) "
+            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
             + " ORDER BY c.id desc"
     )
     Page<NhomThuocs> searchPage(@Param("param") NhomThuocsReq param, Pageable pageable);
@@ -39,6 +40,7 @@ public interface NhomThuocsRepository extends BaseRepository<NhomThuocs, NhomThu
             + " AND (:#{#param.archivedId} IS NULL OR c.archivedId = :#{#param.archivedId}) "
             + " AND (:#{#param.storeId} IS NULL OR c.storeId = :#{#param.storeId}) "
             + " AND (:#{#param.typeGroupProduct} IS NULL OR c.typeGroupProduct = :#{#param.typeGroupProduct}) "
+            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
             + " ORDER BY c.id desc"
     )
     List<NhomThuocs> searchList(@Param("param") NhomThuocsReq param);

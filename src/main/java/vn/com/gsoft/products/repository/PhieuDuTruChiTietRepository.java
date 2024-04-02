@@ -23,6 +23,7 @@ public interface PhieuDuTruChiTietRepository extends BaseRepository<PhieuDuTruCh
           + " AND (:#{#param.duTru} IS NULL OR c.duTru = :#{#param.duTru}) "
           + " AND (:#{#param.maDonViDuTru} IS NULL OR c.maDonViDuTru = :#{#param.maDonViDuTru}) "
           + " AND (:#{#param.donGia} IS NULL OR c.donGia = :#{#param.donGia}) "
+          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
           + " ORDER BY c.id desc"
   )
   Page<PhieuDuTruChiTiet> searchPage(@Param("param") PhieuDuTruChiTietReq param, Pageable pageable);
@@ -39,6 +40,7 @@ public interface PhieuDuTruChiTietRepository extends BaseRepository<PhieuDuTruCh
           + " AND (:#{#param.duTru} IS NULL OR c.duTru = :#{#param.duTru}) "
           + " AND (:#{#param.maDonViDuTru} IS NULL OR c.maDonViDuTru = :#{#param.maDonViDuTru}) "
           + " AND (:#{#param.donGia} IS NULL OR c.donGia = :#{#param.donGia}) "
+          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
           + " ORDER BY c.id desc"
   )
   List<PhieuDuTruChiTiet> searchList(@Param("param") PhieuDuTruChiTietReq param);

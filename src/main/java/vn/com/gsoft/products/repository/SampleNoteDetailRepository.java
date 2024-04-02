@@ -24,6 +24,7 @@ public interface SampleNoteDetailRepository extends BaseRepository<SampleNoteDet
           + " AND (:#{#param.storeId} IS NULL OR c.storeId = :#{#param.storeId}) "
           + " AND (:#{#param.batch} IS NULL OR c.batch = :#{#param.batch}) "
           + " AND (:#{#param.numberOfPotionBars} IS NULL OR lower(c.numberOfPotionBars) LIKE lower(concat('%',CONCAT(:#{#param.numberOfPotionBars},'%'))))"
+          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
           + " ORDER BY c.id desc"
   )
   Page<SampleNoteDetail> searchPage(@Param("param") SampleNoteDetailReq param, Pageable pageable);
@@ -41,6 +42,7 @@ public interface SampleNoteDetailRepository extends BaseRepository<SampleNoteDet
           + " AND (:#{#param.storeId} IS NULL OR c.storeId = :#{#param.storeId}) "
           + " AND (:#{#param.batch} IS NULL OR c.batch = :#{#param.batch}) "
           + " AND (:#{#param.numberOfPotionBars} IS NULL OR lower(c.numberOfPotionBars) LIKE lower(concat('%',CONCAT(:#{#param.numberOfPotionBars},'%'))))"
+          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
           + " ORDER BY c.id desc"
   )
   List<SampleNoteDetail> searchList(@Param("param") SampleNoteDetailReq param);
