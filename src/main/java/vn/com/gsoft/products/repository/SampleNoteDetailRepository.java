@@ -15,6 +15,7 @@ public interface SampleNoteDetailRepository extends BaseRepository<SampleNoteDet
   @Query("SELECT c FROM SampleNoteDetail c " +
          "WHERE 1=1 "
           + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
           + " AND (:#{#param.noteID} IS NULL OR c.noteID = :#{#param.noteID}) "
           + " AND (:#{#param.drugID} IS NULL OR c.drugID = :#{#param.drugID}) "
           + " AND (:#{#param.drugUnitID} IS NULL OR c.drugUnitID = :#{#param.drugUnitID}) "
@@ -32,6 +33,7 @@ public interface SampleNoteDetailRepository extends BaseRepository<SampleNoteDet
   @Query("SELECT c FROM SampleNoteDetail c " +
          "WHERE 1=1 "
           + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
           + " AND (:#{#param.noteID} IS NULL OR c.noteID = :#{#param.noteID}) "
           + " AND (:#{#param.drugID} IS NULL OR c.drugID = :#{#param.drugID}) "
           + " AND (:#{#param.drugUnitID} IS NULL OR c.drugUnitID = :#{#param.drugUnitID}) "

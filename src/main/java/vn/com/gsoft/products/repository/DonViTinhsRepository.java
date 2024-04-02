@@ -15,6 +15,7 @@ public interface DonViTinhsRepository extends BaseRepository<DonViTinhs, DonViTi
   @Query("SELECT c FROM DonViTinhs c " +
          "WHERE 1=1 "
           + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
           + " AND (:#{#param.tenDonViTinh} IS NULL OR lower(c.tenDonViTinh) LIKE lower(concat('%',CONCAT(:#{#param.tenDonViTinh},'%'))))"
           + " AND (:#{#param.maNhaThuoc} IS NULL OR lower(c.maNhaThuoc) LIKE lower(concat('%',CONCAT(:#{#param.maNhaThuoc},'%'))))"
           + " AND (:#{#param.referenceId} IS NULL OR c.referenceId = :#{#param.referenceId}) "
@@ -28,6 +29,7 @@ public interface DonViTinhsRepository extends BaseRepository<DonViTinhs, DonViTi
   @Query("SELECT c FROM DonViTinhs c " +
          "WHERE 1=1 "
           + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
           + " AND (:#{#param.tenDonViTinh} IS NULL OR lower(c.tenDonViTinh) LIKE lower(concat('%',CONCAT(:#{#param.tenDonViTinh},'%'))))"
           + " AND (:#{#param.maNhaThuoc} IS NULL OR lower(c.maNhaThuoc) LIKE lower(concat('%',CONCAT(:#{#param.maNhaThuoc},'%'))))"
           + " AND (:#{#param.referenceId} IS NULL OR c.referenceId = :#{#param.referenceId}) "

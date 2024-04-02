@@ -15,6 +15,7 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
     @Query("SELECT c FROM Thuocs c " +
             "WHERE 1=1 "
             + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (:#{#param.maThuoc} IS NULL OR lower(c.maThuoc) LIKE lower(concat('%',CONCAT(:#{#param.maThuoc},'%'))))"
             + " AND (:#{#param.tenThuoc} IS NULL OR lower(c.tenThuoc) LIKE lower(concat('%',CONCAT(:#{#param.tenThuoc},'%'))))"
             + " AND (:#{#param.thongTin} IS NULL OR lower(c.thongTin) LIKE lower(concat('%',CONCAT(:#{#param.thongTin},'%'))))"
@@ -125,6 +126,7 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
     @Query("SELECT c FROM Thuocs c " +
             "WHERE 1=1 "
             + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (:#{#param.maThuoc} IS NULL OR lower(c.maThuoc) LIKE lower(concat('%',CONCAT(:#{#param.maThuoc},'%'))))"
             + " AND (:#{#param.tenThuoc} IS NULL OR lower(c.tenThuoc) LIKE lower(concat('%',CONCAT(:#{#param.tenThuoc},'%'))))"
             + " AND (:#{#param.thongTin} IS NULL OR lower(c.thongTin) LIKE lower(concat('%',CONCAT(:#{#param.thongTin},'%'))))"

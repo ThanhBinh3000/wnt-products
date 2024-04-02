@@ -15,6 +15,7 @@ public interface SampleNoteRepository extends BaseRepository<SampleNote, SampleN
     @Query("SELECT c FROM SampleNote c " +
             "WHERE 1=1 "
             + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (:#{#param.noteName} IS NULL OR lower(c.noteName) LIKE lower(concat('%',CONCAT(:#{#param.noteName},'%'))))"
             + " AND (:#{#param.barcode} IS NULL OR lower(c.barcode) LIKE lower(concat('%',CONCAT(:#{#param.barcode},'%'))))"
             + " AND (:#{#param.description} IS NULL OR lower(c.description) LIKE lower(concat('%',CONCAT(:#{#param.description},'%'))))"
@@ -45,6 +46,7 @@ public interface SampleNoteRepository extends BaseRepository<SampleNote, SampleN
     @Query("SELECT c FROM SampleNote c " +
             "WHERE 1=1 "
             + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (:#{#param.noteName} IS NULL OR lower(c.noteName) LIKE lower(concat('%',CONCAT(:#{#param.noteName},'%'))))"
             + " AND (:#{#param.barcode} IS NULL OR lower(c.barcode) LIKE lower(concat('%',CONCAT(:#{#param.barcode},'%'))))"
             + " AND (:#{#param.description} IS NULL OR lower(c.description) LIKE lower(concat('%',CONCAT(:#{#param.description},'%'))))"
