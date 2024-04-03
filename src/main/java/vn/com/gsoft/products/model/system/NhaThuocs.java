@@ -1,5 +1,6 @@
 package vn.com.gsoft.products.model.system;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,7 +23,9 @@ public class NhaThuocs {
     private String email;
     private String mobile;
     private String duocSy;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
     private Date created;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
     private Date modified;
     private Long createdByUserId;
     private Long modifiedByUserId;
@@ -46,6 +49,7 @@ public class NhaThuocs {
     private Long regionId;
     private Long cityId;
     private Long wardId;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
     private Date lastTransDate;
     private String supportPhones;
     private String deliveryPolicy;
@@ -67,8 +71,10 @@ public class NhaThuocs {
     private Boolean isNationalSampleConnected;
     private String connectivityCodeMeidcal;
     private String connectivityPasswordMedical;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
     private Date expiredDate;
     private String businessDescription;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
     private Date paidDate;
     private Boolean isUploading;
     private String connEInvoiceSerialCert;

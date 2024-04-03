@@ -1,4 +1,4 @@
-package vn.com.gsoft.products.response;
+package vn.com.gsoft.products.model.system;
 
 import lombok.Data;
 
