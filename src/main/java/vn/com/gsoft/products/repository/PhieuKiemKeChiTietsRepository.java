@@ -15,6 +15,7 @@ public interface PhieuKiemKeChiTietsRepository extends BaseRepository<PhieuKiemK
   @Query("SELECT c FROM PhieuKiemKeChiTiets c " +
          "WHERE 1=1 "
           + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
           + " AND (:#{#param.thuocThuocId} IS NULL OR c.thuocThuocId = :#{#param.thuocThuocId}) "
           + " AND (:#{#param.tonKho} IS NULL OR c.tonKho = :#{#param.tonKho}) "
           + " AND (:#{#param.thucTe} IS NULL OR c.thucTe = :#{#param.thucTe}) "
@@ -34,6 +35,7 @@ public interface PhieuKiemKeChiTietsRepository extends BaseRepository<PhieuKiemK
   @Query("SELECT c FROM PhieuKiemKeChiTiets c " +
          "WHERE 1=1 "
           + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
           + " AND (:#{#param.thuocThuocId} IS NULL OR c.thuocThuocId = :#{#param.thuocThuocId}) "
           + " AND (:#{#param.tonKho} IS NULL OR c.tonKho = :#{#param.tonKho}) "
           + " AND (:#{#param.thucTe} IS NULL OR c.thucTe = :#{#param.thucTe}) "

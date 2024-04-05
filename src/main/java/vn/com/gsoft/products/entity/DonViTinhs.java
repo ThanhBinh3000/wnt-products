@@ -21,10 +21,10 @@ public class DonViTinhs extends BaseEntity{
     @Column(name = "MaNhaThuoc")
     private String maNhaThuoc;
     @Column(name = "ReferenceId")
-    private Integer referenceId;
+    private Long referenceId;
     @Column(name = "ArchivedId")
-    private Integer archivedId;
+    private Long archivedId;
     @Column(name = "StoreId")
-    private Integer storeId;
+    private Long storeId;
 }
 

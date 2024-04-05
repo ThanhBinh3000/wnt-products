@@ -12,11 +12,10 @@ import java.util.List;
 
 @Repository
 public interface NhomThuocsRepository extends BaseRepository<NhomThuocs, NhomThuocsReq, Long> {
-//    List<NhaThuocs> findByUserId(Long id);
-
     @Query("SELECT c FROM NhomThuocs c " +
             "WHERE 1=1 "
             + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (:#{#param.tenNhomThuoc} IS NULL OR lower(c.tenNhomThuoc) LIKE lower(concat('%',CONCAT(:#{#param.tenNhomThuoc},'%'))))"
             + " AND (:#{#param.kyHieuNhomThuoc} IS NULL OR lower(c.kyHieuNhomThuoc) LIKE lower(concat('%',CONCAT(:#{#param.kyHieuNhomThuoc},'%'))))"
             + " AND (:#{#param.maNhaThuoc} IS NULL OR lower(c.maNhaThuoc) LIKE lower(concat('%',CONCAT(:#{#param.maNhaThuoc},'%'))))"
@@ -33,6 +32,7 @@ public interface NhomThuocsRepository extends BaseRepository<NhomThuocs, NhomThu
     @Query("SELECT c FROM NhomThuocs c " +
             "WHERE 1=1 "
             + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (:#{#param.tenNhomThuoc} IS NULL OR lower(c.tenNhomThuoc) LIKE lower(concat('%',CONCAT(:#{#param.tenNhomThuoc},'%'))))"
             + " AND (:#{#param.kyHieuNhomThuoc} IS NULL OR lower(c.kyHieuNhomThuoc) LIKE lower(concat('%',CONCAT(:#{#param.kyHieuNhomThuoc},'%'))))"
             + " AND (:#{#param.maNhaThuoc} IS NULL OR lower(c.maNhaThuoc) LIKE lower(concat('%',CONCAT(:#{#param.maNhaThuoc},'%'))))"

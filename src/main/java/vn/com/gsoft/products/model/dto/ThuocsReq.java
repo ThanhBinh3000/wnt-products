@@ -114,7 +114,7 @@ public class ThuocsReq extends BaseRequest {
     private String resultService;
     private String titleResultService;
     private Integer typeResultService;
-    private Integer groupIdMappingV2;
+    private Long groupIdMappingV2;
     private String storageConditions;
     private String storageLocation;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
@@ -131,7 +131,7 @@ public class ThuocsReq extends BaseRequest {
     private Date userUploadImgDate;
     private Long userUploadImgId;
     private Integer statusConfirm;
-    private Integer userIdConfirm;
-    private Integer userIdMapping;
+    private Long userIdConfirm;
+    private Long userIdMapping;
 }
 

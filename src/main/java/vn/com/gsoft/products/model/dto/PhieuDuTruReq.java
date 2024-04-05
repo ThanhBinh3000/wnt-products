@@ -10,10 +10,10 @@ import java.util.Date;
 public class PhieuDuTruReq extends BaseRequest {
     private Integer soPhieu;
     private Date ngayTao;
-    private Integer createdByUserId;
+    private Long createdByUserId;
     private BigDecimal tongTien;
     private String maNhaThuoc;
-    private Integer recordStatusID;
-    private Integer supplierId;
+    private Long recordStatusID;
+    private Long supplierId;
     private String linkShare;
 }

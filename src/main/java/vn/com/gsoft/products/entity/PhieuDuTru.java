@@ -29,7 +29,7 @@ public class PhieuDuTru extends BaseEntity{
     @Column(name = "MaNhaThuoc")
     private String maNhaThuoc;
     @Column(name = "SupplierId")
-    private Integer supplierId;
+    private Long supplierId;
     @Column(name = "LinkShare")
     private String linkShare;
 }

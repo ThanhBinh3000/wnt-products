@@ -9,16 +9,16 @@ import java.util.Date;
 
 @Data
 public class PhieuKiemKeChiTietsReq extends BaseRequest {
-    private Integer thuocThuocId;
+    private Long thuocThuocId;
     private BigDecimal tonKho;
     private BigDecimal thucTe;
     private Integer phieuKiemKeMaPhieuKiemKe;
     private BigDecimal donGia;
     private String soLo;
     private Date hanDung;
-    private Integer archiveDrugId;
-    private Integer archivedId;
-    private Integer referenceId;
-    private Integer storeId;
+    private Long archiveDrugId;
+    private Long archivedId;
+    private Long referenceId;
+    private Long storeId;
     private Boolean isProdRef;
 }

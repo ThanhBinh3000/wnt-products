@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.com.gsoft.products.constant.PathContains;
 import vn.com.gsoft.products.model.dto.WarehouseLocationReq;
-import vn.com.gsoft.products.response.BaseResponse;
+import vn.com.gsoft.products.model.system.BaseResponse;
 import vn.com.gsoft.products.service.WarehouseLocationService;
 import vn.com.gsoft.products.util.system.ResponseUtils;
 

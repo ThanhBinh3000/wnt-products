@@ -21,7 +21,7 @@ public class PhieuKiemKeChiTiets extends BaseEntity{
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
     @Column(name = "Thuoc_ThuocId")
-    private Integer thuocThuocId;
+    private Long thuocThuocId;
     @Column(name = "TonKho")
     private BigDecimal tonKho;
     @Column(name = "ThucTe")
@@ -35,13 +35,13 @@ public class PhieuKiemKeChiTiets extends BaseEntity{
     @Column(name = "HanDung")
     private Date hanDung;
     @Column(name = "ArchiveDrugId")
-    private Integer archiveDrugId;
+    private Long archiveDrugId;
     @Column(name = "ArchivedId")
-    private Integer archivedId;
+    private Long archivedId;
     @Column(name = "ReferenceId")
-    private Integer referenceId;
+    private Long referenceId;
     @Column(name = "StoreId")
-    private Integer storeId;
+    private Long storeId;
     @Column(name = "IsProdRef")
     private Boolean isProdRef;
 }

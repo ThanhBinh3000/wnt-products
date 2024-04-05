@@ -65,27 +65,27 @@ public class Thuocs extends BaseEntity{
     @Column(name = "NhaThuoc_MaNhaThuocCreate")
     private String nhaThuocMaNhaThuocCreate;
     @Column(name = "RecordStatusID")
-    private Integer recordStatusID;
+    private Long recordStatusID;
     @Column(name = "ConnectivityDrugID")
-    private Integer connectivityDrugID;
+    private Long connectivityDrugID;
     @Column(name = "ConnectivityDrugFactor")
     private BigDecimal connectivityDrugFactor;
     @Column(name = "MaNhaCungCap")
     private Integer maNhaCungCap;
     @Column(name = "ParentDrugId")
-    private Integer parentDrugId;
+    private Long parentDrugId;
     @Column(name = "MetadataHash")
     private Integer metadataHash;
     @Column(name = "RpMetadataHash")
     private Integer rpMetadataHash;
     @Column(name = "ReferenceId")
-    private Integer referenceId;
+    private Long referenceId;
     @Column(name = "Discount")
     private BigDecimal discount;
     @Column(name = "DiscountByRevenue")
     private Boolean discountByRevenue;
     @Column(name = "SaleTypeId")
-    private Integer saleTypeId;
+    private Long saleTypeId;
     @Column(name = "SaleOff")
     private BigDecimal saleOff;
     @Column(name = "SaleDescription")
@@ -101,13 +101,13 @@ public class Thuocs extends BaseEntity{
     @Column(name = "ImagePreviewUrl")
     private String imagePreviewUrl;
     @Column(name = "ConnectivityTypeId")
-    private Integer connectivityTypeId;
+    private Long connectivityTypeId;
     @Column(name = "ArchivedId")
-    private Integer archivedId;
+    private Long archivedId;
     @Column(name = "StoreId")
-    private Integer storeId;
+    private Long storeId;
     @Column(name = "ProductTypeId")
-    private Integer productTypeId;
+    private Long productTypeId;
     @Column(name = "SerialNumber")
     private String serialNumber;
     @Column(name = "MoneyToOneScoreRate")
@@ -129,7 +129,7 @@ public class Thuocs extends BaseEntity{
     @Column(name = "CountryOfManufacturer")
     private String countryOfManufacturer;
     @Column(name = "CountryId")
-    private Integer countryId;
+    private Long countryId;
     @Column(name = "ConnectivityId")
     private String connectivityId;
     @Column(name = "ConnectivityResult")
@@ -149,7 +149,7 @@ public class Thuocs extends BaseEntity{
     @Column(name = "CodeHash")
     private Long codeHash;
     @Column(name = "ConnectivityStatusId")
-    private Integer connectivityStatusId;
+    private Long connectivityStatusId;
     @Column(name = "OrganizeDeclaration")
     private String organizeDeclaration;
     @Column(name = "CountryRegistration")
@@ -171,13 +171,13 @@ public class Thuocs extends BaseEntity{
     @Column(name = "TypeServices")
     private Integer typeServices;
     @Column(name = "IdTypeService")
-    private Integer idTypeService;
+    private Long idTypeService;
     @Column(name = "IdClinic")
-    private Integer idClinic;
+    private Long idClinic;
     @Column(name = "CountNumbers")
     private Integer countNumbers;
     @Column(name = "IdWarehouseLocation")
-    private Integer idWarehouseLocation;
+    private Long idWarehouseLocation;
     @Column(name = "HamLuong")
     private String hamLuong;
     @Column(name = "QuyCachDongGoi")
@@ -197,7 +197,7 @@ public class Thuocs extends BaseEntity{
     @Column(name = "Flag")
     private Boolean flag;
     @Column(name = "GroupIdMapping")
-    private Integer groupIdMapping;
+    private Long groupIdMapping;
     @Column(name = "GroupNameMapping")
     private String groupNameMapping;
     @Column(name = "ResultService")
@@ -207,7 +207,7 @@ public class Thuocs extends BaseEntity{
     @Column(name = "TypeResultService")
     private Integer typeResultService;
     @Column(name = "GroupIdMappingV2")
-    private Integer groupIdMappingV2;
+    private Long groupIdMappingV2;
     @Column(name = "StorageConditions")
     private String storageConditions;
     @Column(name = "StorageLocation")
@@ -229,16 +229,16 @@ public class Thuocs extends BaseEntity{
     @Column(name = "DescriptionOnWebsite")
     private String descriptionOnWebsite;
     @Column(name = "ImgReferenceDrugId")
-    private Integer imgReferenceDrugId;
+    private Long imgReferenceDrugId;
     @Column(name = "UserUploadImgDate")
     private Date userUploadImgDate;
     @Column(name = "UserUploadImgId")
-    private Integer userUploadImgId;
+    private Long userUploadImgId;
     @Column(name = "StatusConfirm")
     private Integer statusConfirm;
     @Column(name = "UserIdConfirm")
-    private Integer userIdConfirm;
+    private Long userIdConfirm;
     @Column(name = "UserIdMapping")
-    private Integer userIdMapping;
+    private Long userIdMapping;
 }
 

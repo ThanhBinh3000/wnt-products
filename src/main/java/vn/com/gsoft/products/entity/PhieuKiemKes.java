@@ -26,7 +26,7 @@ public class PhieuKiemKes extends BaseEntity{
     @Column(name = "NhaThuoc_MaNhaThuoc")
     private String nhaThuocMaNhaThuoc;
     @Column(name = "UserProfile_UserId")
-    private Integer userProfileUserId;
+    private Long userProfileUserId;
     @Column(name = "DaCanKho")
     private Boolean daCanKho;
     @Column(name = "Active")
@@ -34,9 +34,9 @@ public class PhieuKiemKes extends BaseEntity{
     @Column(name = "SoPhieu")
     private Integer soPhieu;
     @Column(name = "ArchivedId")
-    private Integer archivedId;
+    private Long archivedId;
     @Column(name = "StoreId")
-    private Integer storeId;
+    private Long storeId;
     @Column(name = "ArchivedDate")
     private Date archivedDate;
 }

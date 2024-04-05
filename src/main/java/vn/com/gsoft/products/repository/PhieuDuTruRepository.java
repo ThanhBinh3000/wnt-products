@@ -15,6 +15,7 @@ public interface PhieuDuTruRepository extends BaseRepository<PhieuDuTru, PhieuDu
     @Query("SELECT c FROM PhieuDuTru c " +
             "WHERE 1=1 "
             + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (:#{#param.soPhieu} IS NULL OR c.soPhieu = :#{#param.soPhieu}) "
             + " AND (:#{#param.createdByUserId} IS NULL OR c.createdByUserId = :#{#param.createdByUserId}) "
             + " AND (:#{#param.tongTien} IS NULL OR c.tongTien = :#{#param.tongTien}) "
@@ -30,6 +31,7 @@ public interface PhieuDuTruRepository extends BaseRepository<PhieuDuTru, PhieuDu
     @Query("SELECT c FROM PhieuDuTru c " +
             "WHERE 1=1 "
             + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (:#{#param.soPhieu} IS NULL OR c.soPhieu = :#{#param.soPhieu}) "
             + " AND (:#{#param.createdByUserId} IS NULL OR c.createdByUserId = :#{#param.createdByUserId}) "
             + " AND (:#{#param.tongTien} IS NULL OR c.tongTien = :#{#param.tongTien}) "

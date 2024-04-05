@@ -8,8 +8,8 @@ import vn.com.gsoft.products.model.system.BaseRequest;
 public class DonViTinhsReq extends BaseRequest {
     private String tenDonViTinh;
     private String maNhaThuoc;
-    private Integer referenceId;
-    private Integer archivedId;
-    private Integer storeId;
+    private Long referenceId;
+    private Long archivedId;
+    private Long storeId;
 }
 

@@ -15,6 +15,7 @@ public interface PhieuDuTruChiTietRepository extends BaseRepository<PhieuDuTruCh
   @Query("SELECT c FROM PhieuDuTruChiTiet c " +
          "WHERE 1=1 "
           + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
           + " AND (:#{#param.maPhieuDuTru} IS NULL OR c.maPhieuDuTru = :#{#param.maPhieuDuTru}) "
           + " AND (:#{#param.maThuoc} IS NULL OR c.maThuoc = :#{#param.maThuoc}) "
           + " AND (:#{#param.maDonViTon} IS NULL OR c.maDonViTon = :#{#param.maDonViTon}) "
@@ -32,6 +33,7 @@ public interface PhieuDuTruChiTietRepository extends BaseRepository<PhieuDuTruCh
   @Query("SELECT c FROM PhieuDuTruChiTiet c " +
          "WHERE 1=1 "
           + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
           + " AND (:#{#param.maPhieuDuTru} IS NULL OR c.maPhieuDuTru = :#{#param.maPhieuDuTru}) "
           + " AND (:#{#param.maThuoc} IS NULL OR c.maThuoc = :#{#param.maThuoc}) "
           + " AND (:#{#param.maDonViTon} IS NULL OR c.maDonViTon = :#{#param.maDonViTon}) "
