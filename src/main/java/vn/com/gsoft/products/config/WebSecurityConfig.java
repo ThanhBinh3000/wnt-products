@@ -31,7 +31,7 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests(authz -> authz
-                        .requestMatchers("/actuator/**","/swagger-ui/**", "/v3/api-docs/**", "/login","/login-qr", "/refresh-token").permitAll()
+                        .requestMatchers("/actuator/**","/swagger-ui/**", "/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
