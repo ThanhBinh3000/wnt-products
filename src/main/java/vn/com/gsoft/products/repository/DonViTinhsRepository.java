@@ -21,7 +21,6 @@ public interface DonViTinhsRepository extends BaseRepository<DonViTinhs, DonViTi
           + " AND (:#{#param.referenceId} IS NULL OR c.referenceId = :#{#param.referenceId}) "
           + " AND (:#{#param.archivedId} IS NULL OR c.archivedId = :#{#param.archivedId}) "
           + " AND (:#{#param.storeId} IS NULL OR c.storeId = :#{#param.storeId}) "
-          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
           + " ORDER BY c.id desc"
   )
   Page<DonViTinhs> searchPage(@Param("param") DonViTinhsReq param, Pageable pageable);
@@ -36,7 +35,6 @@ public interface DonViTinhsRepository extends BaseRepository<DonViTinhs, DonViTi
           + " AND (:#{#param.referenceId} IS NULL OR c.referenceId = :#{#param.referenceId}) "
           + " AND (:#{#param.archivedId} IS NULL OR c.archivedId = :#{#param.archivedId}) "
           + " AND (:#{#param.storeId} IS NULL OR c.storeId = :#{#param.storeId}) "
-          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
           + " ORDER BY c.id desc"
   )
   List<DonViTinhs> searchList(@Param("param") DonViTinhsReq param);

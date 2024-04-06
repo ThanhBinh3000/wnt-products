@@ -20,7 +20,6 @@ public interface WarehouseLocationRepository extends BaseRepository<WarehouseLoc
           + " AND (:#{#param.storeCode} IS NULL OR lower(c.storeCode) LIKE lower(concat('%',CONCAT(:#{#param.storeCode},'%'))))"
           + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
           + " AND (:#{#param.descriptions} IS NULL OR lower(c.descriptions) LIKE lower(concat('%',CONCAT(:#{#param.descriptions},'%'))))"
-          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
           + " ORDER BY c.id desc"
   )
   Page<WarehouseLocation> searchPage(@Param("param") WarehouseLocationReq param, Pageable pageable);
@@ -34,7 +33,6 @@ public interface WarehouseLocationRepository extends BaseRepository<WarehouseLoc
           + " AND (:#{#param.storeCode} IS NULL OR lower(c.storeCode) LIKE lower(concat('%',CONCAT(:#{#param.storeCode},'%'))))"
           + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
           + " AND (:#{#param.descriptions} IS NULL OR lower(c.descriptions) LIKE lower(concat('%',CONCAT(:#{#param.descriptions},'%'))))"
-          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
           + " ORDER BY c.id desc"
   )
   List<WarehouseLocation> searchList(@Param("param") WarehouseLocationReq param);

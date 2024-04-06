@@ -26,7 +26,6 @@ public interface PhieuKiemKeChiTietsRepository extends BaseRepository<PhieuKiemK
           + " AND (:#{#param.archivedId} IS NULL OR c.archivedId = :#{#param.archivedId}) "
           + " AND (:#{#param.referenceId} IS NULL OR c.referenceId = :#{#param.referenceId}) "
           + " AND (:#{#param.storeId} IS NULL OR c.storeId = :#{#param.storeId}) "
-          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
           + " ORDER BY c.id desc"
   )
   Page<PhieuKiemKeChiTiets> searchPage(@Param("param") PhieuKiemKeChiTietsReq param, Pageable pageable);
@@ -46,7 +45,6 @@ public interface PhieuKiemKeChiTietsRepository extends BaseRepository<PhieuKiemK
           + " AND (:#{#param.archivedId} IS NULL OR c.archivedId = :#{#param.archivedId}) "
           + " AND (:#{#param.referenceId} IS NULL OR c.referenceId = :#{#param.referenceId}) "
           + " AND (:#{#param.storeId} IS NULL OR c.storeId = :#{#param.storeId}) "
-          + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
           + " ORDER BY c.id desc"
   )
   List<PhieuKiemKeChiTiets> searchList(@Param("param") PhieuKiemKeChiTietsReq param);

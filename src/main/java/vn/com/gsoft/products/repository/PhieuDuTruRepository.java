@@ -22,7 +22,6 @@ public interface PhieuDuTruRepository extends BaseRepository<PhieuDuTru, PhieuDu
             + " AND (:#{#param.maNhaThuoc} IS NULL OR lower(c.maNhaThuoc) LIKE lower(concat('%',CONCAT(:#{#param.maNhaThuoc},'%'))))"
             + " AND (:#{#param.supplierId} IS NULL OR c.supplierId = :#{#param.supplierId}) "
             + " AND (:#{#param.linkShare} IS NULL OR lower(c.linkShare) LIKE lower(concat('%',CONCAT(:#{#param.linkShare},'%'))))"
-            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
             + " ORDER BY c.id desc"
     )
     Page<PhieuDuTru> searchPage(@Param("param") PhieuDuTruReq param, Pageable pageable);
@@ -38,7 +37,6 @@ public interface PhieuDuTruRepository extends BaseRepository<PhieuDuTru, PhieuDu
             + " AND (:#{#param.maNhaThuoc} IS NULL OR lower(c.maNhaThuoc) LIKE lower(concat('%',CONCAT(:#{#param.maNhaThuoc},'%'))))"
             + " AND (:#{#param.supplierId} IS NULL OR c.supplierId = :#{#param.supplierId}) "
             + " AND (:#{#param.linkShare} IS NULL OR lower(c.linkShare) LIKE lower(concat('%',CONCAT(:#{#param.linkShare},'%'))))"
-            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
             + " ORDER BY c.id desc"
     )
     List<PhieuDuTru> searchList(@Param("param") PhieuDuTruReq param);

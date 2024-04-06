@@ -19,7 +19,6 @@ public interface SampleNoteRepository extends BaseRepository<SampleNote, SampleN
             + " AND (:#{#param.noteName} IS NULL OR lower(c.noteName) LIKE lower(concat('%',CONCAT(:#{#param.noteName},'%'))))"
             + " AND (:#{#param.barcode} IS NULL OR lower(c.barcode) LIKE lower(concat('%',CONCAT(:#{#param.barcode},'%'))))"
             + " AND (:#{#param.description} IS NULL OR lower(c.description) LIKE lower(concat('%',CONCAT(:#{#param.description},'%'))))"
-            + " AND (:#{#param.recordStatusID} IS NULL OR c.recordStatusID = :#{#param.recordStatusID}) "
             + " AND (:#{#param.createdByUserID} IS NULL OR c.createdByUserID = :#{#param.createdByUserID}) "
             + " AND (:#{#param.modifiedByUserID} IS NULL OR c.modifiedByUserID = :#{#param.modifiedByUserID}) "
             + " AND (:#{#param.drugStoreID} IS NULL OR lower(c.drugStoreID) LIKE lower(concat('%',CONCAT(:#{#param.drugStoreID},'%'))))"
@@ -38,7 +37,6 @@ public interface SampleNoteRepository extends BaseRepository<SampleNote, SampleN
             + " AND (:#{#param.formOfTreatment} IS NULL OR c.formOfTreatment = :#{#param.formOfTreatment}) "
             + " AND (:#{#param.typeSampleNote} IS NULL OR c.typeSampleNote = :#{#param.typeSampleNote}) "
             + " AND (:#{#param.referenceId} IS NULL OR c.referenceId = :#{#param.referenceId}) "
-            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
             + " ORDER BY c.id desc"
     )
     Page<SampleNote> searchPage(@Param("param") SampleNoteReq param, Pageable pageable);
