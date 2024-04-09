@@ -8,8 +8,10 @@ public class PathContains {
     public static final String URL_CREATE = "/create";
     public static final String URL_UPDATE = "/update";
     public static final String URL_DETAIL = "/detail/{id}";
-
     public static final String URL_DELETE = "/delete";
+    public static final String URL_DELETE_DATABASE = "/delete-database";
+    public static final String URL_RESTORE = "/restore";
+    public static final String URL_UPDATE_STATUS_MULTI = "/update/multiple";
 
     public static final String URL_NHOM_NHA_CUNG_CAP = "/nhom-nha-cung-cap";
     public static final String URL_NHOM_BAC_SI = "/nhom-bac-si";
@@ -18,6 +20,7 @@ public class PathContains {
     public static final String URL_DON_VI_TINH = "/don-vi-tinh";
     public static final String URL_THUOC = "/thuoc";
     public static final String URL_WAREHOUSE_LOCATION = "/warehouse-location";
+    public static final String URL_PRODUCT_TYPES = "/product-types";
 
 
 }

@@ -9,6 +9,7 @@ import vn.com.gsoft.products.entity.NhomThuocs;
 import vn.com.gsoft.products.model.dto.NhomThuocsReq;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface NhomThuocsRepository extends BaseRepository<NhomThuocs, NhomThuocsReq, Long> {
@@ -42,5 +43,7 @@ public interface NhomThuocsRepository extends BaseRepository<NhomThuocs, NhomThu
             + " ORDER BY c.id desc"
     )
     List<NhomThuocs> searchList(@Param("param") NhomThuocsReq param);
+
+//    Optional<NhomThuocs> findByI
 
 }

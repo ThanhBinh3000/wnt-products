@@ -108,8 +108,60 @@ public class BaseServiceImpl<E extends BaseEntity,R extends BaseRequest, PK exte
         if (optional.isEmpty()) {
             throw new Exception("Không tìm thấy dữ liệu.");
         }
-        optional.get().setRecordStatusId(2l);
+        optional.get().setRecordStatusId(RecordStatusContains.DELETED);
         repository.save(optional.get());
+        return true;
+    }
+
+
+    @Override
+    public boolean restore(PK id) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+
+        Optional<E> optional = repository.findById(id);
+        if (optional.isEmpty()) {
+            throw new Exception("Không tìm thấy dữ liệu.");
+        }
+        optional.get().setRecordStatusId(RecordStatusContains.ACTIVE);
+        repository.save(optional.get());
+        return true;
+    }
+
+    @Override
+    public boolean deleteDatabase(PK id) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+
+        Optional<E> optional = repository.findById(id);
+        if (optional.isEmpty()) {
+            throw new Exception("Không tìm thấy dữ liệu.");
+        }
+        repository.delete(optional.get());
+        return true;
+    }
+
+    @Override
+    public boolean updateStatusMulti(R req) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null){
+            throw new Exception("Bad request.");
+        }
+        if(req == null || req.getListIds().isEmpty()){
+            throw new Exception("Bad request.");
+        }
+        List<E> allByIdIn = repository.findAllByIdIn(req.getListIds());
+
+        if(req.getRecordStatusId() == RecordStatusContains.DELETED_DATABASE){
+            repository.deleteAll(allByIdIn);
+        }else{
+            allByIdIn.forEach(item -> {
+                item.setRecordStatusId(req.getRecordStatusId());
+            });
+            repository.saveAll(allByIdIn);
+        }
         return true;
     }
 }

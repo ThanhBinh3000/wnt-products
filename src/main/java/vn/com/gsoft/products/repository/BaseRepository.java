@@ -15,4 +15,6 @@ public interface BaseRepository<E, R, PK extends Serializable> extends CrudRepos
     Page<E> searchPage(@Param("param") R param, Pageable pageable);
 
     List<E> searchList(@Param("param") R param);
+
+    List<E> findAllByIdIn(List<PK> listIds);
 }

@@ -22,4 +22,13 @@ public interface BaseService<E,R, PK extends Serializable> {
 
     @Transactional(rollbackFor = {Exception.class, Throwable.class})
     boolean delete(PK id) throws Exception;
+
+    @Transactional(rollbackFor = {Exception.class, Throwable.class})
+    boolean restore(PK id) throws Exception;
+
+    @Transactional(rollbackFor = {Exception.class, Throwable.class})
+    boolean deleteDatabase(PK id) throws Exception;
+
+    @Transactional(rollbackFor = {Exception.class, Throwable.class})
+    boolean updateStatusMulti(R req) throws Exception;
 }

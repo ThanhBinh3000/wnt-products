@@ -41,15 +41,15 @@ public class Thuocs extends BaseEntity{
     @Column(name = "NhaThuoc_MaNhaThuoc")
     private String nhaThuocMaNhaThuoc;
     @Column(name = "NhomThuoc_MaNhomThuoc")
-    private Integer nhomThuocMaNhomThuoc;
+    private Long nhomThuocMaNhomThuoc;
     @Column(name = "Nuoc_MaNuoc")
     private Integer nuocMaNuoc;
     @Column(name = "DangBaoChe_MaDangBaoChe")
     private Integer dangBaoCheMaDangBaoChe;
     @Column(name = "DonViXuatLe_MaDonViTinh")
-    private Integer donViXuatLeMaDonViTinh;
+    private Long donViXuatLeMaDonViTinh;
     @Column(name = "DonViThuNguyen_MaDonViTinh")
-    private Integer donViThuNguyenMaDonViTinh;
+    private Long donViThuNguyenMaDonViTinh;
     @Column(name = "BarCode")
     private String barCode;
     @Column(name = "HoatDong")
@@ -64,8 +64,6 @@ public class Thuocs extends BaseEntity{
     private Boolean active;
     @Column(name = "NhaThuoc_MaNhaThuocCreate")
     private String nhaThuocMaNhaThuocCreate;
-    @Column(name = "RecordStatusID")
-    private Long recordStatusID;
     @Column(name = "ConnectivityDrugID")
     private Long connectivityDrugID;
     @Column(name = "ConnectivityDrugFactor")
@@ -240,5 +238,19 @@ public class Thuocs extends BaseEntity{
     private Long userIdConfirm;
     @Column(name = "UserIdMapping")
     private Long userIdMapping;
+
+    // @Transient
+
+    @Transient
+    private String tenNhomThuoc;
+
+    @Transient
+    private String tenDonViTinhXuatLe;
+
+    @Transient
+    private String tenDonViTinhThuNguyen;
+
+    @Transient
+    private String tenViTri;
 }
 

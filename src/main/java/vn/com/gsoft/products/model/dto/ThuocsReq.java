@@ -26,21 +26,14 @@ public class ThuocsReq extends BaseRequest {
     private Integer dangBaoCheMaDangBaoChe;
     private Integer donViXuatLeMaDonViTinh;
     private Integer donViThuNguyenMaDonViTinh;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-    private Date created;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-    private Date modified;
-    private Long createdByUserId;
-    private Long modifiedByUserId;
+
     private String barCode;
     private Boolean hoatDong;
     private Boolean hangTuVan;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-    private Date hanDung;
     private Integer duTru;
     private Boolean active;
     private String nhaThuocMaNhaThuocCreate;
-    private Long recordStatusID;
+    private Long recordStatusId;
     private Long connectivityDrugID;
     private BigDecimal connectivityDrugFactor;
     private Integer maNhaCungCap;
@@ -53,10 +46,7 @@ public class ThuocsReq extends BaseRequest {
     private Long saleTypeId;
     private BigDecimal saleOff;
     private String saleDescription;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-    private Date saleStartDate;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-    private Date saleEndDate;
+
     private Boolean scorable;
     private String imageThumbUrl;
     private String imagePreviewUrl;
@@ -77,8 +67,6 @@ public class ThuocsReq extends BaseRequest {
     private Long countryId;
     private String connectivityId;
     private String connectivityResult;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-    private Date connectivityDateTime;
     private String dosageForms;
     private String smallestPackingUnit;
     private String importers;
@@ -117,8 +105,6 @@ public class ThuocsReq extends BaseRequest {
     private Long groupIdMappingV2;
     private String storageConditions;
     private String storageLocation;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-    private Date mappingDate;
     private String chiDinh;
     private String chongChiDinh;
     private String xuatXu;
@@ -127,11 +113,11 @@ public class ThuocsReq extends BaseRequest {
     private Boolean enablePromotionalDiscounts;
     private String descriptionOnWebsite;
     private Long imgReferenceDrugId;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-    private Date userUploadImgDate;
     private Long userUploadImgId;
     private Integer statusConfirm;
     private Long userIdConfirm;
     private Long userIdMapping;
+
+    private Boolean dataDelete;
 }
 

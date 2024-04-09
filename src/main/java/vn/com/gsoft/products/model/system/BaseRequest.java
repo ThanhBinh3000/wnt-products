@@ -13,4 +13,5 @@ public class BaseRequest {
 	private Long recordStatusId;
 	private List<Long> recordStatusIds;
 	private PaggingReq paggingReq;
+	private List<Long> listIds;
 }
