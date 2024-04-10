@@ -111,6 +111,9 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
             + " AND (:#{#param.statusConfirm} IS NULL OR c.statusConfirm = :#{#param.statusConfirm}) "
             + " AND (:#{#param.userIdConfirm} IS NULL OR c.userIdConfirm = :#{#param.userIdConfirm}) "
             + " AND (:#{#param.userIdMapping} IS NULL OR c.userIdMapping = :#{#param.userIdMapping}) "
+            + " AND ((:#{#param.textSearch} IS NULL OR lower(c.maThuoc) LIKE lower(concat('%',CONCAT(:#{#param.textSearch},'%')))) "
+            + " OR (:#{#param.textSearch} IS NULL OR lower(c.tenThuoc) LIKE lower(concat('%',CONCAT(:#{#param.textSearch},'%')))) "
+            + " OR (:#{#param.textSearch} IS NULL OR lower(c.thongTin) LIKE lower(concat('%',CONCAT(:#{#param.textSearch},'%'))))) "
             + " ORDER BY c.id desc"
     )
     Page<Thuocs> searchPage(@Param("param") ThuocsReq param, Pageable pageable);
@@ -215,6 +218,9 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
             + " AND (:#{#param.statusConfirm} IS NULL OR c.statusConfirm = :#{#param.statusConfirm}) "
             + " AND (:#{#param.userIdConfirm} IS NULL OR c.userIdConfirm = :#{#param.userIdConfirm}) "
             + " AND (:#{#param.userIdMapping} IS NULL OR c.userIdMapping = :#{#param.userIdMapping}) "
+            + " AND ((:#{#param.textSearch} IS NULL OR lower(c.maThuoc) LIKE lower(concat('%',CONCAT(:#{#param.textSearch},'%')))) "
+            + " OR (:#{#param.textSearch} IS NULL OR lower(c.tenThuoc) LIKE lower(concat('%',CONCAT(:#{#param.textSearch},'%')))) "
+            + " OR (:#{#param.textSearch} IS NULL OR lower(c.thongTin) LIKE lower(concat('%',CONCAT(:#{#param.textSearch},'%'))))) "
             + " ORDER BY c.id desc"
     )
     List<Thuocs> searchList(@Param("param") ThuocsReq param);
