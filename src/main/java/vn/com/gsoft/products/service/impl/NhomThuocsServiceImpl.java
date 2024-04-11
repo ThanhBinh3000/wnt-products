@@ -19,6 +19,7 @@ import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.NhomThuocsRepository;
 import vn.com.gsoft.products.service.NhomThuocsService;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,10 +41,12 @@ public class NhomThuocsServiceImpl extends BaseServiceImpl<NhomThuocs, NhomThuoc
 			throw new Exception("Bad request.");
 		NhomThuocs hdr = new NhomThuocs();
 		BeanUtils.copyProperties(req, hdr, "id");
-		if(hdr.getRecordStatusId() == null){
-			req.setRecordStatusId(RecordStatusContains.ACTIVE);
+		if(req.getRecordStatusId() == null){
+			hdr.setRecordStatusId(RecordStatusContains.ACTIVE);
 		}
 		hdr.setMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+		hdr.setCreated(new Date());
+		hdr.setCreatedByUserId(userInfo.getId());
 		return hdrRepo.save(hdr);
 	}
 
@@ -62,6 +65,8 @@ public class NhomThuocsServiceImpl extends BaseServiceImpl<NhomThuocs, NhomThuoc
 			hdr.setRecordStatusId(RecordStatusContains.ACTIVE);
 		}
 		hdr.setMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+		hdr.setModified(new Date());
+		hdr.setModifiedByUserId(userInfo.getId());
 		return hdrRepo.save(hdr);
 	}
 

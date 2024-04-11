@@ -21,7 +21,7 @@ public class ThuocsReq extends BaseRequest {
     private BigDecimal giaDauKy;
     private Integer gioiHan;
     private String nhaThuocMaNhaThuoc;
-    private Integer nhomThuocMaNhomThuoc;
+    private Long nhomThuocMaNhomThuoc;
     private Integer nuocMaNuoc;
     private Integer dangBaoCheMaDangBaoChe;
     private Integer donViXuatLeMaDonViTinh;
