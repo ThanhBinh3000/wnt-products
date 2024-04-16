@@ -26,4 +26,6 @@ public interface BaseService<E,R, PK extends Serializable> {
     boolean restore(PK id) throws Exception;
     @Transactional(rollbackFor = {Exception.class, Throwable.class})
     boolean deleteForever(PK id) throws Exception;
+    @Transactional(rollbackFor = {Exception.class, Throwable.class})
+    boolean updateStatusMulti(R req) throws Exception;
 }

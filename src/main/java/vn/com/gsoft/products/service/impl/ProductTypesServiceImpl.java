@@ -61,9 +61,10 @@ public class ProductTypesServiceImpl implements ProductTypesService {
 	}
 
 	@Override
-	public boolean deleteDatabase(Long id) throws Exception {
+	public boolean deleteForever(Long id) throws Exception {
 		return false;
 	}
+
 
 	@Override
 	public boolean updateStatusMulti(ProductTypesReq req) throws Exception {

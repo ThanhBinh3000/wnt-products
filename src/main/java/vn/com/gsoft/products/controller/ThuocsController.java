@@ -69,7 +69,7 @@ public class ThuocsController {
   @PostMapping(value = PathContains.URL_DELETE_DATABASE, produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<BaseResponse> deleteDatabase(@Valid @RequestBody ThuocsReq idSearchReq) throws Exception {
-    return ResponseEntity.ok(ResponseUtils.ok(service.deleteDatabase(idSearchReq.getId())));
+    return ResponseEntity.ok(ResponseUtils.ok(service.deleteForever(idSearchReq.getId())));
   }
 
   @PostMapping(value = PathContains.URL_RESTORE, produces = MediaType.APPLICATION_JSON_VALUE)

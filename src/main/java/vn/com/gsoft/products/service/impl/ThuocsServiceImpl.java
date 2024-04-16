@@ -23,7 +23,9 @@ import vn.com.gsoft.products.repository.WarehouseLocationRepository;
 import vn.com.gsoft.products.service.ThuocsService;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -165,5 +167,43 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 		hdr.setTypeServices(0);
 		hdr.setTypeService(0);
 		return hdrRepo.save(hdr);
+	}
+
+	@Override
+	public Thuocs detail(Long id) throws Exception {
+		Profile userInfo = this.getLoggedUser();
+		if (userInfo == null)
+			throw new Exception("Bad request.");
+
+		Optional<Thuocs> optional = hdrRepo.findById(id);
+		if (optional.isEmpty()) {
+			throw new Exception("Không tìm thấy dữ liệu.");
+		}else {
+			if(optional.get().getRecordStatusId() != RecordStatusContains.ACTIVE){
+				throw new Exception("Không tìm thấy dữ liệu.");
+			}
+		}
+		Thuocs thuocs = optional.get();
+		List<DonViTinhs> dviTinh = new ArrayList<>();
+		if(thuocs.getDonViXuatLeMaDonViTinh() > 0){
+			Optional<DonViTinhs> byId = donViTinhsRepository.findById(thuocs.getDonViXuatLeMaDonViTinh());
+			if(byId.isPresent()){
+				byId.get().setFactor(1);
+				byId.get().setGiaBan(thuocs.getGiaBanLe());
+				byId.get().setGiaNhap(thuocs.getGiaNhap());
+				dviTinh.add(byId.get());
+			}
+		}
+		if(thuocs.getDonViThuNguyenMaDonViTinh() > 0 && !thuocs.getDonViThuNguyenMaDonViTinh().equals(thuocs.getDonViXuatLeMaDonViTinh())){
+			Optional<DonViTinhs> byId = donViTinhsRepository.findById(thuocs.getDonViThuNguyenMaDonViTinh());
+			if(byId.isPresent()){
+				byId.get().setFactor(thuocs.getHeSo());
+				byId.get().setGiaBan(thuocs.getGiaBanLe().multiply(BigDecimal.valueOf(thuocs.getHeSo())));
+				byId.get().setGiaNhap(thuocs.getGiaNhap().multiply(BigDecimal.valueOf(thuocs.getHeSo())));
+				dviTinh.add(byId.get());
+			}
+		}
+		thuocs.setListDonViTinhs(dviTinh);
+		return thuocs;
 	}
 }
