@@ -117,8 +117,6 @@ public class BaseServiceImpl<E extends BaseEntity,R extends BaseRequest, PK exte
         repository.save(optional.get());
         return true;
     }
-
-
     @Override
     public boolean restore(PK id) throws Exception {
         Profile userInfo = this.getLoggedUser();
@@ -129,13 +127,16 @@ public class BaseServiceImpl<E extends BaseEntity,R extends BaseRequest, PK exte
         if (optional.isEmpty()) {
             throw new Exception("Không tìm thấy dữ liệu.");
         }
+        if(!optional.get().getRecordStatusId().equals(RecordStatusContains.DELETED)){
+            throw new Exception("Không tìm thấy dữ liệu.");
+        }
         optional.get().setRecordStatusId(RecordStatusContains.ACTIVE);
         repository.save(optional.get());
         return true;
     }
 
     @Override
-    public boolean deleteDatabase(PK id) throws Exception {
+    public boolean deleteForever(PK id) throws Exception {
         Profile userInfo = this.getLoggedUser();
         if (userInfo == null)
             throw new Exception("Bad request.");
@@ -144,29 +145,11 @@ public class BaseServiceImpl<E extends BaseEntity,R extends BaseRequest, PK exte
         if (optional.isEmpty()) {
             throw new Exception("Không tìm thấy dữ liệu.");
         }
-        repository.delete(optional.get());
-        return true;
-    }
-
-    @Override
-    public boolean updateStatusMulti(R req) throws Exception {
-        Profile userInfo = this.getLoggedUser();
-        if (userInfo == null){
-            throw new Exception("Bad request.");
+        if(!optional.get().getRecordStatusId().equals(RecordStatusContains.DELETED)){
+            throw new Exception("Không tìm thấy dữ liệu.");
         }
-        if(req == null || req.getListIds().isEmpty()){
-            throw new Exception("Bad request.");
-        }
-        List<E> allByIdIn = repository.findAllByIdIn(req.getListIds());
-
-        if(req.getRecordStatusId() == RecordStatusContains.DELETED_DATABASE){ //todo
-            repository.deleteAll(allByIdIn);
-        }else{
-            allByIdIn.forEach(item -> {
-                item.setRecordStatusId(req.getRecordStatusId());
-            });
-            repository.saveAll(allByIdIn);
-        }
+        optional.get().setRecordStatusId(RecordStatusContains.DELETED_FOREVER);
+        repository.save(optional.get());
         return true;
     }
 }
