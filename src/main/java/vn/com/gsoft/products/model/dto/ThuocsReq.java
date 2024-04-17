@@ -24,8 +24,8 @@ public class ThuocsReq extends BaseRequest {
     private Long nhomThuocMaNhomThuoc;
     private Integer nuocMaNuoc;
     private Integer dangBaoCheMaDangBaoChe;
-    private Integer donViXuatLeMaDonViTinh;
-    private Integer donViThuNguyenMaDonViTinh;
+    private Long donViXuatLeMaDonViTinh;
+    private Long donViThuNguyenMaDonViTinh;
 
     private String barCode;
     private Boolean hoatDong;
@@ -114,9 +114,11 @@ public class ThuocsReq extends BaseRequest {
     private String descriptionOnWebsite;
     private Long imgReferenceDrugId;
     private Long userUploadImgId;
-    private Integer statusConfirm;
+    private Long statusConfirm;
     private Long userIdConfirm;
     private Long userIdMapping;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    private Date hanDung;
 
     private Boolean dataDelete;
 }

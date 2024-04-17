@@ -12,6 +12,9 @@ public class PathContains {
     public static final String URL_DELETE_DATABASE = "/delete-database";
     public static final String URL_RESTORE = "/restore";
     public static final String URL_UPDATE_STATUS_MULTI = "/update/multiple";
+    public static final String URL_GENERATEDRUGCODE = "/generate-drug-code";
+    public static final String URL_GENERATEBARCODE = "/generate-barcode";
+
 
     public static final String URL_NHOM_NHA_CUNG_CAP = "/nhom-nha-cung-cap";
     public static final String URL_NHOM_BAC_SI = "/nhom-bac-si";

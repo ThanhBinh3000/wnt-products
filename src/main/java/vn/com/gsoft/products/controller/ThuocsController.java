@@ -84,4 +84,16 @@ public class ThuocsController {
     return ResponseEntity.ok(ResponseUtils.ok(service.updateStatusMulti(idSearchReq)));
   }
 
+  @PostMapping(value = PathContains.URL_GENERATEDRUGCODE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<BaseResponse> generateDrugCode() throws Exception {
+    return ResponseEntity.ok(ResponseUtils.ok(service.generateDrugCode()));
+  }
+
+  @PostMapping(value = PathContains.URL_GENERATEBARCODE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<BaseResponse> generateBarCode() throws Exception {
+    return ResponseEntity.ok(ResponseUtils.ok(service.generateBarCode()));
+  }
+
 }
