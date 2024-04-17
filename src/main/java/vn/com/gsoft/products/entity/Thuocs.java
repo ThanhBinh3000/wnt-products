@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -234,7 +235,7 @@ public class Thuocs extends BaseEntity{
     @Column(name = "UserUploadImgId")
     private Long userUploadImgId;
     @Column(name = "StatusConfirm")
-    private Integer statusConfirm;
+    private Long statusConfirm;
     @Column(name = "UserIdConfirm")
     private Long userIdConfirm;
     @Column(name = "UserIdMapping")
@@ -256,5 +257,49 @@ public class Thuocs extends BaseEntity{
 
     @Transient
     private List<DonViTinhs> listDonViTinhs;
+
+    @Transient
+    private double tonKho;
+    // @Override
+    @Override
+    public int hashCode() {
+        int result = maThuoc == null || maThuoc.isEmpty() ? 0 : maThuoc.hashCode();
+        result = (result * 397) ^ (tenThuoc == null || tenThuoc.isEmpty() ? 0 : tenThuoc.hashCode());
+        result = (result * 397) ^ (thongTin == null || thongTin.isEmpty() ? 0 : thongTin.hashCode());
+        result = (result * 397) ^ heSo.hashCode();
+        result = (result * 397) ^ giaBanBuon.hashCode();
+        result = (result * 397) ^ giaBanLe.hashCode();
+        result = (result * 397) ^ soDuDauKy.hashCode();
+        result = (result * 397) ^ soDuDauKy.hashCode();
+        result = (result * 397) ^ giaDauKy.hashCode();
+        result = (result * 397) ^ (gioiHan == null ? 0 : gioiHan.hashCode());
+        result = (result * 397) ^ nhomThuocMaNhomThuoc.hashCode();
+        result = (result * 397) ^ (nuocMaNuoc == null ? 0 : nuocMaNuoc.hashCode());
+        result = (result * 397) ^ (dangBaoCheMaDangBaoChe == null ? 0 : dangBaoCheMaDangBaoChe.hashCode());
+        result = (result * 397) ^ (donViXuatLeMaDonViTinh == null ? 0 : donViXuatLeMaDonViTinh.hashCode());
+        result = (result * 397) ^ (donViThuNguyenMaDonViTinh == null ? 0 : donViThuNguyenMaDonViTinh.hashCode());
+        result = (result * 397) ^ (barCode == null || barCode.isEmpty() ? 0 : barCode.hashCode());
+        result = (result * 397) ^ duTru.hashCode();
+        result = (result * 397) ^ (active == null ? 0 : active.hashCode());
+        result = (result * 397) ^ (maNhaCungCap == null ? 0 : maNhaCungCap.hashCode());
+        result = (int) ((result * 397) ^ super.getRecordStatusId());
+        result = (result * 397) ^ discount.hashCode();
+        result = (result * 397) ^ discountByRevenue.hashCode();
+        result = (result * 397) ^ (hanDung == null ? LocalDateTime.MIN.hashCode() : hanDung.hashCode());
+
+        return result;
+    }
+
+    public int getRpHashCode() {
+        int result = heSo.hashCode();
+        result = (result * 397) ^ heSo.hashCode();
+        result = (result * 397) ^ soDuDauKy.hashCode();
+        result = (result * 397) ^ giaDauKy.hashCode();
+        result = (result * 397) ^ (donViXuatLeMaDonViTinh != null ? donViXuatLeMaDonViTinh.hashCode() : 0);
+        result = (result * 397) ^ (donViThuNguyenMaDonViTinh != null ? donViThuNguyenMaDonViTinh.hashCode() : 0);
+        result = (int) ((result * 397) ^ super.getRecordStatusId());
+        result = (result * 397) ^ (hanDung == null ? LocalDateTime.MIN.hashCode() : hanDung.hashCode());
+        return result;
+    }
 }
 

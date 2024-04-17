@@ -9,6 +9,7 @@ import vn.com.gsoft.products.entity.Thuocs;
 import vn.com.gsoft.products.model.dto.ThuocsReq;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long> {
@@ -225,4 +226,8 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
     )
     List<Thuocs> searchList(@Param("param") ThuocsReq param);
 
+    Optional<Thuocs> findByMaThuocAndNhaThuocMaNhaThuocAndRecordStatusId(String maThuoc,String nhaThuocMaNhaThuoc,Long recordStatusId);
+    Optional<Thuocs> findByTenThuocAndNhaThuocMaNhaThuocAndRecordStatusId(String tenThuoc,String nhaThuocMaNhaThuoc,Long recordStatusId);
+    Optional<Thuocs> findByBarCodeAndNhaThuocMaNhaThuocAndRecordStatusId(String barCode,String nhaThuocMaNhaThuoc,Long recordStatusId);
+    List<Thuocs> findByNhaThuocMaNhaThuoc(String storeCode);
 }
