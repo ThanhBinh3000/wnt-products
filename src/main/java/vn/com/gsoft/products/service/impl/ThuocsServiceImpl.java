@@ -291,6 +291,7 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 			}
 		}
 		Thuocs thuocs = optional.get();
+		//fill dvt
 		List<DonViTinhs> dviTinh = new ArrayList<>();
 		if(thuocs.getDonViXuatLeMaDonViTinh() > 0){
 			Optional<DonViTinhs> byId = donViTinhsRepository.findById(thuocs.getDonViXuatLeMaDonViTinh());
@@ -299,6 +300,7 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 				byId.get().setGiaBan(thuocs.getGiaBanLe());
 				byId.get().setGiaNhap(thuocs.getGiaNhap());
 				dviTinh.add(byId.get());
+				thuocs.setTenDonViTinhXuatLe(byId.get().getTenDonViTinh());
 			}
 		}
 		if(thuocs.getDonViThuNguyenMaDonViTinh() > 0 && !thuocs.getDonViThuNguyenMaDonViTinh().equals(thuocs.getDonViXuatLeMaDonViTinh())){
@@ -308,9 +310,17 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 				byId.get().setGiaBan(thuocs.getGiaBanLe().multiply(BigDecimal.valueOf(thuocs.getHeSo())));
 				byId.get().setGiaNhap(thuocs.getGiaNhap().multiply(BigDecimal.valueOf(thuocs.getHeSo())));
 				dviTinh.add(byId.get());
+				thuocs.setTenDonViTinhThuNguyen(byId.get().getTenDonViTinh());
 			}
 		}
 		thuocs.setListDonViTinhs(dviTinh);
+		//fill vi tri tu/kho
+		if(thuocs.getIdWarehouseLocation() > 0){
+			Optional<WarehouseLocation> byId = warehouseLocationRepository.findById(thuocs.getIdWarehouseLocation());
+			if(byId.isPresent()){
+				thuocs.setTenViTri(byId.get().getNameWarehouse());
+			}
+		}
 		return thuocs;
 	}
 }
