@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.com.gsoft.products.constant.RecordStatusContains;
 import vn.com.gsoft.products.constant.StatusConfirmDrugContains;
+import vn.com.gsoft.products.constant.TypeServiceContains;
 import vn.com.gsoft.products.entity.*;
 import vn.com.gsoft.products.model.dto.InventoryReq;
 import vn.com.gsoft.products.model.dto.NhomThuocsReq;
@@ -49,6 +50,9 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 	public WarehouseLocationRepository warehouseLocationRepository;
 
 	@Autowired
+	public PhongKhamsRepository phongKhamsRepository;
+
+	@Autowired
 	public InventoryRepository inventoryRepository;
 
 
@@ -59,6 +63,7 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 			throw new Exception("Bad request.");
 		Pageable pageable = PageRequest.of(req.getPaggingReq().getPage(), req.getPaggingReq().getLimit());
 		req.setNhaThuocMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+		req.setNhaThuocMaNhaThuocCha(userInfo.getNhaThuoc().getMaNhaThuocCha());
 		if(req.getDataDelete() != null){
 			req.setRecordStatusId(req.getDataDelete() ? RecordStatusContains.DELETED : RecordStatusContains.ACTIVE);
 		}
@@ -68,17 +73,19 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 				Optional<NhomThuocs> byIdNt = nhomThuocsRepository.findById(item.getNhomThuocMaNhomThuoc());
 				byIdNt.ifPresent(nhomThuocs -> item.setTenNhomThuoc(nhomThuocs.getTenNhomThuoc()));
 			}
-			if(item.getDonViThuNguyenMaDonViTinh()!=null){
-				Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViThuNguyenMaDonViTinh());
-				byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhThuNguyen(donViTinhs.getTenDonViTinh()));
-			}
-			if(item.getDonViXuatLeMaDonViTinh()!=null){
-				Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViXuatLeMaDonViTinh());
-				byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhXuatLe(donViTinhs.getTenDonViTinh()));
-			}
-			if(item.getIdWarehouseLocation() != null ){
-				Optional<WarehouseLocation> byIdNt = warehouseLocationRepository.findById(item.getIdWarehouseLocation());
-				byIdNt.ifPresent(warehouseLocations -> item.setTenViTri(warehouseLocations.getNameWarehouse()));
+			if(req.getTypeService() == 0) { //kiểm tra nếu là thuốc thì mới fill dữ liệu bên dưới
+				if(item.getDonViThuNguyenMaDonViTinh()!=null){
+					Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViThuNguyenMaDonViTinh());
+					byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhThuNguyen(donViTinhs.getTenDonViTinh()));
+				}
+				if(item.getDonViXuatLeMaDonViTinh()!=null){
+					Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViXuatLeMaDonViTinh());
+					byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhXuatLe(donViTinhs.getTenDonViTinh()));
+				}
+				if(item.getIdWarehouseLocation() != null ){
+					Optional<WarehouseLocation> byIdNt = warehouseLocationRepository.findById(item.getIdWarehouseLocation());
+					byIdNt.ifPresent(warehouseLocations -> item.setTenViTri(warehouseLocations.getNameWarehouse()));
+				}
 			}
 		});
 		return thuocs;
@@ -89,29 +96,29 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 		Profile userInfo = this.getLoggedUser();
 		if (userInfo == null)
 			throw new Exception("Bad request.");
+		String storeCode = userInfo.getNhaThuoc().getMaNhaThuoc();
+		String parentStoreCode = userInfo.getNhaThuoc().getMaNhaThuocCha() != null && !userInfo.getNhaThuoc().getMaNhaThuocCha().isEmpty()
+				? userInfo.getNhaThuoc().getMaNhaThuocCha() : storeCode;
 		String maThuoc = req.getMaThuoc();
 		String tenThuoc = req.getTenThuoc();
 		String barCode = req.getBarCode();
 		//check trùng mã
-		if(!maThuoc.isEmpty())
-		{
-			Optional<Thuocs> byMaThuocAndRecordStatusId = hdrRepo.findByMaThuocAndNhaThuocMaNhaThuocAndRecordStatusId(maThuoc,userInfo.getNhaThuoc().getMaNhaThuoc(), RecordStatusContains.ACTIVE);
+		if(!maThuoc.isEmpty()) {
+			Optional<Thuocs> byMaThuocAndRecordStatusId = hdrRepo.findByMaThuoc(maThuoc,storeCode, parentStoreCode, RecordStatusContains.ACTIVE);
 			if(byMaThuocAndRecordStatusId.isPresent()){
 				throw new Exception("Đã tồn tại mã thuốc.");
 			}
 		}
 		//check trùng tên
-		if(!tenThuoc.isEmpty())
-		{
-			Optional<Thuocs> byTenThuocAndRecordStatusId = hdrRepo.findByTenThuocAndNhaThuocMaNhaThuocAndRecordStatusId(tenThuoc,userInfo.getNhaThuoc().getMaNhaThuoc(), RecordStatusContains.ACTIVE);
+		if(!tenThuoc.isEmpty()) {
+			Optional<Thuocs> byTenThuocAndRecordStatusId = hdrRepo.findByTenThuoc(tenThuoc,storeCode, parentStoreCode, RecordStatusContains.ACTIVE);
 			if(byTenThuocAndRecordStatusId.isPresent()){
 				throw new Exception("Đã tồn tại tên thuốc.");
 			}
 		}
 		//check trùng barcode
-		if(!barCode.isEmpty())
-		{
-			Optional<Thuocs> byBarcodeAndRecordStatusId = hdrRepo.findByBarCodeAndNhaThuocMaNhaThuocAndRecordStatusId(barCode,userInfo.getNhaThuoc().getMaNhaThuoc(), RecordStatusContains.ACTIVE);
+		if(!barCode.isEmpty()) {
+			Optional<Thuocs> byBarcodeAndRecordStatusId = hdrRepo.findByBarCode(barCode,storeCode, parentStoreCode, RecordStatusContains.ACTIVE);
 			if(byBarcodeAndRecordStatusId.isPresent()){
 				throw new Exception("Đã tồn tại mã vạch thuốc.");
 			}
@@ -130,7 +137,7 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 		hdr.setCodeHash((long) req.getMaThuoc().hashCode());
 		hdr.setNameHash((long) req.getTenThuoc().hashCode());
 		hdr.setDuTru(req.getGioiHan());
-		hdr.setTypeService(0);
+		hdr.setTypeService(TypeServiceContains.DRUG);
 		hdr.setMetadataHash(hashCode());
 		hdr.setRpMetadataHash(hdr.getRpHashCode());
 		if(hdr.getDonViThuNguyenMaDonViTinh().equals(hdr.getDonViXuatLeMaDonViTinh())){
@@ -165,26 +172,29 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 			throw new Exception("Không tìm thấy dữ liệu.");
 		}
 		else {
+			String storeCode = userInfo.getNhaThuoc().getMaNhaThuoc();
+			String parentStoreCode = userInfo.getNhaThuoc().getMaNhaThuocCha() != null && !userInfo.getNhaThuoc().getMaNhaThuocCha().isEmpty()
+					? userInfo.getNhaThuoc().getMaNhaThuocCha() : storeCode;
 			String maThuoc = req.getMaThuoc();
 			String tenThuoc = req.getTenThuoc();
 			String barCode = req.getBarCode();
 			//check trùng mã
 			if(!optional.get().getMaThuoc().equals(maThuoc) && !maThuoc.isEmpty()) {
-				Optional<Thuocs> byMaThuocAndRecordStatusId = hdrRepo.findByMaThuocAndNhaThuocMaNhaThuocAndRecordStatusId(maThuoc, userInfo.getNhaThuoc().getMaNhaThuoc(), RecordStatusContains.ACTIVE);
+				Optional<Thuocs> byMaThuocAndRecordStatusId = hdrRepo.findByMaThuoc(maThuoc,storeCode, parentStoreCode, RecordStatusContains.ACTIVE);
 				if (byMaThuocAndRecordStatusId.isPresent()) {
 					throw new Exception("Đã tồn tại mã thuốc.");
 				}
 			}
 			//check trùng tên
 			if(!optional.get().getTenThuoc().equals(tenThuoc) && !tenThuoc.isEmpty()) {
-				Optional<Thuocs> byTenThuocAndRecordStatusId = hdrRepo.findByTenThuocAndNhaThuocMaNhaThuocAndRecordStatusId(tenThuoc,userInfo.getNhaThuoc().getMaNhaThuoc(), RecordStatusContains.ACTIVE);
+				Optional<Thuocs> byTenThuocAndRecordStatusId = hdrRepo.findByTenThuoc(tenThuoc,storeCode, parentStoreCode, RecordStatusContains.ACTIVE);
 				if(byTenThuocAndRecordStatusId.isPresent()){
 					throw new Exception("Đã tồn tại tên thuốc.");
 				}
 			}
 			//check trùng barcode
 			if(!optional.get().getBarCode().equals(barCode) && !barCode.isEmpty()) {
-				Optional<Thuocs> byBarcodeAndRecordStatusId = hdrRepo.findByBarCodeAndNhaThuocMaNhaThuocAndRecordStatusId(barCode,userInfo.getNhaThuoc().getMaNhaThuoc(), RecordStatusContains.ACTIVE);
+				Optional<Thuocs> byBarcodeAndRecordStatusId = hdrRepo.findByBarCode(barCode,storeCode, parentStoreCode, RecordStatusContains.ACTIVE);
 				if(byBarcodeAndRecordStatusId.isPresent()){
 					throw new Exception("Đã tồn tại mã vạch thuốc.");
 				}
@@ -204,7 +214,7 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 		hdr.setCodeHash((long) req.getMaThuoc().hashCode());
 		hdr.setNameHash((long) req.getTenThuoc().hashCode());
 		hdr.setDuTru(req.getGioiHan());
-		hdr.setTypeService(0);
+		hdr.setTypeService(TypeServiceContains.DRUG);
 		hdr.setMetadataHash(hashCode());
 		hdr.setRpMetadataHash(hdr.getRpHashCode());
 		if(!req.getDonViXuatLeMaDonViTinh().equals(hdr.getDonViXuatLeMaDonViTinh())){
@@ -222,7 +232,13 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 		if (userInfo == null)
 			throw new Exception("Bad request.");
 		String drugCode = "TH1";
-		List<Thuocs> lst = hdrRepo.findByNhaThuocMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+		var storeCode = userInfo.getNhaThuoc().getMaNhaThuoc();
+		String parentStoreCode = userInfo.getNhaThuoc().getMaNhaThuocCha() != null && !userInfo.getNhaThuoc().getMaNhaThuocCha().isEmpty()
+				? userInfo.getNhaThuoc().getMaNhaThuocCha() : storeCode;
+		ThuocsReq thuocsReq = new ThuocsReq();
+		thuocsReq.setNhaThuocMaNhaThuoc(storeCode);
+		thuocsReq.setNhaThuocMaNhaThuocCha(parentStoreCode);
+		List<Thuocs> lst = hdrRepo.searchList(thuocsReq);
 		Thuocs lastestThuoc = lst.stream()
 				.sorted((d1, d2) -> d2.getId().compareTo(d1.getId()))
 				.findFirst()
@@ -253,11 +269,16 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 		if (userInfo == null)
 			throw new Exception("Bad request.");
 		var storeCode = userInfo.getNhaThuoc().getMaNhaThuoc();
-		List<Thuocs> lst = hdrRepo.findByNhaThuocMaNhaThuoc(storeCode);
+		String parentStoreCode = userInfo.getNhaThuoc().getMaNhaThuocCha() != null && !userInfo.getNhaThuoc().getMaNhaThuocCha().isEmpty()
+				? userInfo.getNhaThuoc().getMaNhaThuocCha() : storeCode;
+		ThuocsReq thuocsReq = new ThuocsReq();
+		thuocsReq.setNhaThuocMaNhaThuoc(storeCode);
+		thuocsReq.setNhaThuocMaNhaThuocCha(parentStoreCode);
+		List<Thuocs> lst = hdrRepo.searchList(thuocsReq);
 		String temp = UUID.randomUUID().toString().replace("-", "");
 		String barcode = temp.replaceAll("[a-zA-Z]", "").substring(0, 12);
 
-		while (hdrRepo.findByBarCodeAndNhaThuocMaNhaThuocAndRecordStatusId(barcode,storeCode, RecordStatusContains.ACTIVE).isPresent()) {
+		while (hdrRepo.findByBarCode(barcode,storeCode, parentStoreCode, RecordStatusContains.ACTIVE).isPresent()) {
 			temp = UUID.randomUUID().toString().replace("-", "");
 			barcode = temp.replaceAll("[a-zA-Z]", "").substring(0, 12);
 		}
@@ -295,6 +316,7 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 			}
 		}
 		Thuocs thuocs = optional.get();
+		//fill dvt
 		List<DonViTinhs> dviTinh = new ArrayList<>();
 		if(thuocs.getDonViXuatLeMaDonViTinh() > 0){
 			Optional<DonViTinhs> byId = donViTinhsRepository.findById(thuocs.getDonViXuatLeMaDonViTinh());
@@ -303,6 +325,7 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 				byId.get().setGiaBan(thuocs.getGiaBanLe());
 				byId.get().setGiaNhap(thuocs.getGiaNhap());
 				dviTinh.add(byId.get());
+				thuocs.setTenDonViTinhXuatLe(byId.get().getTenDonViTinh());
 			}
 		}
 		if(thuocs.getDonViThuNguyenMaDonViTinh() > 0 && !thuocs.getDonViThuNguyenMaDonViTinh().equals(thuocs.getDonViXuatLeMaDonViTinh())){
@@ -312,9 +335,17 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 				byId.get().setGiaBan(thuocs.getGiaBanLe().multiply(BigDecimal.valueOf(thuocs.getHeSo())));
 				byId.get().setGiaNhap(thuocs.getGiaNhap().multiply(BigDecimal.valueOf(thuocs.getHeSo())));
 				dviTinh.add(byId.get());
+				thuocs.setTenDonViTinhThuNguyen(byId.get().getTenDonViTinh());
 			}
 		}
 		thuocs.setListDonViTinhs(dviTinh);
+		//fill vi tri tu/kho
+		if(thuocs.getIdWarehouseLocation() > 0){
+			Optional<WarehouseLocation> byId = warehouseLocationRepository.findById(thuocs.getIdWarehouseLocation());
+			if(byId.isPresent()){
+				thuocs.setTenViTri(byId.get().getNameWarehouse());
+			}
+		}
 		InventoryReq inventoryReq = new InventoryReq();
 		inventoryReq.setDrugID(thuocs.getId());
 		inventoryReq.setDrugStoreID(thuocs.getNhaThuocMaNhaThuoc());

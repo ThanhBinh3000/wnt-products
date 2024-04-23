@@ -226,10 +226,12 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
     )
     List<Thuocs> searchList(@Param("param") ThuocsReq param);
 
-    Optional<Thuocs> findByMaThuocAndNhaThuocMaNhaThuocAndRecordStatusId(String maThuoc,String nhaThuocMaNhaThuoc,Long recordStatusId);
-    Optional<Thuocs> findByTenThuocAndNhaThuocMaNhaThuocAndRecordStatusId(String tenThuoc,String nhaThuocMaNhaThuoc,Long recordStatusId);
-    Optional<Thuocs> findByBarCodeAndNhaThuocMaNhaThuocAndRecordStatusId(String barCode,String nhaThuocMaNhaThuoc,Long recordStatusId);
-    List<Thuocs> findByNhaThuocMaNhaThuoc(String storeCode);
+    @Query("SELECT t FROM Thuocs t WHERE t.maThuoc = :maThuoc AND (t.nhaThuocMaNhaThuoc = :maNhaThuoc OR t.nhaThuocMaNhaThuoc = :maNhaCha) AND t.recordStatusId = :recordStatusId")
+    Optional<Thuocs> findByMaThuoc(String maThuoc,String maNhaThuoc, String maNhaCha,Long recordStatusId);
+    @Query("SELECT t FROM Thuocs t WHERE t.tenThuoc = :tenThuoc AND (t.nhaThuocMaNhaThuoc = :maNhaThuoc OR t.nhaThuocMaNhaThuoc = :maNhaCha) AND t.recordStatusId = :recordStatusId")
 
+    Optional<Thuocs> findByTenThuoc(String tenThuoc,String maNhaThuoc, String maNhaCha,Long recordStatusId);
+    @Query("SELECT t FROM Thuocs t WHERE t.barCode = :barCode AND (t.nhaThuocMaNhaThuoc = :maNhaThuoc OR t.nhaThuocMaNhaThuoc = :maNhaCha) AND t.recordStatusId = :recordStatusId")
 
+    Optional<Thuocs> findByBarCode(String barCode,String maNhaThuoc, String maNhaCha,Long recordStatusId);
 }
