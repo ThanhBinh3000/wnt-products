@@ -27,7 +27,7 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
             + " AND (:#{#param.soDuDauKy} IS NULL OR c.soDuDauKy = :#{#param.soDuDauKy}) "
             + " AND (:#{#param.giaDauKy} IS NULL OR c.giaDauKy = :#{#param.giaDauKy}) "
             + " AND (:#{#param.gioiHan} IS NULL OR c.gioiHan = :#{#param.gioiHan}) "
-            + " AND (:#{#param.nhaThuocMaNhaThuoc} IS NULL OR c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuoc})"
+            + " AND ((:#{#param.nhaThuocMaNhaThuoc} IS NULL OR c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuoc}) OR (:#{#param.nhaThuocMaNhaThuocCha} IS NULL OR c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuocCha}))"
             + " AND (:#{#param.nhomThuocMaNhomThuoc} IS NULL OR c.nhomThuocMaNhomThuoc = :#{#param.nhomThuocMaNhomThuoc}) "
             + " AND (:#{#param.nuocMaNuoc} IS NULL OR c.nuocMaNuoc = :#{#param.nuocMaNuoc}) "
             + " AND (:#{#param.dangBaoCheMaDangBaoChe} IS NULL OR c.dangBaoCheMaDangBaoChe = :#{#param.dangBaoCheMaDangBaoChe}) "
@@ -134,7 +134,7 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
             + " AND (:#{#param.soDuDauKy} IS NULL OR c.soDuDauKy = :#{#param.soDuDauKy}) "
             + " AND (:#{#param.giaDauKy} IS NULL OR c.giaDauKy = :#{#param.giaDauKy}) "
             + " AND (:#{#param.gioiHan} IS NULL OR c.gioiHan = :#{#param.gioiHan}) "
-            + " AND (:#{#param.nhaThuocMaNhaThuoc} IS NULL OR c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuoc})"
+            + " AND ((:#{#param.nhaThuocMaNhaThuoc} IS NULL OR c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuoc}) OR (:#{#param.nhaThuocMaNhaThuocCha} IS NULL OR c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuocCha}))"
             + " AND (:#{#param.nhomThuocMaNhomThuoc} IS NULL OR c.nhomThuocMaNhomThuoc = :#{#param.nhomThuocMaNhomThuoc}) "
             + " AND (:#{#param.nuocMaNuoc} IS NULL OR c.nuocMaNuoc = :#{#param.nuocMaNuoc}) "
             + " AND (:#{#param.dangBaoCheMaDangBaoChe} IS NULL OR c.dangBaoCheMaDangBaoChe = :#{#param.dangBaoCheMaDangBaoChe}) "
@@ -230,4 +230,6 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
     Optional<Thuocs> findByTenThuocAndNhaThuocMaNhaThuocAndRecordStatusId(String tenThuoc,String nhaThuocMaNhaThuoc,Long recordStatusId);
     Optional<Thuocs> findByBarCodeAndNhaThuocMaNhaThuocAndRecordStatusId(String barCode,String nhaThuocMaNhaThuoc,Long recordStatusId);
     List<Thuocs> findByNhaThuocMaNhaThuoc(String storeCode);
+
+
 }

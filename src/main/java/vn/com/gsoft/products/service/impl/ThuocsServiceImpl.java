@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import vn.com.gsoft.products.constant.RecordStatusContains;
 import vn.com.gsoft.products.constant.StatusConfirmDrugContains;
 import vn.com.gsoft.products.entity.*;
+import vn.com.gsoft.products.model.dto.InventoryReq;
 import vn.com.gsoft.products.model.dto.NhomThuocsReq;
 import vn.com.gsoft.products.model.dto.ThuocsReq;
 import vn.com.gsoft.products.model.system.Profile;
@@ -46,6 +47,9 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 
 	@Autowired
 	public WarehouseLocationRepository warehouseLocationRepository;
+
+	@Autowired
+	public InventoryRepository inventoryRepository;
 
 
 	@Override
@@ -311,6 +315,12 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 			}
 		}
 		thuocs.setListDonViTinhs(dviTinh);
+		InventoryReq inventoryReq = new InventoryReq();
+		inventoryReq.setDrugID(thuocs.getId());
+		inventoryReq.setDrugStoreID(thuocs.getNhaThuocMaNhaThuoc());
+		inventoryReq.setRecordStatusID(RecordStatusContains.ACTIVE);
+		Optional<Inventory> inventory = inventoryRepository.searchDetail(inventoryReq);
+		inventory.ifPresent(thuocs::setInventory);
 		return thuocs;
 	}
 }

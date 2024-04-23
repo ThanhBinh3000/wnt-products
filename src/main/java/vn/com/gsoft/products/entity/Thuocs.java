@@ -260,6 +260,9 @@ public class Thuocs extends BaseEntity{
 
     @Transient
     private double tonKho;
+
+    @Transient
+    private Inventory inventory;
     // @Override
     @Override
     public int hashCode() {
