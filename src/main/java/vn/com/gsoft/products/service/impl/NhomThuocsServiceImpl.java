@@ -35,6 +35,18 @@ public class NhomThuocsServiceImpl extends BaseServiceImpl<NhomThuocs, NhomThuoc
 	}
 
 	@Override
+	public Page<NhomThuocs> searchPage(NhomThuocsReq req) throws Exception {
+		Profile userInfo = this.getLoggedUser();
+		if (userInfo == null)
+			throw new Exception("Bad request.");
+		Pageable pageable = PageRequest.of(req.getPaggingReq().getPage(), req.getPaggingReq().getLimit());
+		req.setMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+		req.setRecordStatusId(RecordStatusContains.ACTIVE);
+		Page<NhomThuocs> nhomThuocs = hdrRepo.searchPage(req, pageable);
+		return nhomThuocs;
+	}
+
+	@Override
 	public NhomThuocs create(NhomThuocsReq req) throws Exception {
 		Profile userInfo = this.getLoggedUser();
 		if (userInfo == null)
@@ -45,6 +57,7 @@ public class NhomThuocsServiceImpl extends BaseServiceImpl<NhomThuocs, NhomThuoc
 			hdr.setRecordStatusId(RecordStatusContains.ACTIVE);
 		}
 		hdr.setMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+		hdr.setStoreId(userInfo.getNhaThuoc().getId());
 		hdr.setCreated(new Date());
 		hdr.setCreatedByUserId(userInfo.getId());
 		return hdrRepo.save(hdr);
@@ -65,6 +78,7 @@ public class NhomThuocsServiceImpl extends BaseServiceImpl<NhomThuocs, NhomThuoc
 			hdr.setRecordStatusId(RecordStatusContains.ACTIVE);
 		}
 		hdr.setMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+		hdr.setStoreId(userInfo.getNhaThuoc().getId());
 		hdr.setModified(new Date());
 		hdr.setModifiedByUserId(userInfo.getId());
 		return hdrRepo.save(hdr);
