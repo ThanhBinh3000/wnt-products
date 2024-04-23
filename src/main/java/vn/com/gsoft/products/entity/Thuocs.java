@@ -242,7 +242,7 @@ public class Thuocs extends BaseEntity{
     private Long userIdMapping;
 
     // @Transient
-
+    // Thuoc
     @Transient
     private String tenNhomThuoc;
 
@@ -260,6 +260,12 @@ public class Thuocs extends BaseEntity{
 
     @Transient
     private double tonKho;
+    // Dich vu
+    @Transient
+    private String tenPhongKham;
+
+    @Transient
+    private boolean isServiceCombo;
     // @Override
     @Override
     public int hashCode() {
