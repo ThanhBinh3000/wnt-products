@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long> {
-    @Query("SELECT c FROM Thuocs c " +
+    @Query("SELECT distinct c FROM Thuocs c " +
             "WHERE 1=1 "
             + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
             + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
@@ -120,7 +120,7 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
     Page<Thuocs> searchPage(@Param("param") ThuocsReq param, Pageable pageable);
 
 
-    @Query("SELECT c FROM Thuocs c " +
+    @Query("SELECT distinct c FROM Thuocs c " +
             "WHERE 1=1 "
             + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
             + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
