@@ -12,9 +12,11 @@ import vn.com.gsoft.products.constant.RecordStatusContains;
 import vn.com.gsoft.products.constant.StatusConfirmDrugContains;
 import vn.com.gsoft.products.constant.TypeServiceContains;
 import vn.com.gsoft.products.entity.*;
+import vn.com.gsoft.products.model.dto.FileDto;
 import vn.com.gsoft.products.model.dto.InventoryReq;
 import vn.com.gsoft.products.model.dto.NhomThuocsReq;
 import vn.com.gsoft.products.model.dto.ThuocsReq;
+import vn.com.gsoft.products.model.system.BaseResponse;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.service.ThuocsService;
@@ -54,6 +56,9 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 
 	@Autowired
 	public InventoryRepository inventoryRepository;
+
+	@Autowired
+	public FileServiceImpl fileService;
 
 
 	@Override
@@ -299,6 +304,23 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 		}
 
 		return barcode;
+	}
+
+	@Override
+	public Thuocs uploadImage(FileDto req) throws Exception  {
+		Profile userInfo = this.getLoggedUser();
+		if (userInfo == null)
+			throw new Exception("Bad request.");
+		Optional<Thuocs> optional = hdrRepo.findById(req.getDataId());
+		if (optional.isEmpty()) {
+			throw new Exception("Không tìm thấy dữ liệu.");
+		}
+		FileDto fileUpload =  this.fileService.saveFile(req);
+		Thuocs thuocs = optional.get();
+		thuocs.setImagePreviewUrl(fileUpload.getUrl());
+		thuocs.setImageThumbUrl(fileUpload.getUrl());
+		hdrRepo.save(thuocs);
+		return thuocs;
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package vn.com.gsoft.products.controller;
 
 
 
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +11,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.com.gsoft.products.constant.PathContains;
+import vn.com.gsoft.products.model.dto.FileDto;
 import vn.com.gsoft.products.model.dto.ThuocsReq;
 import vn.com.gsoft.products.model.system.BaseResponse;
 import vn.com.gsoft.products.service.ThuocsService;
 import vn.com.gsoft.products.util.system.ResponseUtils;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = PathContains.URL_THUOC)
@@ -94,6 +98,12 @@ public class ThuocsController {
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<BaseResponse> generateBarCode() throws Exception {
     return ResponseEntity.ok(ResponseUtils.ok(service.generateBarCode()));
+  }
+
+  @PostMapping(value = PathContains.URL_UPLOAD_IMAGE)
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<BaseResponse> uploadImage(@ModelAttribute FileDto req) throws Exception {
+    return ResponseEntity.ok(ResponseUtils.ok(service.uploadImage(req)));
   }
 
 }
