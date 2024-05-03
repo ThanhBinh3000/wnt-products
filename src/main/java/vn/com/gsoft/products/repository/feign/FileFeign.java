@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import vn.com.gsoft.products.model.dto.FileDto;
 import vn.com.gsoft.products.model.system.BaseResponse;
 
-@FeignClient(name = "wnt-file-dev")
+@FeignClient(name = "wnt-file")
 public interface FileFeign {
 
     @PostMapping(value = "/file/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
