@@ -316,6 +316,9 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 			throw new Exception("Không tìm thấy dữ liệu.");
 		}
 		FileDto fileUpload =  this.fileService.saveFile(req);
+		if(fileUpload.getUrl() == null || fileUpload.getUrl().isEmpty()){
+			throw new Exception("Upload file không thành công");
+		}
 		Thuocs thuocs = optional.get();
 		thuocs.setImagePreviewUrl(fileUpload.getUrl());
 		thuocs.setImageThumbUrl(fileUpload.getUrl());
