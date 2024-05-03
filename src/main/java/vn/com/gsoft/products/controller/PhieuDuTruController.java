@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.com.gsoft.products.constant.PathContains;
 import vn.com.gsoft.products.model.dto.PhieuDuTruReq;
+import vn.com.gsoft.products.model.dto.PhieuKiemKesReq;
 import vn.com.gsoft.products.model.system.BaseResponse;
 import vn.com.gsoft.products.service.PhieuDuTruService;
 import vn.com.gsoft.products.util.system.ResponseUtils;
@@ -62,5 +63,23 @@ public class PhieuDuTruController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<BaseResponse> delete(@Valid @RequestBody PhieuDuTruReq idSearchReq) throws Exception {
         return ResponseEntity.ok(ResponseUtils.ok(service.delete(idSearchReq.getId())));
+    }
+
+    @PostMapping(value = PathContains.URL_DELETE_DATABASE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> deleteDatabase(@Valid @RequestBody PhieuDuTruReq idSearchReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.deleteForever(idSearchReq.getId())));
+    }
+
+    @PostMapping(value = PathContains.URL_UPDATE_STATUS_MULTI, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> updStatusMulti(@Valid @RequestBody PhieuDuTruReq idSearchReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.updateStatusMulti(idSearchReq)));
+    }
+
+    @PostMapping(value = PathContains.URL_RESTORE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> restore(@Valid @RequestBody PhieuDuTruReq idSearchReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.restore(idSearchReq.getId())));
     }
 }
