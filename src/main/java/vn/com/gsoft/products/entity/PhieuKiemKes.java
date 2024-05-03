@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Builder
@@ -14,10 +15,10 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 @Table(name = "PhieuKiemKes")
-public class PhieuKiemKes extends BaseEntity{
+public class PhieuKiemKes extends BaseEntity {
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "PhieuNhap_MaPhieuNhap")
     private Integer phieuNhapMaPhieuNhap;
@@ -39,5 +40,9 @@ public class PhieuKiemKes extends BaseEntity{
     private Long storeId;
     @Column(name = "ArchivedDate")
     private Date archivedDate;
+    @Transient
+    private String createdByUseText;
+    @Transient
+    private List<PhieuKiemKeChiTiets> chiTiets;
 }
 

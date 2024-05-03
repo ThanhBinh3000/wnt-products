@@ -12,7 +12,7 @@ public class PhieuKiemKeChiTietsReq extends BaseRequest {
     private Long thuocThuocId;
     private BigDecimal tonKho;
     private BigDecimal thucTe;
-    private Integer phieuKiemKeMaPhieuKiemKe;
+    private Long phieuKiemKeMaPhieuKiemKe;
     private BigDecimal donGia;
     private String soLo;
     private Date hanDung;

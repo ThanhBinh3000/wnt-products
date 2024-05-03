@@ -49,4 +49,5 @@ public interface PhieuKiemKeChiTietsRepository extends BaseRepository<PhieuKiemK
   )
   List<PhieuKiemKeChiTiets> searchList(@Param("param") PhieuKiemKeChiTietsReq param);
 
+  List<PhieuKiemKeChiTiets> findByPhieuKiemKeMaPhieuKiemKe(Long phieuKiemKeMaPhieuKiemKe);
 }

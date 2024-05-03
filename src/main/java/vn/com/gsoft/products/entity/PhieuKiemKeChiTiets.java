@@ -27,7 +27,7 @@ public class PhieuKiemKeChiTiets extends BaseEntity{
     @Column(name = "ThucTe")
     private BigDecimal thucTe;
     @Column(name = "PhieuKiemKe_MaPhieuKiemKe")
-    private Integer phieuKiemKeMaPhieuKiemKe;
+    private Long phieuKiemKeMaPhieuKiemKe;
     @Column(name = "DonGia")
     private BigDecimal donGia;
     @Column(name = "SoLo")
@@ -44,5 +44,12 @@ public class PhieuKiemKeChiTiets extends BaseEntity{
     private Long storeId;
     @Column(name = "IsProdRef")
     private Boolean isProdRef;
+
+    @Transient
+    private String maThuoc;
+    @Transient
+    private String tenThuoc;
+    @Transient
+    private String tenNhomThuoc;
 }
 
