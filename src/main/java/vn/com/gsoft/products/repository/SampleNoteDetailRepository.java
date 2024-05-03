@@ -46,5 +46,8 @@ public interface SampleNoteDetailRepository extends BaseRepository<SampleNoteDet
           + " ORDER BY c.id desc"
   )
   List<SampleNoteDetail> searchList(@Param("param") SampleNoteDetailReq param);
+  @Query("SELECT COUNT(DISTINCT p.drugID) FROM SampleNoteDetail p where p.noteID = ?1")
+  Long countByNoteID(Long noteID);
 
+  List<SampleNoteDetail> findByNoteID(Long noteId);
 }

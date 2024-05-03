@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -15,10 +16,10 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 @Table(name = "SampleNote")
-public class SampleNote extends BaseEntity{
+public class SampleNote extends BaseEntity {
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "NoteName")
     private String noteName;
@@ -74,5 +75,18 @@ public class SampleNote extends BaseEntity{
     private Integer typeSampleNote;
     @Column(name = "ReferenceId")
     private Long referenceId;
+
+    @Transient
+    private String patientName;
+    @Transient
+    private String patientPhoneNumber;
+    @Transient
+    private String doctorName;
+    @Transient
+    private String doctorPhoneNumber;
+    @Transient
+    private Long typeDrugTotal;
+    @Transient
+    private List<SampleNoteDetail> chiTiets;
 }
 

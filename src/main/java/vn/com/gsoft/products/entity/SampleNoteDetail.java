@@ -42,5 +42,11 @@ public class SampleNoteDetail extends BaseEntity{
     private Date toDate;
     @Column(name = "NumberOfPotionBars")
     private String numberOfPotionBars;
+    @Transient
+    private String drugCodeText;
+    @Transient
+    private String drugNameText;
+    @Transient
+    private String drugUnitText;
 }
 
