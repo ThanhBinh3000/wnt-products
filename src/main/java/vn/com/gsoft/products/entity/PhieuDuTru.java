@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Builder
@@ -32,5 +33,12 @@ public class PhieuDuTru extends BaseEntity{
     private Long supplierId;
     @Column(name = "LinkShare")
     private String linkShare;
+
+    @Transient
+    private String createdByUseText;
+    @Transient
+    private String supplierText;
+    @Transient
+    private List<PhieuDuTruChiTiet> chiTiets;
 }
 

@@ -17,14 +17,14 @@ import java.math.BigDecimal;
 public class PhieuDuTruChiTiet extends BaseEntity {
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "MaPhieuDuTru")
-    private Integer maPhieuDuTru;
+    private Long maPhieuDuTru;
     @Column(name = "MaThuoc")
-    private Integer maThuoc;
+    private Long maThuoc;
     @Column(name = "MaDonViTon")
-    private Integer maDonViTon;
+    private Long maDonViTon;
     @Column(name = "SoLuongCanhBao")
     private BigDecimal soLuongCanhBao;
     @Column(name = "TonKho")
@@ -32,8 +32,18 @@ public class PhieuDuTruChiTiet extends BaseEntity {
     @Column(name = "DuTru")
     private BigDecimal duTru;
     @Column(name = "MaDonViDuTru")
-    private Integer maDonViDuTru;
+    private Long maDonViDuTru;
     @Column(name = "DonGia")
     private BigDecimal donGia;
+    @Transient
+    private String maThuocText;
+    @Transient
+    private String tenThuocText;
+    @Transient
+    private String maDonViTonText;
+    @Transient
+    private String maDonViDuTruText;
+    @Transient
+    private String tenNhomThuoc;
 }
 

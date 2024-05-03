@@ -7,12 +7,12 @@ import java.math.BigDecimal;
 
 @Data
 public class PhieuDuTruChiTietReq extends BaseRequest {
-    private Integer maPhieuDuTru;
-    private Integer maThuoc;
-    private Integer maDonViTon;
+    private Long maPhieuDuTru;
+    private Long maThuoc;
+    private Long maDonViTon;
     private BigDecimal soLuongCanhBao;
     private BigDecimal tonKho;
     private BigDecimal duTru;
-    private Integer maDonViDuTru;
+    private Long maDonViDuTru;
     private BigDecimal donGia;
 }
