@@ -1,17 +1,18 @@
 package vn.com.gsoft.products.model.dto;
 
 import lombok.Data;
+import vn.com.gsoft.products.entity.SampleNoteDetail;
 import vn.com.gsoft.products.model.system.BaseRequest;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class SampleNoteReq extends BaseRequest {
     private String noteName;
     private String barcode;
     private String description;
-    private Long recordStatusID;
     private Date createdDateTime;
     private Long createdByUserID;
     private Date modifiedDateTime;
@@ -35,4 +36,6 @@ public class SampleNoteReq extends BaseRequest {
     private Integer formOfTreatment;
     private Integer typeSampleNote;
     private Long referenceId;
+
+    private List<SampleNoteDetail> chiTiets;
 }

@@ -1,5 +1,6 @@
 package vn.com.gsoft.products.repository;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,4 +51,6 @@ public interface SampleNoteDetailRepository extends BaseRepository<SampleNoteDet
   Long countByNoteID(Long noteID);
 
   List<SampleNoteDetail> findByNoteID(Long noteId);
+
+  void deleteAllByNoteID(Long noteID);
 }

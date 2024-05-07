@@ -27,8 +27,6 @@ public class SampleNote extends BaseEntity {
     private String barcode;
     @Column(name = "Description")
     private String description;
-    @Column(name = "RecordStatusID")
-    private Long recordStatusID;
     @Column(name = "CreatedDateTime")
     private Date createdDateTime;
     @Column(name = "CreatedByUserID")
