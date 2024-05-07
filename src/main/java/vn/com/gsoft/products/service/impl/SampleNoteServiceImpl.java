@@ -49,6 +49,10 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
     public Page<SampleNote> searchPage(SampleNoteReq req) throws Exception {
         Pageable pageable = PageRequest.of(req.getPaggingReq().getPage(), req.getPaggingReq().getLimit());
         req.setRecordStatusId(RecordStatusContains.ACTIVE);
+        Profile userInfo = this.getLoggedUser();
+        if(req.getDrugStoreID() == null){
+            req.setDrugStoreID(userInfo.getNhaThuoc().getMaNhaThuoc());
+        }
         Page<SampleNote> sampleNotes = hdrRepo.searchPage(req, pageable);
         for (SampleNote sn : sampleNotes.getContent()) {
             if (sn.getDoctorId() != null && sn.getDoctorId() > 0) {
