@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.com.gsoft.products.constant.RecordStatusContains;
 import vn.com.gsoft.products.entity.*;
+import vn.com.gsoft.products.model.dto.InventoryReq;
 import vn.com.gsoft.products.model.dto.SampleNoteReq;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.*;
@@ -16,7 +17,9 @@ import vn.com.gsoft.products.service.SampleNoteService;
 
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -30,11 +33,13 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
     private BacSiesRepository bacSiesRepository;
     private ThuocsRepository thuocsRepository;
     private DonViTinhsRepository donViTinhsRepository;
+    private InventoryRepository inventoryRepository;
 
     @Autowired
     public SampleNoteServiceImpl(SampleNoteRepository hdrRepo, KhachHangsRepository khachHangsRepository,
                                  BacSiesRepository bacSiesRepository, SampleNoteDetailRepository sampleNoteDetailRepository,
                                  ThuocsRepository thuocsRepository,
+                                 InventoryRepository inventoryRepository,
                                  DonViTinhsRepository donViTinhsRepository) {
         super(hdrRepo);
         this.hdrRepo = hdrRepo;
@@ -43,6 +48,7 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
         this.sampleNoteDetailRepository = sampleNoteDetailRepository;
         this.thuocsRepository = thuocsRepository;
         this.donViTinhsRepository = donViTinhsRepository;
+        this.inventoryRepository =inventoryRepository;
     }
 
     @Override
@@ -103,23 +109,49 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
                 sampleNote.setPatientPhoneNumber(khachHangs.get().getSoDienThoai());
             }
         }
+
         sampleNote.setTypeDrugTotal(sampleNoteDetailRepository.countByNoteID(sampleNote.getId()));
         sampleNote.setChiTiets(sampleNoteDetailRepository.findByNoteID(sampleNote.getId()));
         for (SampleNoteDetail ct : sampleNote.getChiTiets()) {
-            if (ct.getDrugID() != null && ct.getDrugID() > 0) {
-                Optional<Thuocs> thuocs = thuocsRepository.findById(ct.getDrugID());
-                if (thuocs.isPresent()) {
-                    ct.setDrugCodeText(thuocs.get().getMaThuoc());
-                    ct.setDrugNameText(thuocs.get().getTenThuoc());
-                }
-
-            }
             if (ct.getDrugUnitID() != null && ct.getDrugUnitID() > 0) {
                 Optional<DonViTinhs> donViTinhs = donViTinhsRepository.findById(ct.getDrugUnitID());
                 if (donViTinhs.isPresent()) {
                     ct.setDrugUnitText(donViTinhs.get().getTenDonViTinh());
                 }
 
+            }
+            if (ct.getDrugID() != null && ct.getDrugID() > 0) {
+                Optional<Thuocs> thuocsOpt = thuocsRepository.findById(ct.getDrugID());
+                if (thuocsOpt.isPresent()) {
+                    ct.setDrugCodeText(thuocsOpt.get().getMaThuoc());
+                    ct.setDrugNameText(thuocsOpt.get().getTenThuoc());
+                    Thuocs thuocs = thuocsOpt.get();
+                    List<DonViTinhs> dviTinh = new ArrayList<>();
+                    if (thuocs.getDonViXuatLeMaDonViTinh() > 0) {
+                        Optional<DonViTinhs> byId = donViTinhsRepository.findById(thuocs.getDonViXuatLeMaDonViTinh());
+                        if (byId.isPresent()) {
+                            byId.get().setFactor(1);
+                            dviTinh.add(byId.get());
+                            thuocs.setTenDonViTinhXuatLe(byId.get().getTenDonViTinh());
+                        }
+                    }
+                    if (thuocs.getDonViThuNguyenMaDonViTinh() > 0 && !thuocs.getDonViThuNguyenMaDonViTinh().equals(thuocs.getDonViXuatLeMaDonViTinh())) {
+                        Optional<DonViTinhs> byId = donViTinhsRepository.findById(thuocs.getDonViThuNguyenMaDonViTinh());
+                        if (byId.isPresent()) {
+                            byId.get().setFactor(thuocs.getHeSo());
+                            dviTinh.add(byId.get());
+                            thuocs.setTenDonViTinhThuNguyen(byId.get().getTenDonViTinh());
+                        }
+                    }
+                    thuocs.setListDonViTinhs(dviTinh);
+                    InventoryReq inventoryReq = new InventoryReq();
+                    inventoryReq.setDrugID(thuocs.getId());
+                    inventoryReq.setDrugStoreID(thuocs.getNhaThuocMaNhaThuoc());
+                    inventoryReq.setRecordStatusId(RecordStatusContains.ACTIVE);
+                    Optional<Inventory> inventory = inventoryRepository.searchDetail(inventoryReq);
+                    inventory.ifPresent(thuocs::setInventory);
+                    ct.setThuocs(thuocs);
+                }
             }
         }
         return optional.get();
