@@ -107,6 +107,7 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
             if (khachHangs.isPresent()) {
                 sampleNote.setPatientName(khachHangs.get().getTenKhachHang());
                 sampleNote.setPatientPhoneNumber(khachHangs.get().getSoDienThoai());
+                sampleNote.setPatientAddress(khachHangs.get().getDiaChi());
             }
         }
 

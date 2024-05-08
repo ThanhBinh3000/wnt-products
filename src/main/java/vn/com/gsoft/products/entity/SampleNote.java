@@ -79,6 +79,8 @@ public class SampleNote extends BaseEntity {
     @Transient
     private String patientPhoneNumber;
     @Transient
+    private String patientAddress;
+    @Transient
     private String doctorName;
     @Transient
     private String doctorPhoneNumber;
