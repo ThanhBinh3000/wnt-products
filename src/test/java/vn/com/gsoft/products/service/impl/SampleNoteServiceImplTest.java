@@ -47,7 +47,7 @@ class SampleNoteServiceImplTest {
 
     @Test
     void detail() throws Exception {
-        SampleNote detail = sampleNoteService.detail(26771l);
+        SampleNote detail = sampleNoteService.detail(26736l);
         assert detail != null;
     }
 }

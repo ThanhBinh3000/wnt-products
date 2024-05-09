@@ -73,7 +73,8 @@ public class SampleNote extends BaseEntity {
     private Integer typeSampleNote;
     @Column(name = "ReferenceId")
     private Long referenceId;
-
+    @Column(name = "DiagnosticIds")
+    private String diagnosticIds;
     @Transient
     private String patientName;
     @Transient
@@ -88,5 +89,7 @@ public class SampleNote extends BaseEntity {
     private Long typeDrugTotal;
     @Transient
     private List<SampleNoteDetail> chiTiets;
+    @Transient
+    private List<ESDiagnose> diagnostics;
 }
 
