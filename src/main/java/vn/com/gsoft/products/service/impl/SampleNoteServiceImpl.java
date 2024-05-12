@@ -17,10 +17,8 @@ import vn.com.gsoft.products.service.SampleNoteService;
 
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -34,12 +32,14 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
     private ThuocsRepository thuocsRepository;
     private DonViTinhsRepository donViTinhsRepository;
     private InventoryRepository inventoryRepository;
+    private ESDiagnoseRepository diagnoseRepository;
 
     @Autowired
     public SampleNoteServiceImpl(SampleNoteRepository hdrRepo, KhachHangsRepository khachHangsRepository,
                                  BacSiesRepository bacSiesRepository, SampleNoteDetailRepository sampleNoteDetailRepository,
                                  ThuocsRepository thuocsRepository,
                                  InventoryRepository inventoryRepository,
+                                 ESDiagnoseRepository diagnoseRepository,
                                  DonViTinhsRepository donViTinhsRepository) {
         super(hdrRepo);
         this.hdrRepo = hdrRepo;
@@ -49,6 +49,7 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
         this.thuocsRepository = thuocsRepository;
         this.donViTinhsRepository = donViTinhsRepository;
         this.inventoryRepository =inventoryRepository;
+        this.diagnoseRepository = diagnoseRepository;
     }
 
     @Override
@@ -113,6 +114,14 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
 
         sampleNote.setTypeDrugTotal(sampleNoteDetailRepository.countByNoteID(sampleNote.getId()));
         sampleNote.setChiTiets(sampleNoteDetailRepository.findByNoteID(sampleNote.getId()));
+        if (sampleNote.getDiagnosticIds() != null) {
+            String[] diagnosticIds = sampleNote.getDiagnosticIds().split(",");
+            List<Long> ids = Arrays.stream(diagnosticIds)
+                    .map(Long::parseLong)
+                    .collect(Collectors.toList());
+            List<ESDiagnose> diagnose = diagnoseRepository.findByIdIn(ids);
+            sampleNote.setDiagnostics(diagnose);
+        }
         for (SampleNoteDetail ct : sampleNote.getChiTiets()) {
             if (ct.getDrugUnitID() != null && ct.getDrugUnitID() > 0) {
                 Optional<DonViTinhs> donViTinhs = donViTinhsRepository.findById(ct.getDrugUnitID());
