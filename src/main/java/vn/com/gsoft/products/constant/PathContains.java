@@ -15,6 +15,7 @@ public class PathContains {
     public static final String URL_GENERATEDRUGCODE = "/generate-drug-code";
     public static final String URL_GENERATEBARCODE = "/generate-barcode";
     public static final String URL_UPLOAD_IMAGE = "/upload-image";
+    public static final String URL_EXPORT = "/export";
 
 
     public static final String URL_NHOM_NHA_CUNG_CAP = "/nhom-nha-cung-cap";

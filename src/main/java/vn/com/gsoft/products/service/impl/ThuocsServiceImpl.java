@@ -1,6 +1,7 @@
 package vn.com.gsoft.products.service.impl;
 
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +18,12 @@ import vn.com.gsoft.products.model.dto.InventoryReq;
 import vn.com.gsoft.products.model.dto.NhomThuocsReq;
 import vn.com.gsoft.products.model.dto.ThuocsReq;
 import vn.com.gsoft.products.model.system.BaseResponse;
+import vn.com.gsoft.products.model.system.PaggingReq;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.service.ThuocsService;
+import vn.com.gsoft.products.util.system.ExportExcel;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -324,6 +328,124 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 		thuocs.setImageThumbUrl(fileUpload.getUrl());
 		hdrRepo.save(thuocs);
 		return thuocs;
+	}
+
+	@Override
+	public void export(ThuocsReq objReq, HttpServletResponse response) throws Exception {
+		PaggingReq paggingReq = new PaggingReq();
+		paggingReq.setPage(0);
+		paggingReq.setLimit(Integer.MAX_VALUE);
+		objReq.setPaggingReq(paggingReq);
+		Page<Thuocs> page = this.searchPage(objReq);
+		List<Thuocs> data = page.getContent();
+
+
+		String title = "Drug List";
+		String[] rowsName = new String[]{"Mã thuốc", "Nhón thuốc", "Tên thuốc", "Thông tin", "Giá nhập",
+		"Giá bán lẻ", "Trạng thái tích điểm\n" + "(0 -bỏ tích, 1-tích)", "Tích điểm(%)", "Trạng thái chiết khấu theo lợi nhuận\n" +
+		"(0 -bỏ tích, 1-tích)", "Chiết khấu hàng tư vấn cho nhân viên(%)", "Giá Buôn", "Đơn Vị Lẻ", "Đơn Vị Thứ Nguyên",
+		"Số lượng cảnh báo","Hệ Số","Số dư đầu kỳ","Giá đầu kỳ","Barcode","Số Lô","Hạn Dùng","Dạng Bào Chế","Số ĐK","Hoạt Chất","Hàm Lượng",
+		"QC Đóng Gói","Nước SX","Hãng SX","Nhà Nhập Khẩu","ĐV Đóng Gói NN","Giá Khai Báo","Mã QG","Loại Hàng","CS Kê Khai","Nước ĐK",
+		"Địa Chỉ ĐK","Địa Chỉ Sản Xuất","Phân Loại","Mã Định Danh","Bán Buôn","Result","CTKM","Điều kiện bảo quản","Vị trí bảo quản"};
+		String fileName = "drugList.xlsx";
+		List<Object[]> dataList = new ArrayList<Object[]>();
+		Object[] objs = null;
+
+		objs = new Object[rowsName.length];
+		objs[0] = "Code";
+		objs[1] = "GroupName";
+		objs[2] = "Name";
+		objs[3] = "Information";
+		objs[4] = "InPrice";
+		objs[5] = "RetailOutPrice";
+		objs[6] = "Scorable";
+		objs[7] = "MoneyToOneScoreRate";
+		objs[8] = "DiscountByRevenue";
+		objs[9] = "Discount";
+		objs[10] = "BatchOutPrice";
+		objs[11] = "RetailUnit";
+		objs[12] = "Unit";
+		objs[13] = "WarningQuantity";
+		objs[14] = "Factors";
+		objs[15] = "InitValue";
+		objs[16] = "InitPrice";
+		objs[17] = "Barcode";
+		objs[18] = "SerialNumber";
+		objs[19] = "ExpiredDate";
+		objs[20] = "DosageForms";
+		objs[21] = "RegisteredNo";
+		objs[22] = "ActiveSubstance";
+		objs[23] = "Contents";
+		objs[24] = "CountryOfManufacturer";
+		objs[25] = "Manufacturer";
+		objs[26] = "Importers";
+		objs[27] = "SmallestPackingUnit";
+		objs[28] = "DeclaredPrice";
+		objs[29] = "ConnectivityCode";
+		objs[30] = "ProductTypeId";
+		objs[31] = "OrganizeDeclaration";
+		objs[32] = "CountryRegistration";
+		objs[33] = "AddressRegistration";
+		objs[34] = "AddressManufacture";
+		objs[35] = "Classification";
+		objs[36] = "Identifier";
+		objs[37] = "ForWholesale";
+		objs[38] = "Result";
+		objs[39] = "SaleDescription";
+		objs[40] = "StorageConditions";
+		objs[41] = "StorageLocation";
+		dataList.add(objs);
+
+		for (int i = 0; i < data.size(); i++) {
+			Thuocs thuocs = data.get(i);
+			objs = new Object[rowsName.length];
+			objs[0] = thuocs.getMaThuoc();
+			objs[1] = thuocs.getTenNhomThuoc();
+			objs[2] = thuocs.getTenThuoc();
+			objs[3] = "Information";
+			objs[4] = "InPrice";
+			objs[5] = "RetailOutPrice";
+			objs[6] = "Scorable";
+			objs[7] = "MoneyToOneScoreRate";
+			objs[8] = "DiscountByRevenue";
+			objs[9] = "Discount";
+			objs[10] = "BatchOutPrice";
+			objs[11] = "RetailUnit";
+			objs[12] = "Unit";
+			objs[13] = "WarningQuantity";
+			objs[14] = "Factors";
+			objs[15] = "InitValue";
+			objs[16] = "InitPrice";
+			objs[17] = "Barcode";
+			objs[18] = "SerialNumber";
+			objs[19] = "ExpiredDate";
+			objs[20] = "DosageForms";
+			objs[21] = "RegisteredNo";
+			objs[22] = "ActiveSubstance";
+			objs[23] = "Contents";
+			objs[24] = "CountryOfManufacturer";
+			objs[25] = "Manufacturer";
+			objs[26] = "Importers";
+			objs[27] = "SmallestPackingUnit";
+			objs[28] = "DeclaredPrice";
+			objs[29] = "ConnectivityCode";
+			objs[30] = "ProductTypeId";
+			objs[31] = "OrganizeDeclaration";
+			objs[32] = "CountryRegistration";
+			objs[33] = "AddressRegistration";
+			objs[34] = "AddressManufacture";
+			objs[35] = "Classification";
+			objs[36] = "Identifier";
+			objs[37] = "ForWholesale";
+			objs[38] = "Result";
+			objs[39] = "SaleDescription";
+			objs[40] = "StorageConditions";
+			objs[41] = "StorageLocation";
+			dataList.add(objs);
+			dataList.add(objs);
+		}
+		ExportExcel ex = new ExportExcel(title, fileName, rowsName, dataList, response);
+		ex.export();
 	}
 
 	@Override
