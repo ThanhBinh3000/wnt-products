@@ -493,6 +493,10 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 				thuocs.setTenViTri(byId.get().getNameWarehouse());
 			}
 		}
+		if(thuocs.getNhomThuocMaNhomThuoc()!=null){
+			Optional<NhomThuocs> byIdNt = nhomThuocsRepository.findById(thuocs.getNhomThuocMaNhomThuoc());
+			byIdNt.ifPresent(nhomThuocs -> thuocs.setTenNhomThuoc(nhomThuocs.getTenNhomThuoc()));
+		}
 		InventoryReq inventoryReq = new InventoryReq();
 		inventoryReq.setDrugID(thuocs.getId());
 		inventoryReq.setDrugStoreID(thuocs.getNhaThuocMaNhaThuoc());
