@@ -44,5 +44,6 @@ public class PhieuKiemKes extends BaseEntity {
     private String createdByUseText;
     @Transient
     private List<PhieuKiemKeChiTiets> chiTiets;
+
 }
 

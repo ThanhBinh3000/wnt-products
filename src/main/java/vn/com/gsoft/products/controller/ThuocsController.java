@@ -3,7 +3,6 @@ package vn.com.gsoft.products.controller;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +19,6 @@ import vn.com.gsoft.products.service.ThuocsService;
 import vn.com.gsoft.products.util.system.ResponseUtils;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -46,7 +44,11 @@ public class ThuocsController {
     return ResponseEntity.ok(ResponseUtils.ok(service.searchList(objReq)));
   }
 
-
+  @PostMapping(value = PathContains.URL_SEARCH_PAGE+ "-not-in-phieu-kiem-ke", produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<BaseResponse> colectionListNotInPhieuKiemKe(@RequestBody ThuocsReq objReq) throws Exception {
+    return ResponseEntity.ok(ResponseUtils.ok(service.colectionPageNotInPhieuKiemKe(objReq)));
+  }
 
   @PostMapping(value = PathContains.URL_CREATE, produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseStatus(HttpStatus.CREATED)

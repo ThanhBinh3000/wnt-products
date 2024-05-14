@@ -81,4 +81,22 @@ public class PhieuKiemKesController {
     public ResponseEntity<BaseResponse> restore(@Valid @RequestBody PhieuKiemKesReq idSearchReq) throws Exception {
         return ResponseEntity.ok(ResponseUtils.ok(service.restore(idSearchReq.getId())));
     }
+
+    @PostMapping(value = "can-kho", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> canKho(@Valid @RequestBody PhieuKiemKesReq idSearchReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.canKho(idSearchReq)));
+    }
+
+    @PostMapping(value = "check-thuoc-ton-tai-kiem-ke", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> checkThuocTonTaiKiemKe(@Valid @RequestBody PhieuKiemKesReq idSearchReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.checkThuocTonTaiKiemKe(idSearchReq.getThuocThuocId())));
+    }
+
+    @PostMapping(value = "check-bien-dong", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> checkBienDong(@Valid @RequestBody PhieuKiemKesReq idSearchReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.checkBienDong(idSearchReq.getId())));
+    }
 }

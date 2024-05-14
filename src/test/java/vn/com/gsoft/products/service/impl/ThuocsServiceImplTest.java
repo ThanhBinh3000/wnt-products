@@ -9,29 +9,31 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import vn.com.gsoft.products.entity.PhieuKiemKeChiTiets;
-import vn.com.gsoft.products.entity.PhieuKiemKes;
-import vn.com.gsoft.products.entity.SampleNote;
-import vn.com.gsoft.products.model.dto.PhieuKiemKesReq;
+import vn.com.gsoft.products.entity.NhomThuocs;
+import vn.com.gsoft.products.entity.Thuocs;
+import vn.com.gsoft.products.model.dto.NhomThuocsReq;
+import vn.com.gsoft.products.model.dto.ThuocsReq;
 import vn.com.gsoft.products.model.system.NhaThuocs;
 import vn.com.gsoft.products.model.system.PaggingReq;
 import vn.com.gsoft.products.model.system.Profile;
-import vn.com.gsoft.products.service.PhieuKiemKesService;
+import vn.com.gsoft.products.service.ThuocsService;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest
 @Slf4j
-class PhieuKiemKesServiceImplTest {
+class ThuocsServiceImplTest {
     @Autowired
-    private PhieuKiemKesService phieuKiemKesService;
+    private ThuocsService thuocsService;
 
     @BeforeAll
     static void beforeAll() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         Profile p = new Profile();
-        NhaThuocs nt =new NhaThuocs();
+        NhaThuocs nt = new NhaThuocs();
         nt.setMaNhaThuoc("0010");
         p.setNhaThuoc(nt);
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(p, null, authorities);
@@ -39,35 +41,13 @@ class PhieuKiemKesServiceImplTest {
     }
 
     @Test
-    void searchPage() throws Exception {
-        PhieuKiemKesReq phieuKiemKesReq = new PhieuKiemKesReq();
+    void colectionPageNotInPhieuKiemKe() throws Exception {
+        ThuocsReq thuocsReq = new ThuocsReq();
         PaggingReq paggingReq = new PaggingReq();
         paggingReq.setPage(0);
         paggingReq.setLimit(10);
-        phieuKiemKesReq.setPaggingReq(paggingReq);
-        Page<PhieuKiemKes> sampleNotes = phieuKiemKesService.searchPage(phieuKiemKesReq);
+        thuocsReq.setPaggingReq(paggingReq);
+        Page<Thuocs> sampleNotes = thuocsService.colectionPageNotInPhieuKiemKe(thuocsReq);
         assert sampleNotes != null;
-    }
-
-    @Test
-    void detail() throws Exception {
-        PhieuKiemKes detail = phieuKiemKesService.detail(222935l);
-        assert detail != null;
-    }
-
-    @Test
-    void canKho() {
-    }
-
-    @Test
-    void checkThuocTonTaiKiemKe() throws Exception {
-        Boolean checkThuocTonTaiKiemKe = phieuKiemKesService.checkThuocTonTaiKiemKe(9681629l);
-        assert checkThuocTonTaiKiemKe != null;
-    }
-
-    @Test
-    void checkBienDong() throws Exception {
-        List<PhieuKiemKeChiTiets> checkBienDong = phieuKiemKesService.checkBienDong(222782l);
-        assert checkBienDong != null;
     }
 }

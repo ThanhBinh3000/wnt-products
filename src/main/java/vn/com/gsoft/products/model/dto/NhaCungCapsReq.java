@@ -19,10 +19,6 @@ public class NhaCungCapsReq extends BaseRequest {
     private BigDecimal noDauKy;
     private String maNhaThuoc;
     private Integer maNhomNhaCungCap;
-    private Date created;
-    private Date modified;
-    private Integer createdByUserId;
-    private Integer modifiedByUserId;
     private Boolean active;
     private Integer supplierTypeId;
     private Long recordStatusId;

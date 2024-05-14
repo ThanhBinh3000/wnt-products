@@ -17,4 +17,6 @@ public class PhieuKiemKesReq extends BaseRequest {
     private Long archivedId;
     private Long storeId;
     private Date archivedDate;
+
+    private Long thuocThuocId;
 }

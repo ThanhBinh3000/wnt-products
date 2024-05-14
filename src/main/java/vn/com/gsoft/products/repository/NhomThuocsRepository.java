@@ -14,16 +14,17 @@ import java.util.Optional;
 @Repository
 public interface NhomThuocsRepository extends BaseRepository<NhomThuocs, NhomThuocsReq, Long> {
     @Query("SELECT c FROM NhomThuocs c " +
-            "WHERE 1=1 "
+            "WHERE  c.maNhaThuoc = :#{#param.maNhaThuoc} "
             + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
             + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (:#{#param.tenNhomThuoc} IS NULL OR lower(c.tenNhomThuoc) LIKE lower(concat('%',CONCAT(:#{#param.tenNhomThuoc},'%'))))"
             + " AND (:#{#param.kyHieuNhomThuoc} IS NULL OR lower(c.kyHieuNhomThuoc) LIKE lower(concat('%',CONCAT(:#{#param.kyHieuNhomThuoc},'%'))))"
-            + " AND (:#{#param.maNhaThuoc} IS NULL OR lower(c.maNhaThuoc) LIKE lower(concat('%',CONCAT(:#{#param.maNhaThuoc},'%'))))"
             + " AND (:#{#param.referenceId} IS NULL OR c.referenceId = :#{#param.referenceId}) "
             + " AND (:#{#param.archivedId} IS NULL OR c.archivedId = :#{#param.archivedId}) "
             + " AND (:#{#param.storeId} IS NULL OR c.storeId = :#{#param.storeId}) "
             + " AND (:#{#param.typeGroupProduct} IS NULL OR c.typeGroupProduct = :#{#param.typeGroupProduct}) "
+            + " AND ((:#{#param.textSearch} IS NULL OR c.kyHieuNhomThuoc = :#{#param.textSearch}) "
+            + " AND (:#{#param.textSearch} IS NULL OR c.tenNhomThuoc = :#{#param.textSearch})) "
             + " ORDER BY c.id desc"
     )
     Page<NhomThuocs> searchPage(@Param("param") NhomThuocsReq param, Pageable pageable);

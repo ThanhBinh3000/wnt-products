@@ -18,10 +18,6 @@ public class KhachHangsReq extends BaseRequest {
     private String ghiChu;
     private String maNhaThuoc;
     private Long maNhomKhachHang;
-    private Date created;
-    private Date modified;
-    private Integer createdByUserId;
-    private Integer modifiedByUserId;
     private Boolean active;
     private Integer customerTypeId;
     private String barCode;

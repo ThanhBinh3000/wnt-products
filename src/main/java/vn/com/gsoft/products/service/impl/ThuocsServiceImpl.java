@@ -449,6 +449,41 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 	}
 
 	@Override
+	public Page<Thuocs> colectionPageNotInPhieuKiemKe(ThuocsReq req) throws Exception {
+		Profile userInfo = this.getLoggedUser();
+		if (userInfo == null)
+			throw new Exception("Bad request.");
+		Pageable pageable = PageRequest.of(req.getPaggingReq().getPage(), req.getPaggingReq().getLimit());
+		req.setNhaThuocMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+		req.setNhaThuocMaNhaThuocCha(userInfo.getNhaThuoc().getMaNhaThuocCha());
+		if(req.getDataDelete() != null){
+			req.setRecordStatusId(req.getDataDelete() ? RecordStatusContains.DELETED : RecordStatusContains.ACTIVE);
+		}
+		Page<Thuocs> thuocs = hdrRepo.colectionPageNotInPhieuKiemKe(req,pageable);
+		thuocs.getContent().forEach( item -> {
+			if(item.getNhomThuocMaNhomThuoc()!=null){
+				Optional<NhomThuocs> byIdNt = nhomThuocsRepository.findById(item.getNhomThuocMaNhomThuoc());
+				byIdNt.ifPresent(nhomThuocs -> item.setTenNhomThuoc(nhomThuocs.getTenNhomThuoc()));
+			}
+			if(req.getTypeService() == 0) { //kiểm tra nếu là thuốc thì mới fill dữ liệu bên dưới
+				if(item.getDonViThuNguyenMaDonViTinh()!=null){
+					Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViThuNguyenMaDonViTinh());
+					byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhThuNguyen(donViTinhs.getTenDonViTinh()));
+				}
+				if(item.getDonViXuatLeMaDonViTinh()!=null){
+					Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViXuatLeMaDonViTinh());
+					byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhXuatLe(donViTinhs.getTenDonViTinh()));
+				}
+				if(item.getIdWarehouseLocation() != null ){
+					Optional<WarehouseLocation> byIdNt = warehouseLocationRepository.findById(item.getIdWarehouseLocation());
+					byIdNt.ifPresent(warehouseLocations -> item.setTenViTri(warehouseLocations.getNameWarehouse()));
+				}
+			}
+		});
+		return thuocs;
+	}
+
+	@Override
 	public Thuocs detail(Long id) throws Exception {
 		Profile userInfo = this.getLoggedUser();
 		if (userInfo == null)
