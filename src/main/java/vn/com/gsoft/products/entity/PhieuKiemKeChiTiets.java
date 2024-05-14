@@ -23,9 +23,9 @@ public class PhieuKiemKeChiTiets extends BaseEntity{
     @Column(name = "Thuoc_ThuocId")
     private Long thuocThuocId;
     @Column(name = "TonKho")
-    private BigDecimal tonKho;
+    private Double tonKho;
     @Column(name = "ThucTe")
-    private BigDecimal thucTe;
+    private Double thucTe;
     @Column(name = "PhieuKiemKe_MaPhieuKiemKe")
     private Long phieuKiemKeMaPhieuKiemKe;
     @Column(name = "DonGia")

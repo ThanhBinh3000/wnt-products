@@ -21,9 +21,9 @@ public class PhieuKiemKes extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "PhieuNhap_MaPhieuNhap")
-    private Integer phieuNhapMaPhieuNhap;
+    private Long phieuNhapMaPhieuNhap;
     @Column(name = "PhieuXuat_MaPhieuXuat")
-    private Integer phieuXuatMaPhieuXuat;
+    private Long phieuXuatMaPhieuXuat;
     @Column(name = "NhaThuoc_MaNhaThuoc")
     private String nhaThuocMaNhaThuoc;
     @Column(name = "UserProfile_UserId")

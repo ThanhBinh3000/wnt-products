@@ -12,6 +12,8 @@ import vn.com.gsoft.products.model.dto.PhieuKiemKesReq;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.service.PhieuKiemKesService;
+import vn.com.gsoft.products.service.PhieuNhapsService;
+import vn.com.gsoft.products.service.PhieuXuatsService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,8 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
     private NhomThuocsRepository nhomThuocsRepository;
     private PhieuXuatChiTietsRepository phieuXuatChiTietsRepository;
     private PhieuNhapChiTietsRepository phieuNhapChiTietsRepository;
+    private PhieuXuatsService phieuXuatsService;
+    private PhieuNhapsService phieuNhapsService;
 
     @Autowired
     public PhieuKiemKesServiceImpl(PhieuKiemKesRepository hdrRepo, UserProfileRepository userProfileRepository,
@@ -36,6 +40,8 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
                                    ThuocsRepository thuocsRepository,
                                    PhieuXuatChiTietsRepository phieuXuatChiTietsRepository,
                                    PhieuNhapChiTietsRepository phieuNhapChiTietsRepository,
+                                   PhieuXuatsService phieuXuatsService,
+                                   PhieuNhapsService phieuNhapsService,
                                    NhomThuocsRepository nhomThuocsRepository) {
         super(hdrRepo);
         this.hdrRepo = hdrRepo;
@@ -45,6 +51,8 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         this.nhomThuocsRepository = nhomThuocsRepository;
         this.phieuXuatChiTietsRepository = phieuXuatChiTietsRepository;
         this.phieuNhapChiTietsRepository = phieuNhapChiTietsRepository;
+        this.phieuXuatsService = phieuXuatsService;
+        this.phieuNhapsService = phieuNhapsService;
     }
 
     @Override
@@ -59,6 +67,18 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
             }
         }
         return phieuKiemKes;
+    }
+
+    @Override
+    public PhieuKiemKes create(PhieuKiemKesReq req) throws Exception {
+        // todo
+        return super.create(req);
+    }
+
+    @Override
+    public PhieuKiemKes update(PhieuKiemKesReq req) throws Exception {
+        // todo
+        return super.update(req);
     }
 
     @Override
@@ -98,14 +118,47 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
     }
 
     @Override
-    public PhieuKiemKes canKho(PhieuKiemKesReq idSearchReq) throws Exception {
-        if (idSearchReq.getId() != null && idSearchReq.getId() > 0) {
-            super.create(idSearchReq);
+    public PhieuKiemKes canKho(PhieuKiemKesReq req) throws Exception {
+        PhieuKiemKes phieuKiemKes = null;
+        if (req.getId() != null && req.getId() > 0) {
+            phieuKiemKes = super.create(req);
         } else {
-            super.update(idSearchReq);
+            phieuKiemKes = super.update(req);
         }
         // xử lý cân kho
-        return null;
+        List<PhieuKiemKeChiTiets> canXuat = new ArrayList<>();
+        List<PhieuKiemKeChiTiets> canNhap = new ArrayList<>();
+        for (PhieuKiemKeChiTiets ct : phieuKiemKes.getChiTiets()) {
+            if (ct.getThucTe() > ct.getTonKho()) {
+                canNhap.add(ct);
+            }
+            if (ct.getThucTe() < ct.getTonKho()) {
+                canXuat.add(ct);
+            }
+        }
+        if (!canXuat.isEmpty()) {
+            PhieuXuats phieuXuats = null;
+            phieuKiemKes.setChiTiets(canXuat);
+            if (req.getPhieuXuatMaPhieuXuat() != null && req.getPhieuXuatMaPhieuXuat() > 0) {
+                phieuXuats = phieuXuatsService.updateByPhieuKiemKes(phieuKiemKes);
+            } else {
+                phieuXuats = phieuXuatsService.createByPhieuKiemKes(phieuKiemKes);
+            }
+            req.setPhieuXuatMaPhieuXuat(phieuXuats != null ? phieuXuats.getId() : null);
+            super.update(req);
+        }
+        if (!canNhap.isEmpty()) {
+            PhieuNhaps phieuNhaps = null;
+            phieuKiemKes.setChiTiets(canNhap);
+            if (req.getPhieuNhapMaPhieuNhap() != null && req.getPhieuNhapMaPhieuNhap() > 0) {
+                phieuNhaps = phieuNhapsService.updateByPhieuKiemKes(phieuKiemKes);
+            } else {
+                phieuNhaps = phieuNhapsService.createByPhieuKiemKes(phieuKiemKes);
+            }
+            req.setPhieuNhapMaPhieuNhap(phieuNhaps != null ? phieuNhaps.getId() : null);
+            super.update(req);
+        }
+        return phieuKiemKes;
     }
 
     @Override
