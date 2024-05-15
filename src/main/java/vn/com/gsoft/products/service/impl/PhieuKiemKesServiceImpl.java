@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -155,13 +156,14 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
                 }
             }
         }
-        phieuKiemKes.setChiTiets(new ArrayList<>());
+        phieuKiemKes.setPhieuXuatNhaps(new ArrayList<>());
         if(phieuKiemKes.getPhieuXuatMaPhieuXuat()!=null && phieuKiemKes.getPhieuXuatMaPhieuXuat()>0){
             PhieuXuats phieuXuats = phieuXuatsService.detail(phieuKiemKes.getPhieuXuatMaPhieuXuat());
             PhieuXuatNhapRes phieuXuatNhapRes = new PhieuXuatNhapRes();
             phieuXuatNhapRes.setId(phieuXuats.getId());
             phieuXuatNhapRes.setLoaiPhieu("Phiếu xuất");
             phieuXuatNhapRes.setSoPhieu(phieuXuats.getSoPhieuXuat());
+            phieuXuatNhapRes.setSoLuongThuoc(phieuXuats.getChiTiets().stream().map(PhieuXuatChiTiets::getThuocThuocId).collect(Collectors.toSet()).size());
             phieuKiemKes.getPhieuXuatNhaps().add(phieuXuatNhapRes);
         }
         if(phieuKiemKes.getPhieuNhapMaPhieuNhap()!=null && phieuKiemKes.getPhieuNhapMaPhieuNhap()>0){
@@ -170,6 +172,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
             phieuXuatNhapRes.setId(phieuNhaps.getId());
             phieuXuatNhapRes.setLoaiPhieu("Phiếu nhập");
             phieuXuatNhapRes.setSoPhieu(phieuNhaps.getSoPhieuNhap());
+            phieuXuatNhapRes.setSoLuongThuoc(phieuNhaps.getChiTiets().stream().map(PhieuNhapChiTiets::getThuocThuocId).collect(Collectors.toSet()).size());
             phieuKiemKes.getPhieuXuatNhaps().add(phieuXuatNhapRes);
         }
 
