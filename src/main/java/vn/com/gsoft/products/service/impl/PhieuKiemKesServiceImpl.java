@@ -1,6 +1,7 @@
 package vn.com.gsoft.products.service.impl;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -9,13 +10,16 @@ import org.springframework.stereotype.Service;
 import vn.com.gsoft.products.constant.RecordStatusContains;
 import vn.com.gsoft.products.entity.*;
 import vn.com.gsoft.products.model.dto.PhieuKiemKesReq;
+import vn.com.gsoft.products.model.dto.PhieuXuatNhapRes;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.service.PhieuKiemKesService;
 import vn.com.gsoft.products.service.PhieuNhapsService;
 import vn.com.gsoft.products.service.PhieuXuatsService;
 
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,14 +75,51 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
 
     @Override
     public PhieuKiemKes create(PhieuKiemKesReq req) throws Exception {
-        // todo
-        return super.create(req);
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        PhieuKiemKes e = new PhieuKiemKes();
+        BeanUtils.copyProperties(req, e, "id");
+        if(e.getRecordStatusId() == null){
+            e.setRecordStatusId(RecordStatusContains.ACTIVE);
+        }
+        e.setCreated(new Date());
+        e.setCreatedByUserId(getLoggedUser().getId());
+        e = hdrRepo.save(e);
+        for(PhieuKiemKeChiTiets ct: req.getChiTiets()){
+            ct.setRecordStatusId(RecordStatusContains.ACTIVE);
+            ct.setPhieuKiemKeMaPhieuKiemKe(e.getId());
+        }
+        phieuKiemKeChiTietsRepository.saveAll(req.getChiTiets());
+        return e;
     }
 
     @Override
     public PhieuKiemKes update(PhieuKiemKesReq req) throws Exception {
-        // todo
-        return super.update(req);
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+
+        Optional<PhieuKiemKes> optional = hdrRepo.findById(req.getId());
+        if (optional.isEmpty()) {
+            throw new Exception("Không tìm thấy dữ liệu.");
+        }
+
+        PhieuKiemKes e = optional.get();
+        BeanUtils.copyProperties(req, e, "id", "created", "createdByUserId");
+        if(e.getRecordStatusId() == null){
+            e.setRecordStatusId(RecordStatusContains.ACTIVE);
+        }
+        e.setModified(new Date());
+        e.setModifiedByUserId(getLoggedUser().getId());
+        e = hdrRepo.save(e);
+        phieuKiemKeChiTietsRepository.deleteByPhieuKiemKeMaPhieuKiemKe(e.getId());
+        for(PhieuKiemKeChiTiets ct: req.getChiTiets()){
+            ct.setRecordStatusId(RecordStatusContains.ACTIVE);
+            ct.setPhieuKiemKeMaPhieuKiemKe(e.getId());
+        }
+        phieuKiemKeChiTietsRepository.saveAll(req.getChiTiets());
+        return e;
     }
 
     @Override
@@ -114,6 +155,24 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
                 }
             }
         }
+        phieuKiemKes.setChiTiets(new ArrayList<>());
+        if(phieuKiemKes.getPhieuXuatMaPhieuXuat()!=null && phieuKiemKes.getPhieuXuatMaPhieuXuat()>0){
+            PhieuXuats phieuXuats = phieuXuatsService.detail(phieuKiemKes.getPhieuXuatMaPhieuXuat());
+            PhieuXuatNhapRes phieuXuatNhapRes = new PhieuXuatNhapRes();
+            phieuXuatNhapRes.setId(phieuXuats.getId());
+            phieuXuatNhapRes.setLoaiPhieu("Phiếu xuất");
+            phieuXuatNhapRes.setSoPhieu(phieuXuats.getSoPhieuXuat());
+            phieuKiemKes.getPhieuXuatNhaps().add(phieuXuatNhapRes);
+        }
+        if(phieuKiemKes.getPhieuNhapMaPhieuNhap()!=null && phieuKiemKes.getPhieuNhapMaPhieuNhap()>0){
+            PhieuNhaps phieuNhaps = phieuNhapsService.detail(phieuKiemKes.getPhieuNhapMaPhieuNhap());
+            PhieuXuatNhapRes phieuXuatNhapRes = new PhieuXuatNhapRes();
+            phieuXuatNhapRes.setId(phieuNhaps.getId());
+            phieuXuatNhapRes.setLoaiPhieu("Phiếu nhập");
+            phieuXuatNhapRes.setSoPhieu(phieuNhaps.getSoPhieuNhap());
+            phieuKiemKes.getPhieuXuatNhaps().add(phieuXuatNhapRes);
+        }
+
         return phieuKiemKes;
     }
 

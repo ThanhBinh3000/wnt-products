@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.com.gsoft.products.model.dto.PhieuXuatNhapRes;
 
 import java.util.Date;
 import java.util.List;
@@ -44,6 +45,8 @@ public class PhieuKiemKes extends BaseEntity {
     private String createdByUseText;
     @Transient
     private List<PhieuKiemKeChiTiets> chiTiets;
+    @Transient
+    private List<PhieuXuatNhapRes> phieuXuatNhaps;
 
 }
 
