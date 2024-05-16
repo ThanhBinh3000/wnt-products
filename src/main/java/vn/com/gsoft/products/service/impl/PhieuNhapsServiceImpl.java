@@ -6,23 +6,19 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import vn.com.gsoft.products.constant.ENoteType;
 import vn.com.gsoft.products.constant.InventoryConstant;
 import vn.com.gsoft.products.constant.RecordStatusContains;
-import vn.com.gsoft.products.entity.PhieuKiemKes;
-import vn.com.gsoft.products.entity.PhieuNhapChiTiets;
-import vn.com.gsoft.products.entity.PhieuNhaps;
+import vn.com.gsoft.products.entity.*;
 import vn.com.gsoft.products.model.dto.PhieuNhapsReq;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.model.system.WrapData;
-import vn.com.gsoft.products.repository.PhieuNhapChiTietsRepository;
-import vn.com.gsoft.products.repository.PhieuNhapsRepository;
+import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.service.KafkaProducer;
 import vn.com.gsoft.products.service.PhieuNhapsService;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -34,6 +30,9 @@ public class PhieuNhapsServiceImpl extends BaseServiceImpl<PhieuNhaps, PhieuNhap
 
     private PhieuNhapsRepository hdrRepo;
     private PhieuNhapChiTietsRepository phieuNhapChiTietsRepository;
+    private NhaCungCapsRepository nhaCungCapsRepository;
+    private KhachHangsRepository khachHangsRepository;
+    private NhaThuocsRepository nhaThuocsRepository;
     private KafkaProducer kafkaProducer;
     @Value("${wnt.kafka.internal.consumer.topic.inventory}")
     private String topicName;
@@ -41,11 +40,75 @@ public class PhieuNhapsServiceImpl extends BaseServiceImpl<PhieuNhaps, PhieuNhap
     @Autowired
     public PhieuNhapsServiceImpl(PhieuNhapsRepository hdrRepo,
                                  PhieuNhapChiTietsRepository phieuNhapChiTietsRepository,
+                                 NhaCungCapsRepository nhaCungCapsRepository,
+                                 KhachHangsRepository khachHangsRepository,
+                                 NhaThuocsRepository nhaThuocsRepository,
                                  KafkaProducer kafkaProducer) {
         super(hdrRepo);
         this.hdrRepo = hdrRepo;
         this.phieuNhapChiTietsRepository = phieuNhapChiTietsRepository;
         this.kafkaProducer = kafkaProducer;
+        this.nhaCungCapsRepository = nhaCungCapsRepository;
+        this.khachHangsRepository = khachHangsRepository;
+        this.nhaThuocsRepository = nhaThuocsRepository;
+
+    }
+
+    @Override
+    public PhieuNhaps init(Long maLoaiXuatNhap, Long id) throws Exception {
+        Profile currUser = getLoggedUser();
+        String maNhaThuoc = currUser.getNhaThuoc().getMaNhaThuoc();
+        PhieuNhaps data = null;
+        if (id == null) {
+            data = new PhieuNhaps();
+            Long soPhieuNhap = hdrRepo.findBySoPhieuNhapMax(maNhaThuoc, maLoaiXuatNhap);
+            if (soPhieuNhap == null) {
+                soPhieuNhap = 1L;
+            } else {
+                soPhieuNhap += 1;
+            }
+            data.setSoPhieuNhap(soPhieuNhap);
+            data.setUId(UUID.randomUUID());
+            data.setNgayNhap(new Date());
+
+//            if (Objects.equals(maLoaiXuatNhap, ENoteType.Receipt)) {
+//                // tìm nhà cung cấp nhập lẻ
+//                Optional<NhaCungCaps> ncc = this.nhaCungCapsRepository.findKhachHangLe(storeCode);
+//                if (ncc.isPresent()) {
+//                    data.setNhaCungCapMaNhaCungCap(ncc.get().getId());
+//                } else {
+//                    throw new Exception("Không tìm thấy khách hàng lẻ!");
+//                }
+//            } else if (Objects.equals(maLoaiXuatNhap, ENoteType.Delivery)) {
+//                // tìm khách hàng lẻ
+//                Optional<KhachHangs> kh = this.khachHangsRepository.findKhachHangLe(storeCode);
+//                if (kh.isPresent()) {
+//                    data.setKhachHangMaKhachHang(kh.get().getId());
+//                } else {
+//                    throw new Exception("Không tìm thấy khách hàng lẻ!");
+//                }
+//            }
+        } else {
+            Optional<PhieuNhaps> phieuNhaps = hdrRepo.findById(id);
+            if (phieuNhaps.isPresent()) {
+                data = phieuNhaps.get();
+                data.setId(null);
+                Long soPhieuNhap = hdrRepo.findBySoPhieuNhapMax(maNhaThuoc, maLoaiXuatNhap);
+                if (soPhieuNhap == null) {
+                    soPhieuNhap = 1L;
+                }
+                data.setUId(UUID.randomUUID());
+                data.setSoPhieuNhap(soPhieuNhap);
+                data.setNgayNhap(new Date());
+                data.setCreatedByUserId(null);
+                data.setModifiedByUserId(null);
+                data.setCreated(null);
+                data.setModified(null);
+            } else {
+                throw new Exception("Không tìm thấy phiếu copy!");
+            }
+        }
+        return data;
     }
 
     @Override
@@ -71,16 +134,88 @@ public class PhieuNhapsServiceImpl extends BaseServiceImpl<PhieuNhaps, PhieuNhap
 
     @Override
     public PhieuNhaps createByPhieuKiemKes(PhieuKiemKes e) throws Exception {
-        //todo
-        return null;
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        PhieuNhaps pn = new PhieuNhaps();
+        BeanUtils.copyProperties(e, pn, "id", "created", "createdByUserId", "modified", "modifiedByUserId", "recordStatusId");
+        PhieuNhaps init = init(ENoteType.InventoryAdjustment.longValue(), null);
+        pn.setSoPhieuNhap(init.getSoPhieuNhap());
+        pn.setNhaThuocMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+        pn.setStoreId(userInfo.getNhaThuoc().getId());
+        pn.setTargetId(null);
+        pn.setTargetStoreId(null);
+        pn.setTargetManagementId(null);
+        pn.setRecordStatusId(RecordStatusContains.ACTIVE);
+        pn.setIsModified(false);
+        e.setCreated(new Date());
+        e.setCreatedByUserId(getLoggedUser().getId());
+        pn = hdrRepo.save(pn);
+        // save chi tiết
+        pn.setChiTiets(new ArrayList<>());
+        for (PhieuKiemKeChiTiets chiTiet : e.getChiTiets()) {
+            PhieuNhapChiTiets ct = new PhieuNhapChiTiets();
+            BeanUtils.copyProperties(chiTiet, ct, "id", "created", "createdByUserId", "modified", "modifiedByUserId", "recordStatusId");
+            ct.setPhieuNhapMaPhieuNhap(pn.getId());
+            ct.setSoLuong(new BigDecimal(Math.abs(ct.getSoLuong().doubleValue())));
+            pn.getChiTiets().add(ct);
+        }
+        this.phieuNhapChiTietsRepository.saveAll(pn.getChiTiets());
+        updateInventory(pn);
+        return pn;
     }
 
     @Override
     public PhieuNhaps updateByPhieuKiemKes(PhieuKiemKes e) throws Exception {
-        //todo
-        return null;
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        PhieuNhaps phieuNhaps = detail(e.getPhieuNhapMaPhieuNhap());
+        if(phieuNhaps ==null){
+            throw new Exception("Không tìm thấy phiếu nhập cũ!");
+        }
+        delete(phieuNhaps.getId());
+        PhieuNhaps pn = new PhieuNhaps();
+        BeanUtils.copyProperties(e, pn, "id", "created", "createdByUserId", "modified", "modifiedByUserId", "recordStatusId");
+        PhieuNhaps init = init(ENoteType.InventoryAdjustment.longValue(), null);
+        pn.setSoPhieuNhap(init.getSoPhieuNhap());
+        pn.setNhaThuocMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+        pn.setStoreId(userInfo.getNhaThuoc().getId());
+        pn.setTargetId(null);
+        pn.setTargetStoreId(null);
+        pn.setTargetManagementId(null);
+        pn.setRecordStatusId(RecordStatusContains.ACTIVE);
+        pn.setIsModified(false);
+        e.setCreated(phieuNhaps.getCreated());
+        e.setCreatedByUserId(phieuNhaps.getCreatedByUserId());
+        e.setModified(new Date());
+        e.setModifiedByUserId(userInfo.getId());
+        pn = hdrRepo.save(pn);
+        // save chi tiết
+        pn.setChiTiets(new ArrayList<>());
+        for (PhieuKiemKeChiTiets chiTiet : e.getChiTiets()) {
+            PhieuNhapChiTiets ct = new PhieuNhapChiTiets();
+            BeanUtils.copyProperties(chiTiet, ct, "id", "created", "createdByUserId", "modified", "modifiedByUserId", "recordStatusId");
+            ct.setPhieuNhapMaPhieuNhap(pn.getId());
+            ct.setSoLuong(new BigDecimal(Math.abs(ct.getSoLuong().doubleValue())));
+            pn.getChiTiets().add(ct);
+        }
+        this.phieuNhapChiTietsRepository.saveAll(pn.getChiTiets());
+        updateInventory(pn);
+        return pn;
     }
+    @Override
+    public boolean delete(Long id) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
 
+        PhieuNhaps phieuNhaps = detail(id);
+        phieuNhaps.setRecordStatusId(RecordStatusContains.DELETED);
+        hdrRepo.save(phieuNhaps);
+        updateInventory(phieuNhaps);
+        return true;
+    }
     private void updateInventory(PhieuNhaps e) throws ExecutionException, InterruptedException, TimeoutException {
         Gson gson = new Gson();
         for (PhieuNhapChiTiets chiTiet : e.getChiTiets()) {

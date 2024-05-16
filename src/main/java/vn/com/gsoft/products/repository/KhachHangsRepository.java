@@ -11,6 +11,7 @@ import vn.com.gsoft.products.entity.KhachHangs;
 import vn.com.gsoft.products.model.dto.KhachHangsReq;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface KhachHangsRepository extends BaseRepository<KhachHangs, KhachHangsReq, Long> {
@@ -143,4 +144,6 @@ public interface KhachHangsRepository extends BaseRepository<KhachHangs, KhachHa
             nativeQuery = true
     )
     Page<Tuple> searchCustomerManagementPage(@Param("param") KhachHangsReq param, Pageable pageable);
+    @Query("SELECT kh FROM KhachHangs kh where kh.customerTypeId=1 and kh.maNhaThuoc= ?1 ")
+    Optional<KhachHangs> findKhachHangLe(String storeCode);
 }

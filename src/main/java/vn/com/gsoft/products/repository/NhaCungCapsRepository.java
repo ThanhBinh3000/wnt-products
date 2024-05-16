@@ -10,6 +10,7 @@ import vn.com.gsoft.products.entity.NhaCungCaps;
 import vn.com.gsoft.products.model.dto.NhaCungCapsReq;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface NhaCungCapsRepository extends BaseRepository<NhaCungCaps, NhaCungCapsReq, Long> {
@@ -104,4 +105,6 @@ public interface NhaCungCapsRepository extends BaseRepository<NhaCungCaps, NhaCu
           nativeQuery = true
   )
   Page<Tuple> searchSupplierManagementPage(@Param("param") NhaCungCapsReq param, Pageable pageable);
+  @Query("SELECT ncc FROM NhaCungCaps ncc where ncc.supplierTypeId=1 and ncc.maNhaThuoc= ?1 ")
+  Optional<NhaCungCaps> findKhachHangLe(String storeCode);
 }

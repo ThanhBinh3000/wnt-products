@@ -38,6 +38,8 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
     private PhieuNhapChiTietsRepository phieuNhapChiTietsRepository;
     private PhieuXuatsService phieuXuatsService;
     private PhieuNhapsService phieuNhapsService;
+    private DonViTinhsRepository donViTinhsRepository;
+    private WarehouseLocationRepository warehouseLocationRepository;
 
     @Autowired
     public PhieuKiemKesServiceImpl(PhieuKiemKesRepository hdrRepo, UserProfileRepository userProfileRepository,
@@ -47,6 +49,8 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
                                    PhieuNhapChiTietsRepository phieuNhapChiTietsRepository,
                                    PhieuXuatsService phieuXuatsService,
                                    PhieuNhapsService phieuNhapsService,
+                                   DonViTinhsRepository donViTinhsRepository,
+                                   WarehouseLocationRepository warehouseLocationRepository,
                                    NhomThuocsRepository nhomThuocsRepository) {
         super(hdrRepo);
         this.hdrRepo = hdrRepo;
@@ -58,6 +62,8 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         this.phieuNhapChiTietsRepository = phieuNhapChiTietsRepository;
         this.phieuXuatsService = phieuXuatsService;
         this.phieuNhapsService = phieuNhapsService;
+        this.donViTinhsRepository = donViTinhsRepository;
+        this.warehouseLocationRepository = warehouseLocationRepository;
     }
 
     @Override
@@ -81,13 +87,13 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
             throw new Exception("Bad request.");
         PhieuKiemKes e = new PhieuKiemKes();
         BeanUtils.copyProperties(req, e, "id");
-        if(e.getRecordStatusId() == null){
+        if (e.getRecordStatusId() == null) {
             e.setRecordStatusId(RecordStatusContains.ACTIVE);
         }
         e.setCreated(new Date());
         e.setCreatedByUserId(getLoggedUser().getId());
         e = hdrRepo.save(e);
-        for(PhieuKiemKeChiTiets ct: req.getChiTiets()){
+        for (PhieuKiemKeChiTiets ct : req.getChiTiets()) {
             ct.setRecordStatusId(RecordStatusContains.ACTIVE);
             ct.setPhieuKiemKeMaPhieuKiemKe(e.getId());
         }
@@ -108,14 +114,14 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
 
         PhieuKiemKes e = optional.get();
         BeanUtils.copyProperties(req, e, "id", "created", "createdByUserId");
-        if(e.getRecordStatusId() == null){
+        if (e.getRecordStatusId() == null) {
             e.setRecordStatusId(RecordStatusContains.ACTIVE);
         }
         e.setModified(new Date());
         e.setModifiedByUserId(getLoggedUser().getId());
         e = hdrRepo.save(e);
         phieuKiemKeChiTietsRepository.deleteByPhieuKiemKeMaPhieuKiemKe(e.getId());
-        for(PhieuKiemKeChiTiets ct: req.getChiTiets()){
+        for (PhieuKiemKeChiTiets ct : req.getChiTiets()) {
             ct.setRecordStatusId(RecordStatusContains.ACTIVE);
             ct.setPhieuKiemKeMaPhieuKiemKe(e.getId());
         }
@@ -157,7 +163,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
             }
         }
         phieuKiemKes.setPhieuXuatNhaps(new ArrayList<>());
-        if(phieuKiemKes.getPhieuXuatMaPhieuXuat()!=null && phieuKiemKes.getPhieuXuatMaPhieuXuat()>0){
+        if (phieuKiemKes.getPhieuXuatMaPhieuXuat() != null && phieuKiemKes.getPhieuXuatMaPhieuXuat() > 0) {
             PhieuXuats phieuXuats = phieuXuatsService.detail(phieuKiemKes.getPhieuXuatMaPhieuXuat());
             PhieuXuatNhapRes phieuXuatNhapRes = new PhieuXuatNhapRes();
             phieuXuatNhapRes.setId(phieuXuats.getId());
@@ -166,7 +172,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
             phieuXuatNhapRes.setSoLuongThuoc(phieuXuats.getChiTiets().stream().map(PhieuXuatChiTiets::getThuocThuocId).collect(Collectors.toSet()).size());
             phieuKiemKes.getPhieuXuatNhaps().add(phieuXuatNhapRes);
         }
-        if(phieuKiemKes.getPhieuNhapMaPhieuNhap()!=null && phieuKiemKes.getPhieuNhapMaPhieuNhap()>0){
+        if (phieuKiemKes.getPhieuNhapMaPhieuNhap() != null && phieuKiemKes.getPhieuNhapMaPhieuNhap() > 0) {
             PhieuNhaps phieuNhaps = phieuNhapsService.detail(phieuKiemKes.getPhieuNhapMaPhieuNhap());
             PhieuXuatNhapRes phieuXuatNhapRes = new PhieuXuatNhapRes();
             phieuXuatNhapRes.setId(phieuNhaps.getId());
@@ -251,5 +257,32 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
             }
         }
         return results;
+    }
+
+    @Override
+    public List<Thuocs> colectionNotInKiemKe(Date fromDate, Date toDate) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        List<Thuocs> thuocs = thuocsRepository.findByMaNhaThuocAndPhieuKiemKeNotInAndFromDateAndToDateAndRecordStatusId(userInfo.getNhaThuoc().getMaNhaThuoc(), fromDate, toDate, RecordStatusContains.ACTIVE);
+        thuocs.forEach(item -> {
+            if (item.getNhomThuocMaNhomThuoc() != null) {
+                Optional<NhomThuocs> byIdNt = nhomThuocsRepository.findById(item.getNhomThuocMaNhomThuoc());
+                byIdNt.ifPresent(nhomThuocs -> item.setTenNhomThuoc(nhomThuocs.getTenNhomThuoc()));
+            }
+            if (item.getDonViThuNguyenMaDonViTinh() != null && item.getDonViThuNguyenMaDonViTinh() > 0) {
+                Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViThuNguyenMaDonViTinh());
+                byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhThuNguyen(donViTinhs.getTenDonViTinh()));
+            }
+            if (item.getDonViXuatLeMaDonViTinh() != null && item.getDonViXuatLeMaDonViTinh() > 0) {
+                Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViXuatLeMaDonViTinh());
+                byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhXuatLe(donViTinhs.getTenDonViTinh()));
+            }
+            if (item.getIdWarehouseLocation() != null && item.getIdWarehouseLocation() > 0) {
+                Optional<WarehouseLocation> byIdNt = warehouseLocationRepository.findById(item.getIdWarehouseLocation());
+                byIdNt.ifPresent(warehouseLocations -> item.setTenViTri(warehouseLocations.getNameWarehouse()));
+            }
+        });
+        return thuocs;
     }
 }

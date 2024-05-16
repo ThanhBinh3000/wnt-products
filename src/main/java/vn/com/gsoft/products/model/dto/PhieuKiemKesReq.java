@@ -23,4 +23,7 @@ public class PhieuKiemKesReq extends BaseRequest {
     private List<PhieuKiemKeChiTiets> chiTiets;
 
     private Long thuocThuocId;
+
+    private Date fromDate;
+    private Date toDate;
 }

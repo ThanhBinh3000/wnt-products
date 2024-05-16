@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import vn.com.gsoft.products.entity.PhieuKiemKeChiTiets;
 import vn.com.gsoft.products.entity.PhieuKiemKes;
 import vn.com.gsoft.products.entity.SampleNote;
+import vn.com.gsoft.products.entity.Thuocs;
 import vn.com.gsoft.products.model.dto.PhieuKiemKesReq;
 import vn.com.gsoft.products.model.system.NhaThuocs;
 import vn.com.gsoft.products.model.system.PaggingReq;
@@ -19,6 +20,7 @@ import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.service.PhieuKiemKesService;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @SpringBootTest
@@ -69,5 +71,13 @@ class PhieuKiemKesServiceImplTest {
     void checkBienDong() throws Exception {
         List<PhieuKiemKeChiTiets> checkBienDong = phieuKiemKesService.checkBienDong(222782l);
         assert checkBienDong != null;
+    }
+
+    @Test
+    void colectionNotInKiemKe() throws Exception {
+        Date fromDate = new Date();
+        fromDate.setMonth(3);
+        List<Thuocs> thuocs = phieuKiemKesService.colectionNotInKiemKe(fromDate, new Date());
+        assert thuocs != null;
     }
 }

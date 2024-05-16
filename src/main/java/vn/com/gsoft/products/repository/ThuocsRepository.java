@@ -8,13 +8,14 @@ import org.springframework.data.repository.query.Param;
 import vn.com.gsoft.products.entity.Thuocs;
 import vn.com.gsoft.products.model.dto.ThuocsReq;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long> {
     @Query("SELECT distinct c FROM Thuocs c " +
-            "WHERE 1=1 "
+            "WHERE (c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuoc} OR c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuocCha} ) "
             + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
             + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (:#{#param.maThuoc} IS NULL OR lower(c.maThuoc) LIKE lower(concat('%',CONCAT(:#{#param.maThuoc},'%'))))"
@@ -27,7 +28,6 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
             + " AND (:#{#param.soDuDauKy} IS NULL OR c.soDuDauKy = :#{#param.soDuDauKy}) "
             + " AND (:#{#param.giaDauKy} IS NULL OR c.giaDauKy = :#{#param.giaDauKy}) "
             + " AND (:#{#param.gioiHan} IS NULL OR c.gioiHan = :#{#param.gioiHan}) "
-            + " AND ((:#{#param.nhaThuocMaNhaThuoc} IS NULL OR c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuoc}) OR (:#{#param.nhaThuocMaNhaThuocCha} IS NOT NULL AND c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuocCha}))"
             + " AND (:#{#param.nhomThuocMaNhomThuoc} IS NULL OR c.nhomThuocMaNhomThuoc = :#{#param.nhomThuocMaNhomThuoc}) "
             + " AND (:#{#param.nuocMaNuoc} IS NULL OR c.nuocMaNuoc = :#{#param.nuocMaNuoc}) "
             + " AND (:#{#param.dangBaoCheMaDangBaoChe} IS NULL OR c.dangBaoCheMaDangBaoChe = :#{#param.dangBaoCheMaDangBaoChe}) "
@@ -341,4 +341,11 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
             + " ORDER BY c.id desc"
     )
     Page<Thuocs> colectionPageNotInPhieuKiemKe(@Param("param") ThuocsReq param, Pageable pageable);
+
+    @Query("SELECT distinct c FROM Thuocs c " +
+            "WHERE (c.nhaThuocMaNhaThuoc = ?1 OR c.nhaThuocMaNhaThuoc = ?1 ) "
+            + " AND c.id not in (select e.thuocThuocId from PhieuKiemKes d join PhieuKiemKeChiTiets e on e.phieuKiemKeMaPhieuKiemKe = d.id and d.created >= ?2 and d.created <= ?3 and d.recordStatusId =?4) "
+            + " ORDER BY c.id desc"
+    )
+    List<Thuocs> findByMaNhaThuocAndPhieuKiemKeNotInAndFromDateAndToDateAndRecordStatusId(String maNhaThuoc, Date fromDate, Date toDate, Long active);
 }

@@ -99,4 +99,10 @@ public class PhieuKiemKesController {
     public ResponseEntity<BaseResponse> checkBienDong(@Valid @RequestBody PhieuKiemKesReq idSearchReq) throws Exception {
         return ResponseEntity.ok(ResponseUtils.ok(service.checkBienDong(idSearchReq.getId())));
     }
+
+    @PostMapping(value = PathContains.URL_SEARCH_PAGE+"-not-in-kiem-ke", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> colectionNotInKiemKe(@Valid @RequestBody PhieuKiemKesReq idSearchReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.colectionNotInKiemKe(idSearchReq.getFromDate(), idSearchReq.getToDate())));
+    }
 }
