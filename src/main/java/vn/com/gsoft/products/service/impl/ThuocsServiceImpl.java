@@ -101,6 +101,61 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 	}
 
 	@Override
+	public List<Thuocs> searchList(ThuocsReq req) throws Exception {
+		Profile userInfo = this.getLoggedUser();
+		if (userInfo == null)
+			throw new Exception("Bad request.");
+//		req.setNhaThuocMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+//		req.setNhaThuocMaNhaThuocCha(userInfo.getNhaThuoc().getMaNhaThuocCha());
+//		if(req.getDataDelete() != null){
+//			req.setRecordStatusId(req.getDataDelete() ? RecordStatusContains.DELETED : RecordStatusContains.ACTIVE);
+//		}
+		List<Thuocs> thuocs = hdrRepo.searchList(req);
+		thuocs.forEach( item -> {
+			List<DonViTinhs> dviTinh = new ArrayList<>();
+			if(item.getDonViXuatLeMaDonViTinh() > 0){
+				Optional<DonViTinhs> byId = donViTinhsRepository.findById(item.getDonViXuatLeMaDonViTinh());
+				if(byId.isPresent()){
+					byId.get().setFactor(1);
+					byId.get().setGiaBan(item.getGiaBanLe());
+					byId.get().setGiaNhap(item.getGiaNhap());
+					dviTinh.add(byId.get());
+					item.setTenDonViTinhXuatLe(byId.get().getTenDonViTinh());
+				}
+			}
+			if(item.getDonViThuNguyenMaDonViTinh() > 0 && !item.getDonViThuNguyenMaDonViTinh().equals(item.getDonViXuatLeMaDonViTinh())){
+				Optional<DonViTinhs> byId = donViTinhsRepository.findById(item.getDonViThuNguyenMaDonViTinh());
+				if(byId.isPresent()){
+					byId.get().setFactor(item.getHeSo());
+					byId.get().setGiaBan(item.getGiaBanLe().multiply(BigDecimal.valueOf(item.getHeSo())));
+					byId.get().setGiaNhap(item.getGiaNhap().multiply(BigDecimal.valueOf(item.getHeSo())));
+					dviTinh.add(byId.get());
+					item.setTenDonViTinhThuNguyen(byId.get().getTenDonViTinh());
+				}
+			}
+			item.setListDonViTinhs(dviTinh);
+			//fill vi tri tu/kho
+			if(item.getIdWarehouseLocation() > 0){
+				Optional<WarehouseLocation> byId = warehouseLocationRepository.findById(item.getIdWarehouseLocation());
+				if(byId.isPresent()){
+					item.setTenViTri(byId.get().getNameWarehouse());
+				}
+			}
+			if(item.getNhomThuocMaNhomThuoc()!=null){
+				Optional<NhomThuocs> byIdNt = nhomThuocsRepository.findById(item.getNhomThuocMaNhomThuoc());
+				byIdNt.ifPresent(nhomThuocs -> item.setTenNhomThuoc(nhomThuocs.getTenNhomThuoc()));
+			}
+			InventoryReq inventoryReq = new InventoryReq();
+			inventoryReq.setDrugID(item.getId());
+			inventoryReq.setDrugStoreID(item.getNhaThuocMaNhaThuoc());
+			inventoryReq.setRecordStatusID(RecordStatusContains.ACTIVE);
+			Optional<Inventory> inventory = inventoryRepository.searchDetail(inventoryReq);
+			inventory.ifPresent(item::setInventory);
+		});
+		return thuocs;
+	}
+
+	@Override
 	public Thuocs create(ThuocsReq req) throws Exception {
 		Profile userInfo = this.getLoggedUser();
 		if (userInfo == null)
