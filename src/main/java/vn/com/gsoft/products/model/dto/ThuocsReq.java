@@ -122,5 +122,7 @@ public class ThuocsReq extends BaseRequest {
     private Date hanDung;
 
     private Boolean dataDelete;
+
+    private Long nhaCungCapMaNhaCungCap;
 }
 

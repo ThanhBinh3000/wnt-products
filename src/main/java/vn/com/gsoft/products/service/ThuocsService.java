@@ -17,4 +17,5 @@ public interface ThuocsService extends BaseService<Thuocs, ThuocsReq, Long> {
     void export(ThuocsReq req, HttpServletResponse response) throws Exception;
 
     Page<Thuocs> colectionPageNotInPhieuKiemKe(ThuocsReq objReq) throws Exception;
+    Page<Thuocs> colectionPageHangDuTru(ThuocsReq objReq) throws Exception;
 }

@@ -50,6 +50,12 @@ public class ThuocsController {
     return ResponseEntity.ok(ResponseUtils.ok(service.colectionPageNotInPhieuKiemKe(objReq)));
   }
 
+  @PostMapping(value = PathContains.URL_SEARCH_PAGE+ "-hang-du-tru", produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<BaseResponse> colectionListHangDuTru(@RequestBody ThuocsReq objReq) throws Exception {
+    return ResponseEntity.ok(ResponseUtils.ok(service.colectionPageHangDuTru(objReq)));
+  }
+
   @PostMapping(value = PathContains.URL_CREATE, produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
   public ResponseEntity<BaseResponse> insert(@Valid @RequestBody ThuocsReq objReq) throws Exception {
