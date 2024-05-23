@@ -46,4 +46,6 @@ public interface PhieuDuTruChiTietRepository extends BaseRepository<PhieuDuTruCh
   List<PhieuDuTruChiTiet> searchList(@Param("param") PhieuDuTruChiTietReq param);
 
   List<PhieuDuTruChiTiet> findByMaPhieuDuTru(Long maPhieuDuTru);
+
+  void deleteAllByMaPhieuDuTru(Long maPhieuDuTru);
 }

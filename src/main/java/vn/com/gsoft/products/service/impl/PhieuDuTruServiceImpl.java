@@ -1,6 +1,7 @@
 package vn.com.gsoft.products.service.impl;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +14,9 @@ import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.service.PhieuDuTruService;
 
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -21,7 +25,7 @@ import java.util.Optional;
 public class PhieuDuTruServiceImpl extends BaseServiceImpl<PhieuDuTru, PhieuDuTruReq,Long> implements PhieuDuTruService {
 
 	private PhieuDuTruRepository hdrRepo;
-	private PhieuDuTruChiTietRepository phieuDuTruChiTietRepository;
+	private PhieuDuTruChiTietRepository dtlRepo;
 	private UserProfileRepository userProfileRepository;
 	private NhaCungCapsRepository nhaCungCapsRepository;
 	private ThuocsRepository thuocsRepository;
@@ -38,7 +42,7 @@ public class PhieuDuTruServiceImpl extends BaseServiceImpl<PhieuDuTru, PhieuDuTr
 		this.hdrRepo = hdrRepo;
 		this.userProfileRepository =userProfileRepository;
 		this.nhaCungCapsRepository =nhaCungCapsRepository;
-		this.phieuDuTruChiTietRepository =phieuDuTruChiTietRepository;
+		this.dtlRepo =phieuDuTruChiTietRepository;
 		this.thuocsRepository= thuocsRepository;
 		this.nhomThuocsRepository =nhomThuocsRepository;
 		this.donViTinhsRepository =donViTinhsRepository;
@@ -60,6 +64,35 @@ public class PhieuDuTruServiceImpl extends BaseServiceImpl<PhieuDuTru, PhieuDuTr
 			}
 		}
 		return phieuDuTrus;
+	}
+
+	@Override
+	public PhieuDuTru create(PhieuDuTruReq req) throws Exception {
+		Profile userInfo = this.getLoggedUser();
+		if (userInfo == null)
+			throw new Exception("Bad request.");
+		req.setMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+		req.setRecordStatusId(RecordStatusContains.ACTIVE);
+		req.setSupplierId(userInfo.getNhaThuoc().getId());
+		PhieuDuTru hdr = new PhieuDuTru();
+		BeanUtils.copyProperties(req, hdr, "id");
+		hdr.setCreated(new Date());
+		hdr.setCreatedByUserId(getLoggedUser().getId());
+		PhieuDuTru save = hdrRepo.save(hdr);
+		List<PhieuDuTruChiTiet> phieuNhapChiTiets = saveChildren(save.getId(), req);
+		save.setChiTiets(phieuNhapChiTiets);
+		return save;
+	}
+
+	private List<PhieuDuTruChiTiet> saveChildren(Long idHdr, PhieuDuTruReq req) {
+		// save chi tiết
+		dtlRepo.deleteAllByMaPhieuDuTru(idHdr);
+		for (PhieuDuTruChiTiet chiTiet : req.getChiTiets()) {
+			chiTiet.setMaPhieuDuTru(idHdr);
+			chiTiet.setRecordStatusId(RecordStatusContains.ACTIVE);
+		}
+		this.dtlRepo.saveAll(req.getChiTiets());
+		return req.getChiTiets();
 	}
 
 	@Override
@@ -85,7 +118,7 @@ public class PhieuDuTruServiceImpl extends BaseServiceImpl<PhieuDuTru, PhieuDuTr
 			Optional<NhaCungCaps> nhaCungCaps = nhaCungCapsRepository.findById(phieuDuTru.getSupplierId());
 			nhaCungCaps.ifPresent(profile -> phieuDuTru.setSupplierText(nhaCungCaps.get().getTenNhaCungCap()));
 		}
-		phieuDuTru.setChiTiets(phieuDuTruChiTietRepository.findByMaPhieuDuTru(phieuDuTru.getId()));
+		phieuDuTru.setChiTiets(dtlRepo.findByMaPhieuDuTru(phieuDuTru.getId()));
 		for(PhieuDuTruChiTiet ct: phieuDuTru.getChiTiets()){
 			if(ct.getMaThuoc() != null && ct.getMaThuoc()>0){
 				Optional<Thuocs> thuocs = thuocsRepository.findById(ct.getMaThuoc());
