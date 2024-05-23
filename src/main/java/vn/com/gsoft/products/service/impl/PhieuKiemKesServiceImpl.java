@@ -285,4 +285,24 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         });
         return thuocs;
     }
+
+    @Override
+    public PhieuKiemKeChiTiets updateHanDung(Long id, String soLo, Date hanDung) throws Exception {
+        Optional<PhieuKiemKeChiTiets> phieuKiemKeChiTiets = phieuKiemKeChiTietsRepository.findById(id);
+        if (phieuKiemKeChiTiets.isEmpty()){
+            throw new Exception("Không tìm thấy chi tiết phiếu!");
+        }
+        PhieuKiemKes phieuKiemKes = detail(phieuKiemKeChiTiets.get().getPhieuKiemKeMaPhieuKiemKe());
+        if(phieuKiemKes.getDaCanKho() != null && phieuKiemKes.getDaCanKho()){
+            for(PhieuXuatNhapRes pxn: phieuKiemKes.getPhieuXuatNhaps()){
+                if("Phiếu xuất".equals(pxn.getLoaiPhieu())){
+                    
+                }
+                if("Phiếu nhập".equals(pxn.getLoaiPhieu())){
+
+                }
+            }
+        }
+        return null;
+    }
 }

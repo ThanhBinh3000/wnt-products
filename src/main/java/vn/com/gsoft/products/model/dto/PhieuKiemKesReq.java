@@ -1,6 +1,5 @@
 package vn.com.gsoft.products.model.dto;
 
-import jakarta.persistence.Column;
 import lombok.Data;
 import vn.com.gsoft.products.entity.PhieuKiemKeChiTiets;
 import vn.com.gsoft.products.model.system.BaseRequest;
@@ -26,4 +25,6 @@ public class PhieuKiemKesReq extends BaseRequest {
 
     private Date fromDate;
     private Date toDate;
+    private String soLo;
+    private Date hanDung;
 }

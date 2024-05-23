@@ -49,7 +49,11 @@ public class PhieuKiemKesController {
     public ResponseEntity<BaseResponse> update(@Valid @RequestBody PhieuKiemKesReq objReq) throws Exception {
         return ResponseEntity.ok(ResponseUtils.ok(service.update(objReq)));
     }
-
+    @PostMapping(value = PathContains.URL_UPDATE+"-han-dung", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<BaseResponse> updateHanDung(@Valid @RequestBody PhieuKiemKesReq objReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.updateHanDung(objReq.getId(),objReq.getSoLo(),objReq.getHanDung())));
+    }
 
     @GetMapping(value = PathContains.URL_DETAIL, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
