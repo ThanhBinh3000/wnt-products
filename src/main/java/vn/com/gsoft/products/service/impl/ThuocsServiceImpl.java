@@ -520,26 +520,24 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 				Optional<NhomThuocs> byIdNt = nhomThuocsRepository.findById(item.getNhomThuocMaNhomThuoc());
 				byIdNt.ifPresent(nhomThuocs -> item.setTenNhomThuoc(nhomThuocs.getTenNhomThuoc()));
 			}
-			if(req.getTypeService() == 0) { //kiểm tra nếu là thuốc thì mới fill dữ liệu bên dưới
-				if(item.getDonViThuNguyenMaDonViTinh()!=null){
-					Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViThuNguyenMaDonViTinh());
-					byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhThuNguyen(donViTinhs.getTenDonViTinh()));
-				}
-				if(item.getDonViXuatLeMaDonViTinh()!=null){
-					Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViXuatLeMaDonViTinh());
-					byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhXuatLe(donViTinhs.getTenDonViTinh()));
-				}
-				if(item.getIdWarehouseLocation() != null ){
-					Optional<WarehouseLocation> byIdNt = warehouseLocationRepository.findById(item.getIdWarehouseLocation());
-					byIdNt.ifPresent(warehouseLocations -> item.setTenViTri(warehouseLocations.getNameWarehouse()));
-				}
-				InventoryReq inventoryReq = new InventoryReq();
-				inventoryReq.setDrugID(item.getId());
-				inventoryReq.setDrugStoreID(item.getNhaThuocMaNhaThuoc());
-				inventoryReq.setRecordStatusID(RecordStatusContains.ACTIVE);
-				Optional<Inventory> inventory = inventoryRepository.searchDetail(inventoryReq);
-				inventory.ifPresent(item::setInventory);
+			if(item.getDonViThuNguyenMaDonViTinh()!=null){
+				Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViThuNguyenMaDonViTinh());
+				byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhThuNguyen(donViTinhs.getTenDonViTinh()));
 			}
+			if(item.getDonViXuatLeMaDonViTinh()!=null){
+				Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViXuatLeMaDonViTinh());
+				byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhXuatLe(donViTinhs.getTenDonViTinh()));
+			}
+			if(item.getIdWarehouseLocation() != null ){
+				Optional<WarehouseLocation> byIdNt = warehouseLocationRepository.findById(item.getIdWarehouseLocation());
+				byIdNt.ifPresent(warehouseLocations -> item.setTenViTri(warehouseLocations.getNameWarehouse()));
+			}
+			InventoryReq inventoryReq = new InventoryReq();
+			inventoryReq.setDrugID(item.getId());
+			inventoryReq.setDrugStoreID(item.getNhaThuocMaNhaThuoc());
+			inventoryReq.setRecordStatusID(RecordStatusContains.ACTIVE);
+			Optional<Inventory> inventory = inventoryRepository.searchDetail(inventoryReq);
+			inventory.ifPresent(item::setInventory);
 		});
 		return thuocs;
 	}
