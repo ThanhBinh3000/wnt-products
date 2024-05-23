@@ -101,7 +101,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
             ct.setPhieuKiemKeMaPhieuKiemKe(e.getId());
         }
         phieuKiemKeChiTietsRepository.saveAll(req.getChiTiets());
-        return e;
+        return detail(e.getId());
     }
 
     @Override
@@ -132,7 +132,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
             ct.setPhieuKiemKeMaPhieuKiemKe(e.getId());
         }
         phieuKiemKeChiTietsRepository.saveAll(req.getChiTiets());
-        return e;
+        return detail(e.getId());
     }
 
     @Override
