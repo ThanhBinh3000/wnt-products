@@ -148,18 +148,27 @@ public class PhieuNhapsServiceImpl extends BaseServiceImpl<PhieuNhaps, PhieuNhap
         pn.setTargetManagementId(null);
         pn.setRecordStatusId(RecordStatusContains.ACTIVE);
         pn.setIsModified(false);
-        e.setCreated(new Date());
-        e.setCreatedByUserId(getLoggedUser().getId());
+        pn.setCreated(new Date());
+        pn.setCreatedByUserId(getLoggedUser().getId());
+        pn.setDaTra(0d);
+        pn.setTongTien(0d);
+        pn.setVat(0);
         pn = hdrRepo.save(pn);
         // save chi tiết
         pn.setChiTiets(new ArrayList<>());
+        Double tongTien = 0d;
         for (PhieuKiemKeChiTiets chiTiet : e.getChiTiets()) {
             PhieuNhapChiTiets ct = new PhieuNhapChiTiets();
             BeanUtils.copyProperties(chiTiet, ct, "id", "created", "createdByUserId", "modified", "modifiedByUserId", "recordStatusId");
             ct.setPhieuNhapMaPhieuNhap(pn.getId());
-            ct.setSoLuong(new BigDecimal(Math.abs(ct.getSoLuong().doubleValue())));
+            ct.setSoLuong(BigDecimal.valueOf(Math.abs(chiTiet.getTonKho() - chiTiet.getThucTe())));
+            ct.setGiaNhap(chiTiet.getDonGia());
+            ct.setIsModified(false);
+            tongTien  += ct.getSoLuong().doubleValue() * ct.getGiaNhap().doubleValue();
             pn.getChiTiets().add(ct);
         }
+        pn.setTongTien(tongTien);
+        pn = hdrRepo.save(pn);
         this.phieuNhapChiTietsRepository.saveAll(pn.getChiTiets());
         updateInventory(pn);
         return pn;
@@ -186,20 +195,27 @@ public class PhieuNhapsServiceImpl extends BaseServiceImpl<PhieuNhaps, PhieuNhap
         pn.setTargetManagementId(null);
         pn.setRecordStatusId(RecordStatusContains.ACTIVE);
         pn.setIsModified(false);
-        e.setCreated(phieuNhaps.getCreated());
-        e.setCreatedByUserId(phieuNhaps.getCreatedByUserId());
-        e.setModified(new Date());
-        e.setModifiedByUserId(userInfo.getId());
+        pn.setCreated(new Date());
+        pn.setCreatedByUserId(getLoggedUser().getId());
+        pn.setDaTra(0d);
+        pn.setTongTien(0d);
+        pn.setVat(0);
         pn = hdrRepo.save(pn);
         // save chi tiết
         pn.setChiTiets(new ArrayList<>());
+        Double tongTien = 0d;
         for (PhieuKiemKeChiTiets chiTiet : e.getChiTiets()) {
             PhieuNhapChiTiets ct = new PhieuNhapChiTiets();
             BeanUtils.copyProperties(chiTiet, ct, "id", "created", "createdByUserId", "modified", "modifiedByUserId", "recordStatusId");
             ct.setPhieuNhapMaPhieuNhap(pn.getId());
-            ct.setSoLuong(new BigDecimal(Math.abs(ct.getSoLuong().doubleValue())));
+            ct.setSoLuong(BigDecimal.valueOf(Math.abs(chiTiet.getTonKho() - chiTiet.getThucTe())));
+            ct.setGiaNhap(chiTiet.getDonGia());
+            ct.setIsModified(false);
+            tongTien  += ct.getSoLuong().doubleValue() * ct.getGiaNhap().doubleValue();
             pn.getChiTiets().add(ct);
         }
+        pn.setTongTien(tongTien);
+        pn = hdrRepo.save(pn);
         this.phieuNhapChiTietsRepository.saveAll(pn.getChiTiets());
         updateInventory(pn);
         return pn;

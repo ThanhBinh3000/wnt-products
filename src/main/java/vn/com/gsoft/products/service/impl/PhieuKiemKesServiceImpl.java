@@ -94,6 +94,9 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         e.setCreatedByUserId(getLoggedUser().getId());
         e = hdrRepo.save(e);
         for (PhieuKiemKeChiTiets ct : req.getChiTiets()) {
+            if(ct.getThucTe() < 0){
+                throw new Exception("Số lượng thực tế phải > 0!");
+            }
             ct.setRecordStatusId(RecordStatusContains.ACTIVE);
             ct.setPhieuKiemKeMaPhieuKiemKe(e.getId());
         }
@@ -122,6 +125,9 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         e = hdrRepo.save(e);
         phieuKiemKeChiTietsRepository.deleteByPhieuKiemKeMaPhieuKiemKe(e.getId());
         for (PhieuKiemKeChiTiets ct : req.getChiTiets()) {
+            if(ct.getThucTe() < 0){
+                throw new Exception("Số lượng thực tế phải > 0!");
+            }
             ct.setRecordStatusId(RecordStatusContains.ACTIVE);
             ct.setPhieuKiemKeMaPhieuKiemKe(e.getId());
         }
@@ -189,9 +195,9 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
     public PhieuKiemKes canKho(PhieuKiemKesReq req) throws Exception {
         PhieuKiemKes phieuKiemKes = null;
         if (req.getId() != null && req.getId() > 0) {
-            phieuKiemKes = super.create(req);
+            phieuKiemKes = update(req);
         } else {
-            phieuKiemKes = super.update(req);
+            phieuKiemKes = create(req);
         }
         // xử lý cân kho
         List<PhieuKiemKeChiTiets> canXuat = new ArrayList<>();
@@ -212,8 +218,8 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
             } else {
                 phieuXuats = phieuXuatsService.createByPhieuKiemKes(phieuKiemKes);
             }
-            req.setPhieuXuatMaPhieuXuat(phieuXuats != null ? phieuXuats.getId() : null);
-            super.update(req);
+            phieuKiemKes.setPhieuXuatMaPhieuXuat(phieuXuats != null ? phieuXuats.getId() : null);
+            hdrRepo.save(phieuKiemKes);
         }
         if (!canNhap.isEmpty()) {
             PhieuNhaps phieuNhaps = null;
@@ -223,8 +229,8 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
             } else {
                 phieuNhaps = phieuNhapsService.createByPhieuKiemKes(phieuKiemKes);
             }
-            req.setPhieuNhapMaPhieuNhap(phieuNhaps != null ? phieuNhaps.getId() : null);
-            super.update(req);
+            phieuKiemKes.setPhieuNhapMaPhieuNhap(phieuNhaps != null ? phieuNhaps.getId() : null);
+            hdrRepo.save(phieuKiemKes);
         }
         return phieuKiemKes;
     }
@@ -296,7 +302,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         if(phieuKiemKes.getDaCanKho() != null && phieuKiemKes.getDaCanKho()){
             for(PhieuXuatNhapRes pxn: phieuKiemKes.getPhieuXuatNhaps()){
                 if("Phiếu xuất".equals(pxn.getLoaiPhieu())){
-                    
+
                 }
                 if("Phiếu nhập".equals(pxn.getLoaiPhieu())){
 

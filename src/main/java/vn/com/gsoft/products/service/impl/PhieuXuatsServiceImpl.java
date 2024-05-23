@@ -14,10 +14,7 @@ import vn.com.gsoft.products.model.dto.PhieuXuatsReq;
 import vn.com.gsoft.products.model.system.ApplicationSetting;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.model.system.WrapData;
-import vn.com.gsoft.products.repository.KhachHangsRepository;
-import vn.com.gsoft.products.repository.NhaCungCapsRepository;
-import vn.com.gsoft.products.repository.PhieuXuatChiTietsRepository;
-import vn.com.gsoft.products.repository.PhieuXuatsRepository;
+import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.service.KafkaProducer;
 import vn.com.gsoft.products.service.PhieuXuatsService;
 
@@ -36,6 +33,7 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
     private NhaCungCapsRepository nhaCungCapsRepository;
     private KhachHangsRepository khachHangsRepository;
     private KafkaProducer kafkaProducer;
+    private ThuocsRepository thuocsRepository;
     @Value("${wnt.kafka.internal.consumer.topic.inventory}")
     private String topicName;
 
@@ -44,6 +42,7 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
                                  PhieuXuatChiTietsRepository phieuXuatChiTietsRepository,
                                  NhaCungCapsRepository nhaCungCapsRepository,
                                  KhachHangsRepository khachHangsRepository,
+                                 ThuocsRepository thuocsRepository,
                                  KafkaProducer kafkaProducer) {
         super(hdrRepo);
         this.hdrRepo = hdrRepo;
@@ -51,6 +50,7 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
         this.phieuXuatChiTietsRepository = phieuXuatChiTietsRepository;
         this.nhaCungCapsRepository = nhaCungCapsRepository;
         this.khachHangsRepository = khachHangsRepository;
+        this.thuocsRepository = thuocsRepository;
     }
 
     @Override
@@ -139,6 +139,7 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
         BeanUtils.copyProperties(e, px, "id", "created", "createdByUserId", "modified", "modifiedByUserId", "recordStatusId");
         PhieuXuats init = init(ENoteType.InventoryAdjustment.longValue(), null);
         px.setSoPhieuXuat(init.getSoPhieuXuat());
+        px.setMaLoaiXuatNhap(ENoteType.InventoryAdjustment.longValue());
         px.setNhaThuocMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
         px.setStoreId(userInfo.getNhaThuoc().getId());
         px.setTargetId(null);
@@ -146,18 +147,48 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
         px.setTargetManagementId(null);
         px.setRecordStatusId(RecordStatusContains.ACTIVE);
         px.setIsModified(false);
-        e.setCreated(new Date());
-        e.setCreatedByUserId(getLoggedUser().getId());
+        px.setCreated(new Date());
+        px.setCreatedByUserId(getLoggedUser().getId());
+        //
+        px.setBackPaymentAmount(new BigDecimal(0l));
+        px.setConnectivityStatusID(0l);
+        px.setDaTra(0d);
+        px.setDiscount(0d);
+        px.setPaymentScore(new BigDecimal(0l));
+        px.setTongTien(0d);
+        px.setVat(0);
         px = hdrRepo.save(px);
         // save chi tiết
         px.setChiTiets(new ArrayList<>());
+        Double tongTien = 0d;
         for (PhieuKiemKeChiTiets chiTiet : e.getChiTiets()) {
+            if(chiTiet.getThucTe() < 0){
+                throw new Exception("Số lượng thực tế phải > 0!");
+            }
             PhieuXuatChiTiets ct = new PhieuXuatChiTiets();
             BeanUtils.copyProperties(chiTiet, ct, "id", "created", "createdByUserId", "modified", "modifiedByUserId", "recordStatusId");
             ct.setPhieuXuatMaPhieuXuat(px.getId());
-            ct.setSoLuong(Math.abs(ct.getSoLuong().doubleValue()));
+            ct.setThuocThuocId(chiTiet.getThuocThuocId());
+            Optional<Thuocs> thuocs = thuocsRepository.findById(chiTiet.getThuocThuocId());
+            if (thuocs.isEmpty()){
+                throw new Exception("Lỗi không tìm thấy thuốc!");
+            }
+            ct.setGiaXuat(chiTiet.getDonGia().doubleValue());
+            ct.setRetailPrice(chiTiet.getDonGia().doubleValue());
+            ct.setSoLuong(Math.abs(chiTiet.getTonKho() - chiTiet.getThucTe()));
+            ct.setRetailQuantity(Math.abs(chiTiet.getTonKho() - chiTiet.getThucTe()));
+            ct.setMaLoaiXuatNhap(px.getMaLoaiXuatNhap());
+            ct.setChietKhau(0d);
+            ct.setConnectivityStatusId(0l);
+            ct.setVat(0d);
+            ct.setDonViTinhMaDonViTinh(thuocs.get().getDonViXuatLeMaDonViTinh());
+            ct.setIsModified(false);
+            ct.setRecordStatusId(RecordStatusContains.ACTIVE);
+            tongTien += ct.getSoLuong()*ct.getGiaXuat();
             px.getChiTiets().add(ct);
         }
+        px.setTongTien(tongTien);
+        px = hdrRepo.save(px);
         this.phieuXuatChiTietsRepository.saveAll(px.getChiTiets());
         updateInventory(px);
         return px;
@@ -169,7 +200,7 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
         if (userInfo == null)
             throw new Exception("Bad request.");
         PhieuXuats phieuXuats = detail(e.getPhieuXuatMaPhieuXuat());
-        if(phieuXuats ==null){
+        if (phieuXuats == null) {
             throw new Exception("Không tìm thấy phiếu xuất!");
         }
         delete(phieuXuats.getId());
@@ -177,6 +208,7 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
         BeanUtils.copyProperties(e, px, "id", "created", "createdByUserId", "modified", "modifiedByUserId", "recordStatusId");
         PhieuXuats init = init(ENoteType.InventoryAdjustment.longValue(), null);
         px.setSoPhieuXuat(init.getSoPhieuXuat());
+        px.setMaLoaiXuatNhap(ENoteType.InventoryAdjustment.longValue());
         px.setNhaThuocMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
         px.setStoreId(userInfo.getNhaThuoc().getId());
         px.setTargetId(null);
@@ -184,20 +216,48 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
         px.setTargetManagementId(null);
         px.setRecordStatusId(RecordStatusContains.ACTIVE);
         px.setIsModified(false);
-        e.setCreated(phieuXuats.getCreated());
-        e.setCreatedByUserId(phieuXuats.getCreatedByUserId());
-        e.setModified(new Date());
-        e.setModifiedByUserId(userInfo.getId());
+        px.setCreated(new Date());
+        px.setCreatedByUserId(getLoggedUser().getId());
+        //
+        px.setBackPaymentAmount(new BigDecimal(0l));
+        px.setConnectivityStatusID(0l);
+        px.setDaTra(0d);
+        px.setDiscount(0d);
+        px.setPaymentScore(new BigDecimal(0l));
+        px.setTongTien(0d);
+        px.setVat(0);
         px = hdrRepo.save(px);
         // save chi tiết
         px.setChiTiets(new ArrayList<>());
+        Double tongTien = 0d;
         for (PhieuKiemKeChiTiets chiTiet : e.getChiTiets()) {
+            if(chiTiet.getThucTe() < 0){
+                throw new Exception("Số lượng thực tế phải > 0!");
+            }
             PhieuXuatChiTiets ct = new PhieuXuatChiTiets();
             BeanUtils.copyProperties(chiTiet, ct, "id", "created", "createdByUserId", "modified", "modifiedByUserId", "recordStatusId");
             ct.setPhieuXuatMaPhieuXuat(px.getId());
-            ct.setSoLuong(Math.abs(ct.getSoLuong().doubleValue()));
+            ct.setThuocThuocId(chiTiet.getThuocThuocId());
+            Optional<Thuocs> thuocs = thuocsRepository.findById(chiTiet.getThuocThuocId());
+            if (thuocs.isEmpty()){
+                throw new Exception("Lỗi không tìm thấy thuốc!");
+            }
+            ct.setGiaXuat(chiTiet.getDonGia().doubleValue());
+            ct.setRetailPrice(chiTiet.getDonGia().doubleValue());
+            ct.setSoLuong(Math.abs(chiTiet.getTonKho() - chiTiet.getThucTe()));
+            ct.setRetailQuantity(Math.abs(chiTiet.getTonKho() - chiTiet.getThucTe()));
+            ct.setMaLoaiXuatNhap(px.getMaLoaiXuatNhap());
+            ct.setChietKhau(0d);
+            ct.setConnectivityStatusId(0l);
+            ct.setVat(0d);
+            ct.setDonViTinhMaDonViTinh(thuocs.get().getDonViXuatLeMaDonViTinh());
+            ct.setIsModified(false);
+            ct.setRecordStatusId(RecordStatusContains.ACTIVE);
+            tongTien += ct.getSoLuong()*ct.getGiaXuat();
             px.getChiTiets().add(ct);
         }
+        px.setTongTien(tongTien);
+        px = hdrRepo.save(px);
         this.phieuXuatChiTietsRepository.saveAll(px.getChiTiets());
         updateInventory(px);
         return px;
