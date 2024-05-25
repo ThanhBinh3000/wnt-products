@@ -1,5 +1,6 @@
 package vn.com.gsoft.products.service.impl;
 
+import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Log4j2
+@Transactional
 public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, PhieuKiemKesReq, Long> implements PhieuKiemKesService {
 
     private PhieuKiemKesRepository hdrRepo;
@@ -192,6 +194,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
     }
 
     @Override
+    @Transactional
     public PhieuKiemKes canKho(PhieuKiemKesReq req) throws Exception {
         PhieuKiemKes phieuKiemKes = null;
         if (req.getId() != null && req.getId() > 0) {
