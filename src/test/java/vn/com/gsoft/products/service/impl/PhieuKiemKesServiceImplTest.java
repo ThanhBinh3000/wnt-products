@@ -53,7 +53,7 @@ class PhieuKiemKesServiceImplTest {
 
     @Test
     void detail() throws Exception {
-        PhieuKiemKes detail = phieuKiemKesService.detail(193093l);
+        PhieuKiemKes detail = phieuKiemKesService.detail(222973l);
         assert detail != null;
     }
 
