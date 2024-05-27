@@ -353,4 +353,25 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         }
         return phieuKiemKeChiTiets.get();
     }
+
+    @Override
+    public boolean delete(Long id) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+
+        Optional<PhieuKiemKes> optional = hdrRepo.findById(id);
+        if (optional.isEmpty()) {
+            throw new Exception("Không tìm thấy dữ liệu.");
+        }
+        optional.get().setRecordStatusId(RecordStatusContains.DELETED);
+        hdrRepo.save(optional.get());
+        if (optional.get().getPhieuNhapMaPhieuNhap() != null && optional.get().getPhieuNhapMaPhieuNhap() > 0) {
+            phieuNhapsService.detail(optional.get().getPhieuNhapMaPhieuNhap());
+        }
+        if (optional.get().getPhieuXuatMaPhieuXuat() != null && optional.get().getPhieuXuatMaPhieuXuat() > 0) {
+            phieuXuatsService.detail(optional.get().getPhieuXuatMaPhieuXuat());
+        }
+        return true;
+    }
 }
