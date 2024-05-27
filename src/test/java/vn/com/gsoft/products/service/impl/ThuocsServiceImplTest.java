@@ -10,8 +10,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import vn.com.gsoft.products.entity.NhomThuocs;
+import vn.com.gsoft.products.entity.SampleNote;
 import vn.com.gsoft.products.entity.Thuocs;
 import vn.com.gsoft.products.model.dto.NhomThuocsReq;
+import vn.com.gsoft.products.model.dto.SampleNoteReq;
 import vn.com.gsoft.products.model.dto.ThuocsReq;
 import vn.com.gsoft.products.model.system.NhaThuocs;
 import vn.com.gsoft.products.model.system.PaggingReq;
@@ -34,7 +36,7 @@ class ThuocsServiceImplTest {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         Profile p = new Profile();
         NhaThuocs nt = new NhaThuocs();
-        nt.setMaNhaThuoc("0010");
+        nt.setMaNhaThuoc("13442");
         p.setNhaThuoc(nt);
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(p, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -48,6 +50,18 @@ class ThuocsServiceImplTest {
         paggingReq.setLimit(10);
         thuocsReq.setPaggingReq(paggingReq);
         Page<Thuocs> sampleNotes = thuocsService.colectionPageNotInPhieuKiemKe(thuocsReq);
+        assert sampleNotes != null;
+    }
+
+    @Test
+    void searchPage() throws Exception {
+        ThuocsReq sampleNoteReq = new ThuocsReq();
+        PaggingReq paggingReq = new PaggingReq();
+        paggingReq.setPage(0);
+        paggingReq.setLimit(10);
+        sampleNoteReq.setPaggingReq(paggingReq);
+        sampleNoteReq.setNhomThuocTenNhomThuoc("Khám bệnh");
+        Page<Thuocs> sampleNotes = thuocsService.searchPage(sampleNoteReq);
         assert sampleNotes != null;
     }
 }

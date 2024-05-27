@@ -27,6 +27,7 @@ public class ThuocsReq extends BaseRequest {
     private Integer dangBaoCheMaDangBaoChe;
     private Long donViXuatLeMaDonViTinh;
     private Long donViThuNguyenMaDonViTinh;
+    private String nhomThuocTenNhomThuoc;
 
     private String barCode;
     private Boolean hoatDong;

@@ -29,6 +29,7 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
             + " AND (:#{#param.giaDauKy} IS NULL OR c.giaDauKy = :#{#param.giaDauKy}) "
             + " AND (:#{#param.gioiHan} IS NULL OR c.gioiHan = :#{#param.gioiHan}) "
             + " AND (:#{#param.nhomThuocMaNhomThuoc} IS NULL OR c.nhomThuocMaNhomThuoc = :#{#param.nhomThuocMaNhomThuoc}) "
+            + " AND (:#{#param.nhomThuocTenNhomThuoc} IS NULL OR c.nhomThuocMaNhomThuoc in (select nt.id from NhomThuocs nt where (nt.maNhaThuoc = :#{#param.nhaThuocMaNhaThuoc} OR nt.maNhaThuoc = :#{#param.nhaThuocMaNhaThuocCha}) and nt.tenNhomThuoc = :#{#param.nhomThuocTenNhomThuoc}  )) "
             + " AND (:#{#param.nuocMaNuoc} IS NULL OR c.nuocMaNuoc = :#{#param.nuocMaNuoc}) "
             + " AND (:#{#param.dangBaoCheMaDangBaoChe} IS NULL OR c.dangBaoCheMaDangBaoChe = :#{#param.dangBaoCheMaDangBaoChe}) "
             + " AND (:#{#param.donViXuatLeMaDonViTinh} IS NULL OR c.donViXuatLeMaDonViTinh = :#{#param.donViXuatLeMaDonViTinh}) "
