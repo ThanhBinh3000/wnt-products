@@ -311,7 +311,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         if (phieuKiemKeChiTiets.isEmpty()) {
             throw new Exception("Không tìm thấy chi tiết phiếu!");
         }
-        if (hanDung != null && AppConstants.MinProductionDataDate.compareTo(hanDung) < 1) {
+        if (hanDung != null && AppConstants.MinProductionDataDate.compareTo(hanDung) > 1) {
             hanDung = null;
         }
         phieuKiemKeChiTiets.get().setDonGia(new BigDecimal(donGia));
