@@ -25,6 +25,7 @@ public class PhieuKiemKesReq extends BaseRequest {
 
     private Date fromDate;
     private Date toDate;
+    private Double donGia;
     private String soLo;
     private Date hanDung;
 }

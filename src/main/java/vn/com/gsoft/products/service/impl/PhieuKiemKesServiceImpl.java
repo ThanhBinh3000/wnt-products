@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import vn.com.gsoft.products.constant.AppConstants;
 import vn.com.gsoft.products.constant.RecordStatusContains;
 import vn.com.gsoft.products.entity.*;
 import vn.com.gsoft.products.model.dto.PhieuKiemKesReq;
@@ -19,6 +20,7 @@ import vn.com.gsoft.products.service.PhieuNhapsService;
 import vn.com.gsoft.products.service.PhieuXuatsService;
 
 import java.lang.reflect.ParameterizedType;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -42,6 +44,8 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
     private PhieuNhapsService phieuNhapsService;
     private DonViTinhsRepository donViTinhsRepository;
     private WarehouseLocationRepository warehouseLocationRepository;
+    private PhieuXuatsRepository phieuXuatsRepository;
+    private PhieuNhapsRepository phieuNhapsRepository;
 
     @Autowired
     public PhieuKiemKesServiceImpl(PhieuKiemKesRepository hdrRepo, UserProfileRepository userProfileRepository,
@@ -53,6 +57,8 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
                                    PhieuNhapsService phieuNhapsService,
                                    DonViTinhsRepository donViTinhsRepository,
                                    WarehouseLocationRepository warehouseLocationRepository,
+                                   PhieuXuatsRepository phieuXuatsRepository,
+                                   PhieuNhapsRepository phieuNhapsRepository,
                                    NhomThuocsRepository nhomThuocsRepository) {
         super(hdrRepo);
         this.hdrRepo = hdrRepo;
@@ -65,6 +71,8 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         this.phieuXuatsService = phieuXuatsService;
         this.phieuNhapsService = phieuNhapsService;
         this.donViTinhsRepository = donViTinhsRepository;
+        this.phieuXuatsRepository = phieuXuatsRepository;
+        this.phieuNhapsRepository = phieuNhapsRepository;
         this.warehouseLocationRepository = warehouseLocationRepository;
     }
 
@@ -96,7 +104,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         e.setCreatedByUserId(getLoggedUser().getId());
         e = hdrRepo.save(e);
         for (PhieuKiemKeChiTiets ct : req.getChiTiets()) {
-            if(ct.getThucTe() < 0){
+            if (ct.getThucTe() < 0) {
                 throw new Exception("Số lượng thực tế phải > 0!");
             }
             ct.setRecordStatusId(RecordStatusContains.ACTIVE);
@@ -127,7 +135,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         e = hdrRepo.save(e);
         phieuKiemKeChiTietsRepository.deleteByPhieuKiemKeMaPhieuKiemKe(e.getId());
         for (PhieuKiemKeChiTiets ct : req.getChiTiets()) {
-            if(ct.getThucTe() < 0){
+            if (ct.getThucTe() < 0) {
                 throw new Exception("Số lượng thực tế phải > 0!");
             }
             ct.setRecordStatusId(RecordStatusContains.ACTIVE);
@@ -197,6 +205,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
     @Transactional
     public PhieuKiemKes canKho(PhieuKiemKesReq req) throws Exception {
         PhieuKiemKes phieuKiemKes = null;
+        req.setDaCanKho(true);
         if (req.getId() != null && req.getId() > 0) {
             phieuKiemKes = update(req);
         } else {
@@ -233,7 +242,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
                 phieuNhaps = phieuNhapsService.createByPhieuKiemKes(phieuKiemKes);
             }
             phieuKiemKes.setPhieuNhapMaPhieuNhap(phieuNhaps != null ? phieuNhaps.getId() : null);
-            phieuKiemKes =  hdrRepo.save(phieuKiemKes);
+            phieuKiemKes = hdrRepo.save(phieuKiemKes);
         }
         return detail(phieuKiemKes.getId());
     }
@@ -296,22 +305,73 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
     }
 
     @Override
-    public PhieuKiemKeChiTiets updateHanDung(Long id, String soLo, Date hanDung) throws Exception {
+    @Transactional
+    public PhieuKiemKeChiTiets updateHanDung(Long id, Double donGia, String soLo, Date hanDung) throws Exception {
         Optional<PhieuKiemKeChiTiets> phieuKiemKeChiTiets = phieuKiemKeChiTietsRepository.findById(id);
-        if (phieuKiemKeChiTiets.isEmpty()){
+        if (phieuKiemKeChiTiets.isEmpty()) {
             throw new Exception("Không tìm thấy chi tiết phiếu!");
         }
+        if (hanDung != null && AppConstants.MinProductionDataDate.compareTo(hanDung) > 1) {
+            hanDung = null;
+        }
+        phieuKiemKeChiTiets.get().setDonGia(new BigDecimal(donGia));
+        phieuKiemKeChiTiets.get().setSoLo(soLo);
+        phieuKiemKeChiTiets.get().setHanDung(hanDung);
+        phieuKiemKeChiTietsRepository.save(phieuKiemKeChiTiets.get());
         PhieuKiemKes phieuKiemKes = detail(phieuKiemKeChiTiets.get().getPhieuKiemKeMaPhieuKiemKe());
-        if(phieuKiemKes.getDaCanKho() != null && phieuKiemKes.getDaCanKho()){
-            for(PhieuXuatNhapRes pxn: phieuKiemKes.getPhieuXuatNhaps()){
-                if("Phiếu xuất".equals(pxn.getLoaiPhieu())){
-
+        for (PhieuXuatNhapRes pxn : phieuKiemKes.getPhieuXuatNhaps()) {
+            if ("Phiếu xuất".equals(pxn.getLoaiPhieu())) {
+                PhieuXuats phieuXuats = phieuXuatsService.detail(pxn.getId());
+                Optional<PhieuXuatChiTiets> phieuXuatChiTiets = phieuXuats.getChiTiets().stream().filter(item -> item.getThuocThuocId().equals(phieuKiemKeChiTiets.get().getThuocThuocId())).findFirst();
+                if (phieuXuatChiTiets.isPresent()) {
+                    phieuXuatChiTiets.get().setGiaXuat(donGia);
                 }
-                if("Phiếu nhập".equals(pxn.getLoaiPhieu())){
-
+                Double totalNoteDelivery = 0d;
+                for (PhieuXuatChiTiets ct : phieuXuats.getChiTiets()) {
+                    totalNoteDelivery += ct.getGiaXuat() * ct.getSoLuong();
                 }
+                phieuXuats.setTongTien(totalNoteDelivery);
+                phieuXuatChiTietsRepository.save(phieuXuatChiTiets.get());
+                phieuXuatsRepository.save(phieuXuats);
+            }
+            if ("Phiếu nhập".equals(pxn.getLoaiPhieu())) {
+                PhieuNhaps phieuNhaps = phieuNhapsService.detail(pxn.getId());
+                Optional<PhieuNhapChiTiets> phieuNhapChiTiets = phieuNhaps.getChiTiets().stream().filter(item -> item.getThuocThuocId().equals(phieuKiemKeChiTiets.get().getThuocThuocId())).findFirst();
+                if (phieuNhapChiTiets.isPresent()) {
+                    phieuNhapChiTiets.get().setGiaNhap(new BigDecimal(donGia));
+                    phieuNhapChiTiets.get().setSoLo(soLo);
+                    phieuNhapChiTiets.get().setHanDung(hanDung);
+                }
+                Double totalNoteReceipt = 0d;
+                for (PhieuNhapChiTiets ct : phieuNhaps.getChiTiets()) {
+                    totalNoteReceipt += ct.getGiaNhap().doubleValue() * ct.getSoLuong().doubleValue();
+                }
+                phieuNhaps.setTongTien(totalNoteReceipt);
+                phieuNhapChiTietsRepository.save(phieuNhapChiTiets.get());
+                phieuNhapsRepository.save(phieuNhaps);
             }
         }
-        return null;
+        return phieuKiemKeChiTiets.get();
+    }
+
+    @Override
+    public boolean delete(Long id) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+
+        Optional<PhieuKiemKes> optional = hdrRepo.findById(id);
+        if (optional.isEmpty()) {
+            throw new Exception("Không tìm thấy dữ liệu.");
+        }
+        optional.get().setRecordStatusId(RecordStatusContains.DELETED);
+        hdrRepo.save(optional.get());
+        if (optional.get().getPhieuNhapMaPhieuNhap() != null && optional.get().getPhieuNhapMaPhieuNhap() > 0) {
+            phieuNhapsService.detail(optional.get().getPhieuNhapMaPhieuNhap());
+        }
+        if (optional.get().getPhieuXuatMaPhieuXuat() != null && optional.get().getPhieuXuatMaPhieuXuat() > 0) {
+            phieuXuatsService.detail(optional.get().getPhieuXuatMaPhieuXuat());
+        }
+        return true;
     }
 }
