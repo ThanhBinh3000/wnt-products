@@ -557,44 +557,6 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         return thuocs;
     }
 
-    @Override
-    public Page<Thuocs> colectionPageHangDuTru(ThuocsReq req) throws Exception {
-        Profile userInfo = this.getLoggedUser();
-        if (userInfo == null)
-            throw new Exception("Bad request.");
-        Pageable pageable = PageRequest.of(req.getPaggingReq().getPage(), req.getPaggingReq().getLimit());
-        req.setNhaThuocMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
-        req.setNhaThuocMaNhaThuocCha(userInfo.getNhaThuoc().getMaNhaThuocCha());
-        if (req.getDataDelete() != null) {
-            req.setRecordStatusId(req.getDataDelete() ? RecordStatusContains.DELETED : RecordStatusContains.ACTIVE);
-        }
-        Page<Thuocs> thuocs = hdrRepo.colectionPagePhieuDuTru(req, pageable);
-        thuocs.getContent().forEach(item -> {
-            if (item.getNhomThuocMaNhomThuoc() != null) {
-                Optional<NhomThuocs> byIdNt = nhomThuocsRepository.findById(item.getNhomThuocMaNhomThuoc());
-                byIdNt.ifPresent(nhomThuocs -> item.setTenNhomThuoc(nhomThuocs.getTenNhomThuoc()));
-            }
-            if (item.getDonViThuNguyenMaDonViTinh() != null) {
-                Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViThuNguyenMaDonViTinh());
-                byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhThuNguyen(donViTinhs.getTenDonViTinh()));
-            }
-            if (item.getDonViXuatLeMaDonViTinh() != null) {
-                Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViXuatLeMaDonViTinh());
-                byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhXuatLe(donViTinhs.getTenDonViTinh()));
-            }
-            if (item.getIdWarehouseLocation() != null) {
-                Optional<WarehouseLocation> byIdNt = warehouseLocationRepository.findById(item.getIdWarehouseLocation());
-                byIdNt.ifPresent(warehouseLocations -> item.setTenViTri(warehouseLocations.getNameWarehouse()));
-            }
-            InventoryReq inventoryReq = new InventoryReq();
-            inventoryReq.setDrugID(item.getId());
-            inventoryReq.setDrugStoreID(item.getNhaThuocMaNhaThuoc());
-            inventoryReq.setRecordStatusID(RecordStatusContains.ACTIVE);
-            Optional<Inventory> inventory = inventoryRepository.searchDetail(inventoryReq);
-            inventory.ifPresent(item::setInventory);
-        });
-        return thuocs;
-    }
 	@Override
 	public Page<Thuocs> colectionPageHangDuTru(ThuocsReq req) throws Exception {
 		Profile userInfo = this.getLoggedUser();
