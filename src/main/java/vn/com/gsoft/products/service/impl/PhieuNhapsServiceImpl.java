@@ -236,7 +236,8 @@ public class PhieuNhapsServiceImpl extends BaseServiceImpl<PhieuNhaps, PhieuNhap
         return true;
     }
 
-    private void updateInventory(PhieuNhaps e) throws ExecutionException, InterruptedException, TimeoutException {
+    @Override
+    public void updateInventory(PhieuNhaps e) throws ExecutionException, InterruptedException, TimeoutException {
         Gson gson = new Gson();
         for (PhieuNhapChiTiets chiTiet : e.getChiTiets()) {
             String key = e.getNhaThuocMaNhaThuoc() + "-" + chiTiet.getThuocThuocId();

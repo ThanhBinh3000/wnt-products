@@ -349,6 +349,7 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
             " left join PhieuNhaps pn on pnct.phieuNhapMaPhieuNhap = pn.id " +
             " WHERE (c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuoc} OR c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuocCha} ) "
             + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+            + " AND (c.id in (select i.drugID from Inventory i where (i.drugStoreID = :#{#param.nhaThuocMaNhaThuoc} OR i.drugStoreID = :#{#param.nhaThuocMaNhaThuocCha} ) and i.lastValue = 0)  ) "
             + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (:#{#param.maThuoc} IS NULL OR lower(c.maThuoc) LIKE lower(concat('%',CONCAT(:#{#param.maThuoc},'%'))))"
             + " AND (:#{#param.tenThuoc} IS NULL OR lower(c.tenThuoc) LIKE lower(concat('%',CONCAT(:#{#param.tenThuoc},'%'))))"

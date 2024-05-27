@@ -35,4 +35,6 @@ public interface NhaThuocsRepository extends BaseRepository<NhaThuocs, NhaThuocs
     Long countDistinctByMaNhaThuocChaIn(List<String> storeCodes);
 
     List<NhaThuocs> findByMaNhaThuocIn(Set<String> maNhaThuocs);
+
+    NhaThuocs findByMaNhaThuoc(String maNhaThuocs);
 }

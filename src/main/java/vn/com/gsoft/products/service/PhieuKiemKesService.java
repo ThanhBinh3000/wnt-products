@@ -21,4 +21,6 @@ public interface PhieuKiemKesService extends BaseService<PhieuKiemKes, PhieuKiem
     List<Thuocs> colectionNotInKiemKe(Date fromDate, Date toDate) throws Exception;
 
     PhieuKiemKeChiTiets updateHanDung(Long id,Double donGia, String soLo, Date hanDung) throws Exception;
+
+    PhieuKiemKes deleteChiTiet(Long id) throws Exception;
 }
