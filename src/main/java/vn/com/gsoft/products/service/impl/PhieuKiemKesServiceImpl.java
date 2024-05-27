@@ -233,9 +233,9 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
                 phieuNhaps = phieuNhapsService.createByPhieuKiemKes(phieuKiemKes);
             }
             phieuKiemKes.setPhieuNhapMaPhieuNhap(phieuNhaps != null ? phieuNhaps.getId() : null);
-            hdrRepo.save(phieuKiemKes);
+            phieuKiemKes =  hdrRepo.save(phieuKiemKes);
         }
-        return phieuKiemKes;
+        return detail(phieuKiemKes.getId());
     }
 
     @Override

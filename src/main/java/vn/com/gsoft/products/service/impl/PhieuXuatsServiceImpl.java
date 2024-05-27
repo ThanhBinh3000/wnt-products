@@ -124,7 +124,7 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
                 throw new Exception("Không tìm thấy dữ liệu.");
             }
             List<PhieuXuatChiTiets> phieuXuatMaPhieuXuat = phieuXuatChiTietsRepository.findByPhieuXuatMaPhieuXuatAndRecordStatusId(optional.get().getId(), RecordStatusContains.ACTIVE);
-            phieuXuatMaPhieuXuat = phieuXuatMaPhieuXuat.stream().filter(item -> RecordStatusContains.ACTIVE == item.getRecordStatusId()).collect(Collectors.toList());
+            phieuXuatMaPhieuXuat = phieuXuatMaPhieuXuat.stream().filter(item -> item.getRecordStatusId() != null && RecordStatusContains.ACTIVE == item.getRecordStatusId()).collect(Collectors.toList());
             optional.get().setChiTiets(phieuXuatMaPhieuXuat);
         }
         return optional.get();
@@ -162,7 +162,7 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
         px.setChiTiets(new ArrayList<>());
         Double tongTien = 0d;
         for (PhieuKiemKeChiTiets chiTiet : e.getChiTiets()) {
-            if(chiTiet.getThucTe() < 0){
+            if (chiTiet.getThucTe() < 0) {
                 throw new Exception("Số lượng thực tế phải > 0!");
             }
             PhieuXuatChiTiets ct = new PhieuXuatChiTiets();
@@ -170,7 +170,7 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
             ct.setPhieuXuatMaPhieuXuat(px.getId());
             ct.setThuocThuocId(chiTiet.getThuocThuocId());
             Optional<Thuocs> thuocs = thuocsRepository.findById(chiTiet.getThuocThuocId());
-            if (thuocs.isEmpty()){
+            if (thuocs.isEmpty()) {
                 throw new Exception("Lỗi không tìm thấy thuốc!");
             }
             ct.setGiaXuat(chiTiet.getDonGia().doubleValue());
@@ -184,7 +184,7 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
             ct.setDonViTinhMaDonViTinh(thuocs.get().getDonViXuatLeMaDonViTinh());
             ct.setIsModified(false);
             ct.setRecordStatusId(RecordStatusContains.ACTIVE);
-            tongTien += ct.getSoLuong()*ct.getGiaXuat();
+            tongTien += ct.getSoLuong() * ct.getGiaXuat();
             px.getChiTiets().add(ct);
         }
         px.setTongTien(tongTien);
@@ -231,7 +231,7 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
         px.setChiTiets(new ArrayList<>());
         Double tongTien = 0d;
         for (PhieuKiemKeChiTiets chiTiet : e.getChiTiets()) {
-            if(chiTiet.getThucTe() < 0){
+            if (chiTiet.getThucTe() < 0) {
                 throw new Exception("Số lượng thực tế phải > 0!");
             }
             PhieuXuatChiTiets ct = new PhieuXuatChiTiets();
@@ -239,7 +239,7 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
             ct.setPhieuXuatMaPhieuXuat(px.getId());
             ct.setThuocThuocId(chiTiet.getThuocThuocId());
             Optional<Thuocs> thuocs = thuocsRepository.findById(chiTiet.getThuocThuocId());
-            if (thuocs.isEmpty()){
+            if (thuocs.isEmpty()) {
                 throw new Exception("Lỗi không tìm thấy thuốc!");
             }
             ct.setGiaXuat(chiTiet.getDonGia().doubleValue());
@@ -253,7 +253,7 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
             ct.setDonViTinhMaDonViTinh(thuocs.get().getDonViXuatLeMaDonViTinh());
             ct.setIsModified(false);
             ct.setRecordStatusId(RecordStatusContains.ACTIVE);
-            tongTien += ct.getSoLuong()*ct.getGiaXuat();
+            tongTien += ct.getSoLuong() * ct.getGiaXuat();
             px.getChiTiets().add(ct);
         }
         px.setTongTien(tongTien);

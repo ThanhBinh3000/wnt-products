@@ -127,7 +127,7 @@ public class PhieuNhapsServiceImpl extends BaseServiceImpl<PhieuNhaps, PhieuNhap
         }
         PhieuNhaps phieuNhaps = optional.get();
         List<PhieuNhapChiTiets> chiTiets = phieuNhapChiTietsRepository.findAllByPhieuNhapMaPhieuNhap(phieuNhaps.getId());
-        chiTiets = chiTiets.stream().filter(item -> RecordStatusContains.ACTIVE == item.getRecordStatusId()).collect(Collectors.toList());
+        chiTiets = chiTiets.stream().filter(item -> item.getRecordStatusId() != null && RecordStatusContains.ACTIVE == item.getRecordStatusId()).collect(Collectors.toList());
         phieuNhaps.setChiTiets(chiTiets);
         return phieuNhaps;
     }
@@ -164,7 +164,8 @@ public class PhieuNhapsServiceImpl extends BaseServiceImpl<PhieuNhaps, PhieuNhap
             ct.setSoLuong(BigDecimal.valueOf(Math.abs(chiTiet.getTonKho() - chiTiet.getThucTe())));
             ct.setGiaNhap(chiTiet.getDonGia());
             ct.setIsModified(false);
-            tongTien  += ct.getSoLuong().doubleValue() * ct.getGiaNhap().doubleValue();
+            ct.setRecordStatusId(RecordStatusContains.ACTIVE);
+            tongTien += ct.getSoLuong().doubleValue() * ct.getGiaNhap().doubleValue();
             pn.getChiTiets().add(ct);
         }
         pn.setTongTien(tongTien);
@@ -180,7 +181,7 @@ public class PhieuNhapsServiceImpl extends BaseServiceImpl<PhieuNhaps, PhieuNhap
         if (userInfo == null)
             throw new Exception("Bad request.");
         PhieuNhaps phieuNhaps = detail(e.getPhieuNhapMaPhieuNhap());
-        if(phieuNhaps ==null){
+        if (phieuNhaps == null) {
             throw new Exception("Không tìm thấy phiếu nhập cũ!");
         }
         delete(phieuNhaps.getId());
@@ -211,7 +212,8 @@ public class PhieuNhapsServiceImpl extends BaseServiceImpl<PhieuNhaps, PhieuNhap
             ct.setSoLuong(BigDecimal.valueOf(Math.abs(chiTiet.getTonKho() - chiTiet.getThucTe())));
             ct.setGiaNhap(chiTiet.getDonGia());
             ct.setIsModified(false);
-            tongTien  += ct.getSoLuong().doubleValue() * ct.getGiaNhap().doubleValue();
+            ct.setRecordStatusId(RecordStatusContains.ACTIVE);
+            tongTien += ct.getSoLuong().doubleValue() * ct.getGiaNhap().doubleValue();
             pn.getChiTiets().add(ct);
         }
         pn.setTongTien(tongTien);
@@ -220,6 +222,7 @@ public class PhieuNhapsServiceImpl extends BaseServiceImpl<PhieuNhaps, PhieuNhap
         updateInventory(pn);
         return pn;
     }
+
     @Override
     public boolean delete(Long id) throws Exception {
         Profile userInfo = this.getLoggedUser();
@@ -232,6 +235,7 @@ public class PhieuNhapsServiceImpl extends BaseServiceImpl<PhieuNhaps, PhieuNhap
         updateInventory(phieuNhaps);
         return true;
     }
+
     private void updateInventory(PhieuNhaps e) throws ExecutionException, InterruptedException, TimeoutException {
         Gson gson = new Gson();
         for (PhieuNhapChiTiets chiTiet : e.getChiTiets()) {
