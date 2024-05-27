@@ -1,6 +1,7 @@
 package vn.com.gsoft.products.service.impl;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
@@ -21,6 +22,7 @@ import vn.com.gsoft.products.model.system.BaseResponse;
 import vn.com.gsoft.products.model.system.PaggingReq;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.*;
+import vn.com.gsoft.products.repository.feign.InventoryFeign;
 import vn.com.gsoft.products.service.ThuocsService;
 import vn.com.gsoft.products.util.system.ExportExcel;
 
@@ -63,6 +65,9 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
 
     @Autowired
     public FileServiceImpl fileService;
+
+	@Autowired
+	public InventoryFeign inventoryFeign;
 
 
     @Override
@@ -590,12 +595,56 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         });
         return thuocs;
     }
+	@Override
+	public Page<Thuocs> colectionPageHangDuTru(ThuocsReq req) throws Exception {
+		Profile userInfo = this.getLoggedUser();
+		if (userInfo == null)
+			throw new Exception("Bad request.");
+		Pageable pageable = PageRequest.of(req.getPaggingReq().getPage(), req.getPaggingReq().getLimit());
+		req.setNhaThuocMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+		req.setNhaThuocMaNhaThuocCha(userInfo.getNhaThuoc().getMaNhaThuocCha());
+		if(req.getDataDelete() != null){
+			req.setRecordStatusId(req.getDataDelete() ? RecordStatusContains.DELETED : RecordStatusContains.ACTIVE);
+		}
+		Page<Thuocs> thuocs = hdrRepo.colectionPagePhieuDuTru(req,pageable);
+		thuocs.getContent().forEach( item -> {
+			if(item.getNhomThuocMaNhomThuoc()!=null){
+				Optional<NhomThuocs> byIdNt = nhomThuocsRepository.findById(item.getNhomThuocMaNhomThuoc());
+				byIdNt.ifPresent(nhomThuocs -> item.setTenNhomThuoc(nhomThuocs.getTenNhomThuoc()));
+			}
+			if(item.getDonViThuNguyenMaDonViTinh()!=null){
+				Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViThuNguyenMaDonViTinh());
+				byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhThuNguyen(donViTinhs.getTenDonViTinh()));
+			}
+			if(item.getDonViXuatLeMaDonViTinh()!=null){
+				Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViXuatLeMaDonViTinh());
+				byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhXuatLe(donViTinhs.getTenDonViTinh()));
+			}
+			if(item.getIdWarehouseLocation() != null ){
+				Optional<WarehouseLocation> byIdNt = warehouseLocationRepository.findById(item.getIdWarehouseLocation());
+				byIdNt.ifPresent(warehouseLocations -> item.setTenViTri(warehouseLocations.getNameWarehouse()));
+			}
+			InventoryReq inventoryReq = new InventoryReq();
+			inventoryReq.setDrugID(item.getId());
+			inventoryReq.setDrugStoreID(item.getNhaThuocMaNhaThuoc());
+			inventoryReq.setRecordStatusID(RecordStatusContains.ACTIVE);
+			HashMap<Integer, Double> inventory = getTotalInventory(inventoryReq);
+			item.setLastValue(inventory.get(item.getId().intValue()));
+		});
+		return thuocs;
+	}
 
-    @Override
-    public Thuocs detail(Long id) throws Exception {
-        Profile userInfo = this.getLoggedUser();
-        if (userInfo == null)
-            throw new Exception("Bad request.");
+	@Override
+	public HashMap<Integer, Double> getTotalInventory(InventoryReq inventoryReq) {
+		HashMap<Integer, Double> profile = inventoryFeign.getTotalInventory(inventoryReq);
+		return profile;
+	}
+
+	@Override
+	public Thuocs detail(Long id) throws Exception {
+		Profile userInfo = this.getLoggedUser();
+		if (userInfo == null)
+			throw new Exception("Bad request.");
 
         Optional<Thuocs> optional = hdrRepo.findById(id);
         if (optional.isEmpty()) {
