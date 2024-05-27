@@ -1,6 +1,7 @@
 package vn.com.gsoft.products.service.impl;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
@@ -21,6 +22,7 @@ import vn.com.gsoft.products.model.system.BaseResponse;
 import vn.com.gsoft.products.model.system.PaggingReq;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.*;
+import vn.com.gsoft.products.repository.feign.InventoryFeign;
 import vn.com.gsoft.products.service.ThuocsService;
 import vn.com.gsoft.products.util.system.ExportExcel;
 
@@ -63,6 +65,9 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 
 	@Autowired
 	public FileServiceImpl fileService;
+
+	@Autowired
+	public InventoryFeign inventoryFeign;
 
 
 	@Override
@@ -575,10 +580,16 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq,Long> i
 			inventoryReq.setDrugID(item.getId());
 			inventoryReq.setDrugStoreID(item.getNhaThuocMaNhaThuoc());
 			inventoryReq.setRecordStatusID(RecordStatusContains.ACTIVE);
-			Optional<Inventory> inventory = inventoryRepository.searchDetail(inventoryReq);
-			inventory.ifPresent(item::setInventory);
+			HashMap<Integer, Double> inventory = getTotalInventory(inventoryReq);
+			item.setLastValue(inventory.get(item.getId().intValue()));
 		});
 		return thuocs;
+	}
+
+	@Override
+	public HashMap<Integer, Double> getTotalInventory(InventoryReq inventoryReq) {
+		HashMap<Integer, Double> profile = inventoryFeign.getTotalInventory(inventoryReq);
+		return profile;
 	}
 
 	@Override
