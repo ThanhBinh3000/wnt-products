@@ -53,26 +53,24 @@ public class ExportExcel {
 			XSSFSheet sheet = workbook.createSheet(title); // Create sheet
 
 			// Generate table header row
-//			XSSFRow rowm = sheet.createRow(0);
-//			XSSFCell cellTiltle = rowm.createCell(0);
+			XSSFRow rowm = sheet.createRow(0);
+			XSSFCell cellTiltle = rowm.createCell(0);
 
-			// sheet style definition [getColumnTopStyle()/getStyle() are all user-defined
-			// methods - below - extensible]
-			XSSFCellStyle columnTopStyle = this.getColumnTopStyle(workbook);// Get column header style object
+			// Sheet style definition [getColumnTopStyle()/getStyle() are all user-defined methods - below - extensible]
+			XSSFCellStyle columnTopStyle = this.getColumnTopStyle(workbook); // Get column header style object
 			XSSFCellStyle style = this.getStyle(workbook); // Cell style object
 
-//			sheet.addMergedRegion(new CellRangeAddress(0, 1, 0, (rowName.length - 1)));
-//			cellTiltle.setCellStyle(columnTopStyle);
-//			cellTiltle.setCellValue(title);
+			sheet.addMergedRegion(new CellRangeAddress(0, 1, 0, (rowName.length - 1)));
+			cellTiltle.setCellStyle(columnTopStyle);
+			cellTiltle.setCellValue(title);
 
 			// Define the number of columns required
 			int columnNum = rowName.length;
-			XSSFRow rowRowName = sheet.createRow(0); // Create row at index 2 (second row from top row)
+			XSSFRow rowRowName = sheet.createRow(2); // Create row at index 2 (second row from top row)
 
 			// Set column headers to cells in sheet
 			for (int n = 0; n < columnNum; n++) {
-				XSSFCell cellRowName = rowRowName.createCell(n); // Create cells corresponding to the number of column
-																	// headers
+				XSSFCell cellRowName = rowRowName.createCell(n); // Create cells corresponding to the number of column headers
 				cellRowName.setCellType(CellType.STRING); // Set the data type of the column header cell
 				XSSFRichTextString text = new XSSFRichTextString(rowName[n]);
 				cellRowName.setCellValue(text); // Set the value of the column header cell
@@ -81,9 +79,8 @@ public class ExportExcel {
 
 			// Set the queried data to the cell corresponding to the sheet
 			for (int i = 0; i < dataList.size(); i++) {
-
-				Object[] obj = dataList.get(i);// Traverse each object
-				XSSFRow row = sheet.createRow(i + 1);// Number of rows required to create
+				Object[] obj = dataList.get(i); // Traverse each object
+				XSSFRow row = sheet.createRow(i + 3); // Number of rows required to create
 
 				for (int j = 0; j < obj.length; j++) {
 					XSSFCell cell = null; // Set cell data type
@@ -99,12 +96,12 @@ public class ExportExcel {
 					cell.setCellStyle(style); // Set cell style
 				}
 			}
+
 			// Let the column width automatically adapt to the exported column length
 			for (int colNum = 0; colNum < columnNum; colNum++) {
 				int columnWidth = sheet.getColumnWidth(colNum) / 256;
-				for (int rowNum = 2; rowNum < sheet.getLastRowNum(); rowNum++) {
+				for (int rowNum = 2; rowNum <= sheet.getLastRowNum(); rowNum++) {
 					XSSFRow currentRow;
-					// The current row has not been used
 					if (sheet.getRow(rowNum) == null) {
 						currentRow = sheet.createRow(rowNum);
 					} else {
@@ -120,11 +117,8 @@ public class ExportExcel {
 						}
 					}
 				}
-				if (colNum == 0) {
-					sheet.setColumnWidth(colNum, (columnWidth - 2) * 256);
-				} else {
-					sheet.setColumnWidth(colNum, (columnWidth + 4) * 256);
-				}
+				columnWidth = Math.min(255, columnWidth); // Ensure column width does not exceed 255 characters
+				sheet.setColumnWidth(colNum, columnWidth * 256);
 			}
 
 			if (workbook != null) {
@@ -138,15 +132,14 @@ public class ExportExcel {
 					out.close();
 				} catch (IOException e) {
 					response.reset();
-					log.error(e.getMessage());
+					e.printStackTrace();
 				}
 			}
 
 		} catch (Exception e) {
 			response.reset();
-			log.error(e.getMessage());
+			e.printStackTrace();
 		}
-
 	}
 
 	/*
