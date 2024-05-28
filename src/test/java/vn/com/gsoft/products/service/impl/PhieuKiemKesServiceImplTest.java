@@ -80,4 +80,10 @@ class PhieuKiemKesServiceImplTest {
         List<Thuocs> thuocs = phieuKiemKesService.colectionNotInKiemKe(fromDate, new Date());
         assert thuocs != null;
     }
+
+    @Test
+    void deleteChiTiet() throws Exception {
+        PhieuKiemKes detail = phieuKiemKesService.deleteChiTiet(13950953l);
+        assert detail != null;
+    }
 }

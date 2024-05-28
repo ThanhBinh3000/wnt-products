@@ -68,6 +68,12 @@ public class PhieuKiemKesController {
         return ResponseEntity.ok(ResponseUtils.ok(service.delete(idSearchReq.getId())));
     }
 
+    @PostMapping(value = PathContains.URL_DELETE+"-chi-tiet", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> deleteChiTiet(@Valid @RequestBody PhieuKiemKesReq idSearchReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.deleteChiTiet(idSearchReq.getId())));
+    }
+
     @PostMapping(value = PathContains.URL_DELETE_DATABASE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<BaseResponse> deleteDatabase(@Valid @RequestBody PhieuKiemKesReq idSearchReq) throws Exception {

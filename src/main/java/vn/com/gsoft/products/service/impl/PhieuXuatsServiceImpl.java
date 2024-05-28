@@ -275,8 +275,8 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
         updateInventory(phieuXuats);
         return true;
     }
-
-    private void updateInventory(PhieuXuats e) throws InterruptedException, ExecutionException, TimeoutException {
+    @Override
+    public void updateInventory(PhieuXuats e) throws InterruptedException, ExecutionException, TimeoutException {
         Gson gson = new Gson();
         for (PhieuXuatChiTiets chiTiet : e.getChiTiets()) {
             String key = e.getNhaThuocMaNhaThuoc() + "-" + chiTiet.getThuocThuocId();

@@ -15,9 +15,7 @@ import vn.com.gsoft.products.model.dto.PhieuKiemKesReq;
 import vn.com.gsoft.products.model.dto.PhieuXuatNhapRes;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.*;
-import vn.com.gsoft.products.service.PhieuKiemKesService;
-import vn.com.gsoft.products.service.PhieuNhapsService;
-import vn.com.gsoft.products.service.PhieuXuatsService;
+import vn.com.gsoft.products.service.*;
 
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
@@ -46,6 +44,10 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
     private WarehouseLocationRepository warehouseLocationRepository;
     private PhieuXuatsRepository phieuXuatsRepository;
     private PhieuNhapsRepository phieuNhapsRepository;
+    private NhaThuocsRepository nhaThuocsRepository;
+    private PhieuKiemKeChiTietsService phieuKiemKeChiTietsService;
+    private PhieuXuatChiTietsService phieuXuatChiTietsService;
+    private PhieuNhapChiTietsService phieuNhapChiTietsService;
 
     @Autowired
     public PhieuKiemKesServiceImpl(PhieuKiemKesRepository hdrRepo, UserProfileRepository userProfileRepository,
@@ -59,6 +61,10 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
                                    WarehouseLocationRepository warehouseLocationRepository,
                                    PhieuXuatsRepository phieuXuatsRepository,
                                    PhieuNhapsRepository phieuNhapsRepository,
+                                   NhaThuocsRepository nhaThuocsRepository,
+                                   PhieuKiemKeChiTietsService phieuKiemKeChiTietsService,
+                                   PhieuXuatChiTietsService phieuXuatChiTietsService,
+                                   PhieuNhapChiTietsService phieuNhapChiTietsService,
                                    NhomThuocsRepository nhomThuocsRepository) {
         super(hdrRepo);
         this.hdrRepo = hdrRepo;
@@ -73,7 +79,11 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         this.donViTinhsRepository = donViTinhsRepository;
         this.phieuXuatsRepository = phieuXuatsRepository;
         this.phieuNhapsRepository = phieuNhapsRepository;
+        this.nhaThuocsRepository = nhaThuocsRepository;
         this.warehouseLocationRepository = warehouseLocationRepository;
+        this.phieuKiemKeChiTietsService = phieuKiemKeChiTietsService;
+        this.phieuXuatChiTietsService = phieuXuatChiTietsService;
+        this.phieuNhapChiTietsService = phieuNhapChiTietsService;
     }
 
     @Override
@@ -164,7 +174,15 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
             Optional<UserProfile> userProfile = userProfileRepository.findById(phieuKiemKes.getCreatedByUserId());
             userProfile.ifPresent(profile -> phieuKiemKes.setCreatedByUseText(profile.getTenDayDu()));
         }
-        phieuKiemKes.setChiTiets(phieuKiemKeChiTietsRepository.findByPhieuKiemKeMaPhieuKiemKe(phieuKiemKes.getId()));
+        if (phieuKiemKes.getNhaThuocMaNhaThuoc() != null) {
+            NhaThuocs nhaThuocs = nhaThuocsRepository.findByMaNhaThuoc(phieuKiemKes.getNhaThuocMaNhaThuoc());
+            if (nhaThuocs != null) {
+                phieuKiemKes.setNhaThuocMaNhaThuocText(nhaThuocs.getTenNhaThuoc());
+            }
+        }
+        List<PhieuKiemKeChiTiets> phieuKiemKeChiTiets = phieuKiemKeChiTietsRepository.findByPhieuKiemKeMaPhieuKiemKe(phieuKiemKes.getId())
+                .stream().filter(item -> item.getRecordStatusId() == RecordStatusContains.ACTIVE).toList();
+        phieuKiemKes.setChiTiets(phieuKiemKeChiTiets);
         for (PhieuKiemKeChiTiets ct : phieuKiemKes.getChiTiets()) {
             if (ct.getThuocThuocId() != null && ct.getThuocThuocId() > 0) {
                 Optional<Thuocs> thuocs = thuocsRepository.findById(ct.getThuocThuocId());
@@ -333,6 +351,8 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
                 phieuXuats.setTongTien(totalNoteDelivery);
                 phieuXuatChiTietsRepository.save(phieuXuatChiTiets.get());
                 phieuXuatsRepository.save(phieuXuats);
+                PhieuXuats detail = phieuXuatsService.detail(phieuXuats.getId());
+                phieuXuatsService.updateInventory(detail);
             }
             if ("Phiếu nhập".equals(pxn.getLoaiPhieu())) {
                 PhieuNhaps phieuNhaps = phieuNhapsService.detail(pxn.getId());
@@ -349,9 +369,60 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
                 phieuNhaps.setTongTien(totalNoteReceipt);
                 phieuNhapChiTietsRepository.save(phieuNhapChiTiets.get());
                 phieuNhapsRepository.save(phieuNhaps);
+                PhieuNhaps detail = phieuNhapsService.detail(phieuNhaps.getId());
+                phieuNhapsService.updateInventory(detail);
             }
         }
         return phieuKiemKeChiTiets.get();
+    }
+
+    @Override
+    @Transactional
+    public PhieuKiemKes deleteChiTiet(Long id) throws Exception {
+        Optional<PhieuKiemKeChiTiets> phieuKiemKeChiTiets = phieuKiemKeChiTietsRepository.findById(id);
+        if (phieuKiemKeChiTiets.isEmpty()) {
+            throw new Exception("Không tìm thấy chi tiết phiếu!");
+        }
+        PhieuKiemKes phieuKiemKes = detail(phieuKiemKeChiTiets.get().getPhieuKiemKeMaPhieuKiemKe());
+
+        for (PhieuXuatNhapRes pxn : phieuKiemKes.getPhieuXuatNhaps()) {
+            if ("Phiếu xuất".equals(pxn.getLoaiPhieu())) {
+                PhieuXuats phieuXuats = phieuXuatsService.detail(pxn.getId());
+                List<PhieuXuatChiTiets> phieuXuatChiTiets = phieuXuats.getChiTiets().stream().filter(item -> !item.getThuocThuocId().equals(phieuKiemKeChiTiets.get().getThuocThuocId())).toList();
+                Double totalNoteDelivery = 0d;
+                for (PhieuXuatChiTiets ct : phieuXuatChiTiets) {
+                    totalNoteDelivery += ct.getGiaXuat() * ct.getSoLuong();
+                }
+                phieuXuats.setTongTien(totalNoteDelivery);
+                Optional<PhieuXuatChiTiets> phieuXuatChiTietsBiXoa = phieuXuats.getChiTiets().stream().filter(item -> item.getThuocThuocId().equals(phieuKiemKeChiTiets.get().getThuocThuocId())).findFirst();
+                if (phieuXuatChiTietsBiXoa.isEmpty()) {
+                    throw new Exception("Không tìm thấy chi tiết phiếu xuất!");
+                }
+                phieuXuatChiTietsService.delete(phieuXuatChiTietsBiXoa.get().getId());
+                phieuXuatsRepository.save(phieuXuats);
+                PhieuXuats detail = phieuXuatsService.detail(phieuXuats.getId());
+                phieuXuatsService.updateInventory(detail);
+            }
+            if ("Phiếu nhập".equals(pxn.getLoaiPhieu())) {
+                PhieuNhaps phieuNhaps = phieuNhapsService.detail(pxn.getId());
+                List<PhieuNhapChiTiets> phieuNhapChiTiets = phieuNhaps.getChiTiets().stream().filter(item -> !item.getThuocThuocId().equals(phieuKiemKeChiTiets.get().getThuocThuocId())).toList();
+                Double totalNoteReceipt = 0d;
+                for (PhieuNhapChiTiets ct : phieuNhapChiTiets) {
+                    totalNoteReceipt += ct.getGiaNhap().doubleValue() * ct.getSoLuong().doubleValue();
+                }
+                phieuNhaps.setTongTien(totalNoteReceipt);
+                Optional<PhieuNhapChiTiets> phieuNhapChiTietsBiXoa = phieuNhaps.getChiTiets().stream().filter(item -> item.getThuocThuocId().equals(phieuKiemKeChiTiets.get().getThuocThuocId())).findFirst();
+                if (phieuNhapChiTietsBiXoa.isEmpty()) {
+                    throw new Exception("Không tìm thấy chi tiết phiếu nhập!");
+                }
+                phieuNhapChiTietsService.delete(phieuNhapChiTietsBiXoa.get().getId());
+                phieuNhapsRepository.save(phieuNhaps);
+                PhieuNhaps detail = phieuNhapsService.detail(phieuNhaps.getId());
+                phieuNhapsService.updateInventory(detail);
+            }
+        }
+        phieuKiemKeChiTietsService.delete(id);
+        return detail(phieuKiemKeChiTiets.get().getPhieuKiemKeMaPhieuKiemKe());
     }
 
     @Override
@@ -360,17 +431,18 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         if (userInfo == null)
             throw new Exception("Bad request.");
 
-        Optional<PhieuKiemKes> optional = hdrRepo.findById(id);
-        if (optional.isEmpty()) {
-            throw new Exception("Không tìm thấy dữ liệu.");
+        PhieuKiemKes optional = detail(id);
+        optional.setRecordStatusId(RecordStatusContains.DELETED);
+        hdrRepo.save(optional);
+        for (PhieuKiemKeChiTiets ct: optional.getChiTiets()){
+            ct.setRecordStatusId(RecordStatusContains.DELETED);
+            phieuKiemKeChiTietsRepository.save(ct);
         }
-        optional.get().setRecordStatusId(RecordStatusContains.DELETED);
-        hdrRepo.save(optional.get());
-        if (optional.get().getPhieuNhapMaPhieuNhap() != null && optional.get().getPhieuNhapMaPhieuNhap() > 0) {
-            phieuNhapsService.detail(optional.get().getPhieuNhapMaPhieuNhap());
+        if (optional.getPhieuNhapMaPhieuNhap() != null && optional.getPhieuNhapMaPhieuNhap() > 0) {
+            phieuNhapsService.detail(optional.getPhieuNhapMaPhieuNhap());
         }
-        if (optional.get().getPhieuXuatMaPhieuXuat() != null && optional.get().getPhieuXuatMaPhieuXuat() > 0) {
-            phieuXuatsService.detail(optional.get().getPhieuXuatMaPhieuXuat());
+        if (optional.getPhieuXuatMaPhieuXuat() != null && optional.getPhieuXuatMaPhieuXuat() > 0) {
+            phieuXuatsService.detail(optional.getPhieuXuatMaPhieuXuat());
         }
         return true;
     }

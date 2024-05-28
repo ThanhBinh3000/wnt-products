@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import vn.com.gsoft.products.entity.SampleNote;
 import vn.com.gsoft.products.model.dto.SampleNoteReq;
+import vn.com.gsoft.products.model.system.NhaThuocs;
 import vn.com.gsoft.products.model.system.PaggingReq;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.service.SampleNoteService;
@@ -30,6 +31,9 @@ class SampleNoteServiceImplTest {
     static void beforeAll() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         Profile p = new Profile();
+        NhaThuocs nt =new NhaThuocs();
+        nt.setMaNhaThuoc("0010");
+        p.setNhaThuoc(nt);
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(p, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
