@@ -13,6 +13,8 @@ import vn.com.gsoft.products.model.system.BaseResponse;
 import vn.com.gsoft.products.service.PhieuKiemKesService;
 import vn.com.gsoft.products.util.system.ResponseUtils;
 
+import java.util.HashMap;
+
 
 @Slf4j
 @RestController
@@ -114,5 +116,11 @@ public class PhieuKiemKesController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<BaseResponse> colectionNotInKiemKe(@Valid @RequestBody PhieuKiemKesReq idSearchReq) throws Exception {
         return ResponseEntity.ok(ResponseUtils.ok(service.colectionNotInKiemKe(idSearchReq.getFromDate(), idSearchReq.getToDate())));
+    }
+
+    @PostMapping(value = PathContains.URL_PREVIEW, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> preview(@RequestBody HashMap<String, Object> body) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.preview(body)));
     }
 }

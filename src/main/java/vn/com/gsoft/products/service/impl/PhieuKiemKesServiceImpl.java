@@ -16,13 +16,12 @@ import vn.com.gsoft.products.model.dto.PhieuXuatNhapRes;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.service.*;
+import vn.com.gsoft.products.util.system.FileUtils;
 
+import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -178,6 +177,8 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
             NhaThuocs nhaThuocs = nhaThuocsRepository.findByMaNhaThuoc(phieuKiemKes.getNhaThuocMaNhaThuoc());
             if (nhaThuocs != null) {
                 phieuKiemKes.setNhaThuocMaNhaThuocText(nhaThuocs.getTenNhaThuoc());
+                phieuKiemKes.setDiaChiNhaThuoc(nhaThuocs.getDiaChi());
+                phieuKiemKes.setSdtNhaThuoc(nhaThuocs.getDienThoai());
             }
         }
         List<PhieuKiemKeChiTiets> phieuKiemKeChiTiets = phieuKiemKeChiTietsRepository.findByPhieuKiemKeMaPhieuKiemKe(phieuKiemKes.getId())
@@ -434,7 +435,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         PhieuKiemKes optional = detail(id);
         optional.setRecordStatusId(RecordStatusContains.DELETED);
         hdrRepo.save(optional);
-        for (PhieuKiemKeChiTiets ct: optional.getChiTiets()){
+        for (PhieuKiemKeChiTiets ct : optional.getChiTiets()) {
             ct.setRecordStatusId(RecordStatusContains.DELETED);
             phieuKiemKeChiTietsRepository.save(ct);
         }
@@ -446,4 +447,22 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         }
         return true;
     }
+
+    @Override
+    public ReportTemplateResponse preview(HashMap<String, Object> hashMap) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        try {
+            PhieuKiemKes phieuKiemKes = this.detail(FileUtils.safeToLong(hashMap.get("id")));
+            String templatePath = "/template/phieuKiemKe/phieu_kiem_ke.docx";
+            InputStream templateInputStream = FileUtils.templateInputStream(templatePath);
+            phieuKiemKes.setTrangThai(phieuKiemKes.getDaCanKho() ? "Đã cân kho" : "Chưa cân kho");
+            return FileUtils.convertDocxToPdf(templateInputStream, phieuKiemKes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

@@ -14,6 +14,8 @@ import vn.com.gsoft.products.model.system.BaseResponse;
 import vn.com.gsoft.products.service.PhieuDuTruService;
 import vn.com.gsoft.products.util.system.ResponseUtils;
 
+import java.util.HashMap;
+
 
 @Slf4j
 @RestController
@@ -81,5 +83,11 @@ public class PhieuDuTruController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<BaseResponse> restore(@Valid @RequestBody PhieuDuTruReq idSearchReq) throws Exception {
         return ResponseEntity.ok(ResponseUtils.ok(service.restore(idSearchReq.getId())));
+    }
+
+    @PostMapping(value = PathContains.URL_PREVIEW, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> preview(@RequestBody HashMap<String, Object> body) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.preview(body)));
     }
 }
