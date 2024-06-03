@@ -39,6 +39,12 @@ public class PhieuDuTru extends BaseEntity{
     @Transient
     private String supplierText;
     @Transient
+    private String maNhaThuocText;
+    @Transient
+    private String diaChiNhaThuoc;
+    @Transient
+    private String sdtNhaThuoc;
+    @Transient
     private List<PhieuDuTruChiTiet> chiTiets;
 }
 

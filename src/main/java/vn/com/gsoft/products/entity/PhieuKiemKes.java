@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import vn.com.gsoft.products.model.dto.PhieuXuatNhapRes;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -50,5 +51,12 @@ public class PhieuKiemKes extends BaseEntity {
     @Transient
     private List<PhieuXuatNhapRes> phieuXuatNhaps;
 
+    //    priview
+    @Transient
+    private String diaChiNhaThuoc;
+    @Transient
+    private String sdtNhaThuoc;
+    @Transient
+    private String trangThai;
 }
 
