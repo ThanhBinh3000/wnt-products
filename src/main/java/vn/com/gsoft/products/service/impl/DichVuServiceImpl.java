@@ -198,30 +198,30 @@ public class DichVuServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         hdr.setCreatedByUserId(userInfo.getId());
         hdr.setCreated(Date.from(Instant.now()));
         hdr.setMaThuoc(req.getMaThuoc().toUpperCase());
-        hdr.setCodeHash((long) req.getMaThuoc().hashCode());
-        hdr.setNameHash((long) req.getTenThuoc().hashCode());
+//        hdr.setCodeHash((long) req.getMaThuoc().hashCode());
+//        hdr.setNameHash((long) req.getTenThuoc().hashCode());
         hdr.setDuTru(req.getGioiHan());
         hdr.setTypeService(TypeServiceContains.SERVICE);
-        hdr.setMetadataHash(hashCode());
-        hdr.setRpMetadataHash(hdr.getRpHashCode());
-        if (hdr.getDonViThuNguyenMaDonViTinh().equals(hdr.getDonViXuatLeMaDonViTinh())) {
-            hdr.setDonViThuNguyenMaDonViTinh(null);
-        }
-        if (hdr.getGroupIdMapping() > 0) {
-            hdr.setMappingDate(new Date());
-            hdr.setStatusConfirm(StatusConfirmDrugContains.MAPPEDBYSYSTEM);
-        } else {
-            if (hdr.getFlag()) {
-                hdr.setMappingDate(new Date());
-                hdr.setStatusConfirm(StatusConfirmDrugContains.ADDNEW);
-            }
-        }
+        hdr.setMetadataHash(0);
+        hdr.setRpMetadataHash(0);
+//        if (hdr.getDonViThuNguyenMaDonViTinh().equals(hdr.getDonViXuatLeMaDonViTinh())) {
+//            hdr.setDonViThuNguyenMaDonViTinh(null);
+//        }
+//        if (hdr.getGroupIdMapping() > 0) {
+//            hdr.setMappingDate(new Date());
+//            hdr.setStatusConfirm(StatusConfirmDrugContains.MAPPEDBYSYSTEM);
+//        } else {
+//            if (hdr.getFlag()) {
+//                hdr.setMappingDate(new Date());
+//                hdr.setStatusConfirm(StatusConfirmDrugContains.ADDNEW);
+//            }
+//        }
 
         hdr = hdrRepo.save(hdr);
-        if (hdr.getId() > 0 && hdr.getFlag() && hdr.getGroupIdMapping() <= 0) {
-            hdr.setGroupIdMapping(hdr.getId());
-            hdr = hdrRepo.save(hdr);
-        }
+//        if (hdr.getId() > 0 && hdr.getFlag() && hdr.getGroupIdMapping() <= 0) {
+//            hdr.setGroupIdMapping(hdr.getId());
+//            hdr = hdrRepo.save(hdr);
+//        }
         return hdr;
     }
 
@@ -273,18 +273,18 @@ public class DichVuServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         hdr.setCreatedByUserId(userInfo.getId());
         hdr.setCreated(Date.from(Instant.now()));
         hdr.setMaThuoc(req.getMaThuoc().toUpperCase());
-        hdr.setCodeHash((long) req.getMaThuoc().hashCode());
-        hdr.setNameHash((long) req.getTenThuoc().hashCode());
+//        hdr.setCodeHash((long) req.getMaThuoc().hashCode());
+//        hdr.setNameHash((long) req.getTenThuoc().hashCode());
         hdr.setDuTru(req.getGioiHan());
         hdr.setTypeService(TypeServiceContains.SERVICE);
-        hdr.setMetadataHash(hashCode());
-        hdr.setRpMetadataHash(hdr.getRpHashCode());
-        if (!req.getDonViXuatLeMaDonViTinh().equals(hdr.getDonViXuatLeMaDonViTinh())) {
-            hdr.setSoDuDauKy(new BigDecimal(hdr.getHeSo()).multiply(hdr.getSoDuDauKy()));
-        }
-        if (hdr.getDonViXuatLeMaDonViTinh().equals(hdr.getDonViThuNguyenMaDonViTinh())) {
-            hdr.setDonViThuNguyenMaDonViTinh(null);
-        }
+//        hdr.setMetadataHash(hashCode());
+//        hdr.setRpMetadataHash(hdr.getRpHashCode());
+//        if (!req.getDonViXuatLeMaDonViTinh().equals(hdr.getDonViXuatLeMaDonViTinh())) {
+//            hdr.setSoDuDauKy(new BigDecimal(hdr.getHeSo()).multiply(hdr.getSoDuDauKy()));
+//        }
+//        if (hdr.getDonViXuatLeMaDonViTinh().equals(hdr.getDonViThuNguyenMaDonViTinh())) {
+//            hdr.setDonViThuNguyenMaDonViTinh(null);
+//        }
         hdr = hdrRepo.save(hdr);
         return hdr;
     }
