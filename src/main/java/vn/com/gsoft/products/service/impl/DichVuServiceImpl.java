@@ -204,6 +204,7 @@ public class DichVuServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         hdr.setTypeService(TypeServiceContains.SERVICE);
         hdr.setMetadataHash(0);
         hdr.setRpMetadataHash(0);
+        hdr.setHeSo(0);
 //        if (hdr.getDonViThuNguyenMaDonViTinh().equals(hdr.getDonViXuatLeMaDonViTinh())) {
 //            hdr.setDonViThuNguyenMaDonViTinh(null);
 //        }
