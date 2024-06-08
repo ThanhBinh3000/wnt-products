@@ -194,6 +194,10 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
                         Optional<NhomThuocs> nhomThuocs = nhomThuocsRepository.findById(thuocs.get().getNhomThuocMaNhomThuoc());
                         nhomThuocs.ifPresent(value -> ct.setTenNhomThuoc(value.getTenNhomThuoc()));
                     }
+                    Optional<DonViTinhs> byId = donViTinhsRepository.findById(thuocs.get().getDonViThuNguyenMaDonViTinh());
+                    if (byId.isPresent()) {
+                        ct.setTenDonViTinh(byId.get().getTenDonViTinh());
+                    }
                 }
             }
         }
@@ -451,18 +455,25 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
     @Override
     public ReportTemplateResponse preview(HashMap<String, Object> hashMap) throws Exception {
         Profile userInfo = this.getLoggedUser();
+        String templatePath = "/template/phieuKiemKe/";
         if (userInfo == null)
             throw new Exception("Bad request.");
         try {
             PhieuKiemKes phieuKiemKes = this.detail(FileUtils.safeToLong(hashMap.get("id")));
-            String templatePath = "/template/phieuKiemKe/phieu_kiem_ke.docx";
+            if (phieuKiemKes.getDaCanKho()){
+//                 templatePath += "RptPhieuKiemKe_DaCan.docx";
+                templatePath += "RptPhieuKiemKe_ChuaCan.docx";
+            }else {
+                 templatePath += "RptPhieuKiemKe_ChuaCan.docx";
+            }
+            for (PhieuKiemKeChiTiets phieuKiemKeChiTiets: phieuKiemKes.getChiTiets()) {
+                phieuKiemKeChiTiets.setChenhLech(phieuKiemKeChiTiets.getThucTe() - phieuKiemKeChiTiets.getTonKho());
+            }
             InputStream templateInputStream = FileUtils.templateInputStream(templatePath);
-            phieuKiemKes.setTrangThai(phieuKiemKes.getDaCanKho() ? "Đã cân kho" : "Chưa cân kho");
             return FileUtils.convertDocxToPdf(templateInputStream, phieuKiemKes);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
-
 }

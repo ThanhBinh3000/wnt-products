@@ -56,7 +56,5 @@ public class PhieuKiemKes extends BaseEntity {
     private String diaChiNhaThuoc;
     @Transient
     private String sdtNhaThuoc;
-    @Transient
-    private String trangThai;
 }
 
