@@ -164,7 +164,7 @@ public class PhieuDuTruServiceImpl extends BaseServiceImpl<PhieuDuTru, PhieuDuTr
             throw new Exception("Bad request.");
         try {
             PhieuDuTru phieuDuTru = this.detail(FileUtils.safeToLong(hashMap.get("id")));
-            String templatePath = "/template/phieuDuTru/phieu_du_tru.docx";
+            String templatePath = "/template/phieuDuTru/RptPhieuDSHangDuTru.docx";
             InputStream templateInputStream = FileUtils.templateInputStream(templatePath);
             return FileUtils.convertDocxToPdf(templateInputStream, phieuDuTru);
         } catch (Exception e) {
