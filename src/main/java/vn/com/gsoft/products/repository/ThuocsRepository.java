@@ -459,4 +459,12 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
             + " ORDER BY c.id desc"
     )
     List<Thuocs> findByMaNhaThuocAndPhieuKiemKeNotInAndFromDateAndToDateAndRecordStatusId(String maNhaThuoc, Date fromDate, Date toDate, Long active);
+
+    List<Thuocs> findByRecordStatusIdAndNhaThuocMaNhaThuocInOrderByTenThuoc(Long recordStatusId, List<String> maNhaThuocs);
+
+    List<Thuocs> findByTenThuocContainingIgnoreCaseAndRecordStatusIdAndNhaThuocMaNhaThuocInOrderByTenThuoc(String tenThuoc, Long recordStatusId, List<String> maNhaThuocs);
+
+    Optional<Thuocs> findByNhaThuocMaNhaThuocAndFlagAndMaThuoc(String maNhaThuoc, Boolean flag, String maThuoc);
+
+    Optional<Thuocs> findByIdAndRecordStatusId(Long id, Long recordStatusId);
 }

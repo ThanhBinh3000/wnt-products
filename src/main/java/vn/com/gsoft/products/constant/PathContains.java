@@ -28,6 +28,8 @@ public class PathContains {
     public static final String URL_DICH_VU = "/dich-vu";
     public static final String URL_WAREHOUSE_LOCATION = "/warehouse-location";
     public static final String URL_PRODUCT_TYPES = "/product-types";
+    public static final String URL_CONNECTIVITY_DRUG = "/connectivity-drug";
+    public static final String URL_DETAIL_CONNECTIVITY_DRUG = "/detail-thuoc-lien-thong/{drugId}";
 
 
 }
