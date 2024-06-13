@@ -455,13 +455,12 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
     @Override
     public ReportTemplateResponse preview(HashMap<String, Object> hashMap) throws Exception {
         Profile userInfo = this.getLoggedUser();
-        String templatePath = "/template/phieuKiemKe/";
         if (userInfo == null)
             throw new Exception("Bad request.");
         try {
             PhieuKiemKes phieuKiemKes = this.detail(FileUtils.safeToLong(hashMap.get("id")));
+            String templatePath = "/template/phieuKiemKe/";
             if (phieuKiemKes.getDaCanKho()){
-//                 templatePath += "RptPhieuKiemKe_DaCan.docx";
                 templatePath += "RptPhieuKiemKe_ChuaCan.docx";
             }else {
                  templatePath += "RptPhieuKiemKe_ChuaCan.docx";

@@ -49,6 +49,8 @@ public class SampleNoteDetail extends BaseEntity {
     @Transient
     private String drugUnitText;
     @Transient
+    private BigDecimal retailPrice;
+    @Transient
     private Thuocs thuocs;
 }
 

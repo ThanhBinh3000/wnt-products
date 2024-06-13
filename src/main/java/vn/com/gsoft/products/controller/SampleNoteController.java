@@ -8,11 +8,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.com.gsoft.products.constant.PathContains;
-import vn.com.gsoft.products.model.dto.PhieuDuTruReq;
 import vn.com.gsoft.products.model.dto.SampleNoteReq;
 import vn.com.gsoft.products.model.system.BaseResponse;
 import vn.com.gsoft.products.service.SampleNoteService;
 import vn.com.gsoft.products.util.system.ResponseUtils;
+
+import java.util.HashMap;
 
 
 @Slf4j
@@ -81,5 +82,11 @@ public class SampleNoteController {
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<BaseResponse> restore(@Valid @RequestBody SampleNoteReq idSearchReq) throws Exception {
     return ResponseEntity.ok(ResponseUtils.ok(service.restore(idSearchReq.getId())));
+  }
+
+  @PostMapping(value = PathContains.URL_PREVIEW, produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<BaseResponse> preview(@RequestBody HashMap<String, Object> body) throws Exception {
+    return ResponseEntity.ok(ResponseUtils.ok(service.preview(body)));
   }
 }

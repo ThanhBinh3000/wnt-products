@@ -11,12 +11,17 @@ import vn.com.gsoft.products.constant.RecordStatusContains;
 import vn.com.gsoft.products.entity.*;
 import vn.com.gsoft.products.model.dto.InventoryReq;
 import vn.com.gsoft.products.model.dto.SampleNoteReq;
+import vn.com.gsoft.products.model.system.ApplicationSetting;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.service.SampleNoteService;
+import vn.com.gsoft.products.util.system.FileUtils;
 
-import java.lang.reflect.ParameterizedType;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,6 +38,8 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
     private DonViTinhsRepository donViTinhsRepository;
     private InventoryRepository inventoryRepository;
     private ESDiagnoseRepository diagnoseRepository;
+    private NoteMedicalsRepository noteMedicalsRepository;
+    private UserProfileRepository userProfileRepository;
 
     @Autowired
     public SampleNoteServiceImpl(SampleNoteRepository hdrRepo, KhachHangsRepository khachHangsRepository,
@@ -40,7 +47,9 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
                                  ThuocsRepository thuocsRepository,
                                  InventoryRepository inventoryRepository,
                                  ESDiagnoseRepository diagnoseRepository,
-                                 DonViTinhsRepository donViTinhsRepository) {
+                                 DonViTinhsRepository donViTinhsRepository,
+                                 NoteMedicalsRepository noteMedicalsRepository,
+                                 UserProfileRepository userProfileRepository) {
         super(hdrRepo);
         this.hdrRepo = hdrRepo;
         this.khachHangsRepository = khachHangsRepository;
@@ -48,8 +57,10 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
         this.sampleNoteDetailRepository = sampleNoteDetailRepository;
         this.thuocsRepository = thuocsRepository;
         this.donViTinhsRepository = donViTinhsRepository;
-        this.inventoryRepository =inventoryRepository;
+        this.inventoryRepository = inventoryRepository;
         this.diagnoseRepository = diagnoseRepository;
+        this.noteMedicalsRepository = noteMedicalsRepository;
+        this.userProfileRepository = userProfileRepository;
     }
 
     @Override
@@ -57,7 +68,7 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
         Pageable pageable = PageRequest.of(req.getPaggingReq().getPage(), req.getPaggingReq().getLimit());
         req.setRecordStatusId(RecordStatusContains.ACTIVE);
         Profile userInfo = this.getLoggedUser();
-        if(req.getDrugStoreID() == null){
+        if (req.getDrugStoreID() == null) {
             req.setDrugStoreID(userInfo.getNhaThuoc().getMaNhaThuoc());
         }
         Page<SampleNote> sampleNotes = hdrRepo.searchPage(req, pageable);
@@ -101,6 +112,7 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
             if (bacSies.isPresent()) {
                 sampleNote.setDoctorName(bacSies.get().getTenBacSy());
                 sampleNote.setDoctorPhoneNumber(bacSies.get().getDienThoai());
+                sampleNote.setDoctorAddress(bacSies.get().getDiaChi());
             }
         }
         if (sampleNote.getPatientId() != null && sampleNote.getPatientId() > 0) {
@@ -109,9 +121,18 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
                 sampleNote.setPatientName(khachHangs.get().getTenKhachHang());
                 sampleNote.setPatientPhoneNumber(khachHangs.get().getSoDienThoai());
                 sampleNote.setPatientAddress(khachHangs.get().getDiaChi());
+                sampleNote.setPatientGender(khachHangs.get().getSexId() == 1 ? "Nữ" : "Nam");
+                sampleNote.setHealthInsuranceNumber(khachHangs.get().getHealthInsuranceNumber());
+                sampleNote.setCitizenIdentification(khachHangs.get().getCitizenIdentification());
+                if (khachHangs.get().getBirthDate() != null) {
+                    sampleNote.setPatientBirthDate(khachHangs.get().getBirthDate());
+                    sampleNote.setPatientAge(Period.between(khachHangs.get().getBirthDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), LocalDate.now()).getYears());
+                }
             }
         }
-
+        if (sampleNote.getCreatedByUserId() != null && sampleNote.getCreatedByUserId() > 0) {
+            optional.get().setCreatedByUserText(this.userProfileRepository.findById(optional.get().getCreatedByUserId()).get().getTenDayDu());
+        }
         sampleNote.setTypeDrugTotal(sampleNoteDetailRepository.countByNoteID(sampleNote.getId()));
         sampleNote.setChiTiets(sampleNoteDetailRepository.findByNoteID(sampleNote.getId()));
         if (sampleNote.getDiagnosticIds() != null) {
@@ -135,6 +156,7 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
                 if (thuocsOpt.isPresent()) {
                     ct.setDrugCodeText(thuocsOpt.get().getMaThuoc());
                     ct.setDrugNameText(thuocsOpt.get().getTenThuoc());
+                    ct.setRetailPrice(thuocsOpt.get().getGiaBanLe());
                     Thuocs thuocs = thuocsOpt.get();
                     List<DonViTinhs> dviTinh = new ArrayList<>();
                     if (thuocs.getDonViXuatLeMaDonViTinh() > 0) {
@@ -230,5 +252,145 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
         }
         sampleNoteDetailRepository.saveAll(e.getChiTiets());
         return e;
+    }
+
+    @Override
+    public ReportTemplateResponse preview(HashMap<String, Object> hashMap) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        try {
+            SampleNote sampleNote = this.detail(FileUtils.safeToLong(hashMap.get("id")));
+            String loai = FileUtils.safeToString(hashMap.get("loai"));
+            boolean isConnectSampleNote = sampleNote.getStatusConnect() == 2L && userInfo.getNhaThuoc().getIsConnectivity();
+            String templatePath = "/template/donMau/";
+            switch (loai) {
+                case FileUtils.InKhachQuen:
+                    templatePath = handleInKhachQuen(sampleNote, isConnectSampleNote, templatePath);
+                    break;
+                case FileUtils.InKhachLeA5:
+                    templatePath = handleInKhachLeA5(userInfo, sampleNote, isConnectSampleNote, templatePath);
+                    break;
+                case FileUtils.InKhachLe80mm:
+                    templatePath += "RptPhieuInDonMau80mm.docx";
+                    break;
+                case FileUtils.InKhachLe58mm:
+                    templatePath += "RptPhieuInDonMau58mm.docx";
+                    break;
+            }
+            InputStream templateInputStream = FileUtils.templateInputStream(templatePath);
+            sampleNote.setPharmacyName(userInfo.getNhaThuoc().getTenNhaThuoc());
+            sampleNote.setPharmacyAddress(userInfo.getNhaThuoc().getDiaChi());
+            sampleNote.setPharmacyPhoneNumber(userInfo.getNhaThuoc().getDienThoai());
+            return FileUtils.convertDocxToPdf(templateInputStream, sampleNote);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private String handleInKhachQuen(SampleNote sampleNote, Boolean isConnectSampleNote, String templatePath) {
+        List<String> validMaNhaThuoc = Arrays.asList("13528", "6135");
+        sampleNote.setWeight("........kg");
+        String noteDes = "- Khám lại xin mang theo đơn này." +
+                "\n- Số điện thoại liên hệ:.................................................................................................................." +
+                "\n- Tên bố hoặc mẹ của trẻ hoặc người đưa trẻ đến khám bệnh, chữa bệnh:................................";
+        if (isConnectSampleNote) {
+            templatePath += ("n".equals(sampleNote.getTypeId()) || "h".equals(sampleNote.getTypeId())) ? "RptPhieuInDonMauA4_PKLT_N.docx" : "RptPhieuInDonMauA4_PKLT.docx";
+            sampleNote.setTitle(sampleNote.getTypeId() != null ? sampleNote.getTypeId().toUpperCase() : "");
+            sampleNote.setHealthInsuranceNumber(sampleNote.getHealthInsuranceNumber() != null ? sampleNote.getHealthInsuranceNumber() : "..................................");
+            sampleNote.setCitizenIdentification(sampleNote.getCitizenIdentification() != null ? sampleNote.getCitizenIdentification() : "...................");
+            if (sampleNote.getIdExamination() != null && sampleNote.getIdExamination() > 0) {
+                noteMedicalsRepository.findById(sampleNote.getIdExamination()).ifPresent(noteMedicals -> {
+                    sampleNote.setWeight(noteMedicals.getWeight() != null ? noteMedicals.getWeight() + " kg" : "........kg");
+                    sampleNote.setNoteName(noteMedicals.getIdDiagnostic() != null && noteMedicals.getIdDiagnostic() > 0
+                            ? sampleNote.getNoteName()
+                            : "...................................................................................................................................." +
+                            "\n........................................................................................................................................................");
+                });
+            }
+        } else if (Arrays.asList("0010", "10324").contains(sampleNote.getDrugStoreID())) {
+            templatePath += "RptPhieuInDonMauA4_10324.docx";
+            noteDes = "Đơn này có giá trị mua, lĩnh thuốc trong thời hạn 5 ngày kể từ ngày kê đơn.";
+            if (sampleNote.getIdExamination() != null && sampleNote.getIdExamination() > 0) {
+                noteMedicalsRepository.findById(sampleNote.getIdExamination()).ifPresent(noteMedicals -> {
+                    sampleNote.setHeartbeat(noteMedicals.getHeartbeat() != null ? noteMedicals.getHeartbeat() + " nhịp/phút" : "       nhịp/phút");
+                    sampleNote.setTemperature(noteMedicals.getTemperature() != null ? noteMedicals.getTemperature() + " độ C" : "       độ C");
+                    sampleNote.setWeight(noteMedicals.getWeight() != null ? noteMedicals.getWeight() + " kg" : "       kg");
+                    sampleNote.setBloodPressure(noteMedicals.getBloodPressure() != null ? noteMedicals.getBloodPressure() + " mmHg" : "       mmHg");
+                    sampleNote.setBreathing(noteMedicals.getBreathing() != null ? noteMedicals.getBreathing() + " nhịp/phút" : "       nhịp/phút");
+                    sampleNote.setConclude(noteMedicals.getConclude() != null ? noteMedicals.getConclude() : "");
+                });
+            }
+        } else if (Arrays.asList("3220", "3780").contains(sampleNote.getDrugStoreID())) {
+            templatePath += "RptPhieuInDonMauA4_3214.docx";
+            sampleNote.setSizeDetail(sampleNote.getChiTiets().size());
+            if (sampleNote.getTypeSampleNote() == 0L) {
+                sampleNote.setTitle("ĐƠN THUỐC");
+                sampleNote.setTitleTatle("Tên thuốc - Hàm lượng");
+                sampleNote.setDescription("Khám lại xin mang theo đơn này" +
+                        "\nĐơn vị tư vấn sử dụng thuốc (giờ hành chính): 19006422");
+            } else {
+                sampleNote.setTitle("PHIẾU TƯ VẤN");
+                sampleNote.setTitleTatle("Thông tin - Hàm lượng");
+                sampleNote.setDescription("Đọc kỹ mặt sau để biết thêm thông tin về phiếu tư vấn" +
+                        "\nTrong quá trình sử dụng nếu có bất thường đến bệnh viện khám lại ngay hoặc liên hệ theo số điện thoại tư vấn (từ 7h đến 22h)" +
+                        "\nSản phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh");
+            }
+        } else {
+            templatePath += validMaNhaThuoc.contains(sampleNote.getDrugStoreID()) ? "RptPhieuInDonMauA4_13528.docx" : "RptPhieuInDonMauA4.docx";
+            noteDes += "\n- Dùng thuốc đúng chỉ dẫn của bác sĩ, khám lại theo hẹn nếu có bất thường quay lại viện khám ngay." +
+                    "\n- Đơn này có giá trị mua, lĩnh thuốc trong thời hạn 5 ngày kể từ ngày kê đơn." +
+                    "\n- Khám lại xin mang theo đơn này.";
+        }
+        sampleNote.setNote(noteDes);
+        return templatePath;
+    }
+
+    private String handleInKhachLeA5(Profile userInfo, SampleNote sampleNote, Boolean isConnectSampleNote, String templatePath) {
+        List<ApplicationSetting> applicationSetting = userInfo.getApplicationSettings();
+        if (isConnectSampleNote) {
+            templatePath += ("n".equals(sampleNote.getTypeId()) || "h".equals(sampleNote.getTypeId())) ? "RptPhieuInDonMauA5_PKLT_N.docx" : "RptPhieuInDonMauA5_PKLT.docx";
+            sampleNote.setTitle(sampleNote.getTypeId() != null ? sampleNote.getTypeId().toUpperCase() : "");
+            sampleNote.setCitizenIdentification(sampleNote.getCitizenIdentification() != null ? sampleNote.getCitizenIdentification() : "...................");
+            sampleNote.setHealthInsuranceNumber(sampleNote.getHealthInsuranceNumber() != null ? sampleNote.getHealthInsuranceNumber() : "..................................");
+            if (sampleNote.getIdExamination() != null && sampleNote.getIdExamination() > 0) {
+                noteMedicalsRepository.findById(sampleNote.getIdExamination()).ifPresent(noteMedicals -> {
+                    sampleNote.setWeight(noteMedicals.getWeight() != null ? noteMedicals.getWeight() + " kg" : "........kg");
+                    sampleNote.setNoteName(noteMedicals.getIdDiagnostic() != null && noteMedicals.getIdDiagnostic() > 0
+                            ? sampleNote.getNoteName()
+                            : ".........................................................................." +
+                            "\n................................................................................................");
+                });
+            }
+            sampleNote.setNote("- Khám lại xin mang theo đơn này." +
+                    "\n- Số điện thoại liên hệ:....................................................................................." +
+                    "\n- Tên bố hoặc mẹ của trẻ hoặc người đưa trẻ đến khám bệnh, chữa bệnh:" +
+                    "\n......................................");
+        } else if (applicationSetting.stream().filter(setting -> setting.getSettingKey().equals("MATURITY_SERVICE_VIA_CREDIT_CARD")).findFirst().isPresent()) {
+            templatePath += "RptPhieuInDonMauA5_TrucLinh.docx";
+        } else if (Arrays.asList("3220", "3780").contains(sampleNote.getDrugStoreID())) {
+            templatePath += "RptPhieuInDonMauA5_3214.docx";
+            sampleNote.setSizeDetail(sampleNote.getChiTiets().size());
+            if (sampleNote.getTypeSampleNote() == 0L) {
+                sampleNote.setTitle("ĐƠN THUỐC");
+                sampleNote.setTitleTatle("Tên thuốc - Hàm lượng");
+                sampleNote.setDescription("Khám lại xin mang theo đơn này" +
+                        "\nĐơn vị tư vấn sử dụng thuốc (giờ hành chính): 19006422");
+            } else {
+                sampleNote.setTitle("PHIẾU TƯ VẤN");
+                sampleNote.setTitleTatle("Thông tin - Hàm lượng");
+                sampleNote.setDescription("Đọc kỹ mặt sau để biết thêm thông tin về phiếu tư vấn" +
+                        "\nTrong quá trình sử dụng nếu có bất thường đến bệnh viện khám lại ngay hoặc liên hệ theo số điện thoại tư vấn (từ 7h đến 22h)" +
+                        "\nSản phẩm này không phải là thuốc, không có tác dụng thay thế thuốc chữa bệnh");
+            }
+        } else if (Arrays.asList("6135", "13528").contains(sampleNote.getDrugStoreID())) {
+            templatePath += "RptPhieuInDonMauA5_13528.docx";
+        } else if ("8009".equals(sampleNote.getDrugStoreID())) {
+            templatePath += "RptPhieuInDonMauA5_8009.docx";
+        } else {
+            templatePath += "RptPhieuInDonMauA5.docx";
+        }
+        return templatePath;
     }
 }

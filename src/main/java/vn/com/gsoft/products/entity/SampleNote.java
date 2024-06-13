@@ -82,14 +82,54 @@ public class SampleNote extends BaseEntity {
     @Transient
     private String patientAddress;
     @Transient
+    private Integer patientAge;
+    @Transient
+    private String patientGender;
+    @Transient
     private String doctorName;
     @Transient
     private String doctorPhoneNumber;
+    @Transient
+    private String doctorAddress;
     @Transient
     private Long typeDrugTotal;
     @Transient
     private List<SampleNoteDetail> chiTiets;
     @Transient
     private List<ESDiagnose> diagnostics;
+    @Transient
+    private String pharmacyName;
+    @Transient
+    private String pharmacyAddress;
+    @Transient
+    private String pharmacyPhoneNumber;
+    @Transient
+    private String note;
+    @Transient
+    private String title;
+    @Transient
+    private Date patientBirthDate;
+    @Transient
+    private String weight;
+    @Transient
+    private String HealthInsuranceNumber;
+    @Transient
+    private String citizenIdentification;
+    @Transient
+    private String heartbeat;
+    @Transient
+    private String temperature;
+    @Transient
+    private String bloodPressure;
+    @Transient
+    private String breathing;
+    @Transient
+    private String conclude;
+    @Transient
+    private Integer sizeDetail;
+    @Transient
+    private String titleTatle;
+    @Transient
+    private String createdByUserText;
 }
 
