@@ -103,5 +103,9 @@ public class ConnectivityDrug extends BaseEntity{
     private String connectivityDrugName;
     @Transient
     private BigDecimal connectivityDrugFactor;
+    @Transient
+    private Thuocs thuocs;
+    @Transient
+    private Long itemTypeId;
 }
 
