@@ -53,9 +53,18 @@ public class ConnectivityDrugServiceImpl extends BaseServiceImpl<ConnectivityDru
             throw new Exception("Bad request.");
 
         Pageable pageable = PageRequest.of(req.getPaggingReq().getPage(), req.getPaggingReq().getLimit());
-        req.setDrugStoreId(AppConstants.ConnectivityStoreID);
+        req.setDrugStoreId(req.getDrugStoreId());
         req.setForWholesale(getLoggedUser().getNhaThuoc().getIsGeneralPharmacy());
         req.setRecordStatusId(RecordStatusContains.ACTIVE);
+        Page<ConnectivityDrug> connectivityDrugs = hdrRepo.searchPage(req, pageable);
+        connectivityDrugs.getContent().forEach(item -> {
+            if(item.getDrugId() != null && item.getDrugId() > 0){
+                Optional<Thuocs> thuoc = thuocsRepository.findById(item.getDrugId());
+                thuoc.ifPresent(thuocs -> item.setThuocs(thuoc.get()));
+            }
+            item.setItemTypeId(item.getDrugStoreId()
+                    .equals(AppConstants.ConnectivityStoreID) ? ConnectivityTypeConstant.NationalDB : ConnectivityTypeConstant.LocalDb);
+        });
         return hdrRepo.searchPage(req, pageable);
     }
 
