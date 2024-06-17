@@ -263,7 +263,7 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
             SampleNote sampleNote = this.detail(FileUtils.safeToLong(hashMap.get("id")));
             String loai = FileUtils.safeToString(hashMap.get("loai"));
             boolean isConnectSampleNote = sampleNote.getStatusConnect() == 2L && userInfo.getNhaThuoc().getIsConnectivity();
-            String templatePath = "/template/donMau/";
+            String templatePath = "/donMau/";
             switch (loai) {
                 case FileUtils.InKhachQuen:
                     templatePath = handleInKhachQuen(sampleNote, isConnectSampleNote, templatePath);
@@ -278,7 +278,7 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
                     templatePath += "RptPhieuInDonMau58mm.docx";
                     break;
             }
-            InputStream templateInputStream = FileUtils.templateInputStream(templatePath);
+            InputStream templateInputStream = FileUtils.getInputStreamByFileName(templatePath);
             sampleNote.setPharmacyName(userInfo.getNhaThuoc().getTenNhaThuoc());
             sampleNote.setPharmacyAddress(userInfo.getNhaThuoc().getDiaChi());
             sampleNote.setPharmacyPhoneNumber(userInfo.getNhaThuoc().getDienThoai());
