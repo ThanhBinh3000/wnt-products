@@ -459,7 +459,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
             throw new Exception("Bad request.");
         try {
             PhieuKiemKes phieuKiemKes = this.detail(FileUtils.safeToLong(hashMap.get("id")));
-            String templatePath = "/template/phieuKiemKe/";
+            String templatePath = "/phieuKiemKe/";
             if (phieuKiemKes.getDaCanKho()){
                 templatePath += "RptPhieuKiemKe_ChuaCan.docx";
             }else {
@@ -468,7 +468,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
             for (PhieuKiemKeChiTiets phieuKiemKeChiTiets: phieuKiemKes.getChiTiets()) {
                 phieuKiemKeChiTiets.setChenhLech(phieuKiemKeChiTiets.getThucTe() - phieuKiemKeChiTiets.getTonKho());
             }
-            InputStream templateInputStream = FileUtils.templateInputStream(templatePath);
+            InputStream templateInputStream = FileUtils.getInputStreamByFileName(templatePath);
             return FileUtils.convertDocxToPdf(templateInputStream, phieuKiemKes);
         } catch (Exception e) {
             e.printStackTrace();
