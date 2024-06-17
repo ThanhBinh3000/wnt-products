@@ -7,18 +7,18 @@ import fr.opensagres.xdocreport.document.IXDocReport;
 import fr.opensagres.xdocreport.document.registry.XDocReportRegistry;
 import fr.opensagres.xdocreport.template.IContext;
 import fr.opensagres.xdocreport.template.TemplateEngineKind;
+import io.micrometer.common.util.StringUtils;
 import org.apache.velocity.tools.generic.DateTool;
 import org.apache.velocity.tools.generic.MathTool;
 import org.apache.velocity.tools.generic.NumberTool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import vn.com.gsoft.products.entity.ReportTemplateResponse;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Base64;
@@ -41,6 +41,7 @@ public class FileUtils {
     private static final String[] units = {"", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"};
     private static final String[] tens = {"", "", "hai mươi", "ba mươi", "bốn mươi", "năm mươi", "sáu mươi", "bảy mươi", "tám mươi", "chín mươi"};
     private static final String[] thousands = {"", "nghìn", "triệu", "tỷ"};
+    private static final Logger log = LoggerFactory.getLogger(FileUtils.class);
 
     public static ReportTemplateResponse convertDocxToPdf(InputStream inputFile, Object data, Object... detail) throws Exception {
         ByteArrayOutputStream outputStreamPdf = new ByteArrayOutputStream();
@@ -77,15 +78,20 @@ public class FileUtils {
         return Base64.getEncoder().encodeToString(byteArray);
     }
 
-    public static InputStream templateInputStream(String templateName) throws IOException {
-        InputStream templateInputStream = null;
-        Resource resource = new ClassPathResource(templateName);
-        if (resource.exists()) {
-            templateInputStream = resource.getInputStream();
+    public static InputStream getInputStreamByFileName(String fileName) throws FileNotFoundException {
+        if (StringUtils.isNotEmpty(fileName) && fileName.contains(".")) {
+            log.info("Find template {}", fileName);
+            ClassLoader cl = Component.class.getClassLoader();
+            InputStream is = cl.getResourceAsStream("\\template\\" + fileName);
+            if (is == null) {
+                log.info("Find template in template folder {}", fileName);
+                String f = new File("").getAbsolutePath() + File.separator + "template" + File.separator + fileName;
+                return new FileInputStream(f);
+            }
+            return is;
         } else {
-            throw new FileNotFoundException("Không tìm thấy file template: " + templateName);
+            return null;
         }
-        return templateInputStream;
     }
 
     public static Long safeToLong(Object o) {
