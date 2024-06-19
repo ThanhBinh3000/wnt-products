@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import vn.com.gsoft.products.constant.ENoteType;
 import vn.com.gsoft.products.constant.RecordStatusContains;
 import vn.com.gsoft.products.entity.*;
 import vn.com.gsoft.products.model.dto.PhieuDuTruReq;
@@ -16,7 +17,6 @@ import vn.com.gsoft.products.service.PhieuDuTruService;
 import vn.com.gsoft.products.util.system.FileUtils;
 
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +35,7 @@ public class PhieuDuTruServiceImpl extends BaseServiceImpl<PhieuDuTru, PhieuDuTr
     private ThuocsRepository thuocsRepository;
     private NhomThuocsRepository nhomThuocsRepository;
     private DonViTinhsRepository donViTinhsRepository;
+    private ConfigTemplateRepository configTemplateRepository;
 
     @Autowired
     public PhieuDuTruServiceImpl(PhieuDuTruRepository hdrRepo, UserProfileRepository userProfileRepository,
@@ -42,7 +43,9 @@ public class PhieuDuTruServiceImpl extends BaseServiceImpl<PhieuDuTru, PhieuDuTr
                                  PhieuDuTruChiTietRepository phieuDuTruChiTietRepository,
                                  ThuocsRepository thuocsRepository,
                                  NhomThuocsRepository nhomThuocsRepository,
-                                 DonViTinhsRepository donViTinhsRepository, NhaThuocsRepository nhaThuocsRepository) {
+                                 DonViTinhsRepository donViTinhsRepository,
+                                 NhaThuocsRepository nhaThuocsRepository,
+                                 ConfigTemplateRepository configTemplateRepository) {
         super(hdrRepo);
         this.hdrRepo = hdrRepo;
         this.userProfileRepository = userProfileRepository;
@@ -52,6 +55,7 @@ public class PhieuDuTruServiceImpl extends BaseServiceImpl<PhieuDuTru, PhieuDuTr
         this.nhomThuocsRepository = nhomThuocsRepository;
         this.donViTinhsRepository = donViTinhsRepository;
         this.nhaThuocsRepository = nhaThuocsRepository;
+        this.configTemplateRepository = configTemplateRepository;
     }
 
     @Override
@@ -163,10 +167,17 @@ public class PhieuDuTruServiceImpl extends BaseServiceImpl<PhieuDuTru, PhieuDuTr
         if (userInfo == null)
             throw new Exception("Bad request.");
         try {
+            String templatePath = "/phieuDuTru/";
+            Integer checkType = 0;
+            String loai = FileUtils.safeToString(hashMap.get("loai"));
             PhieuDuTru phieuDuTru = this.detail(FileUtils.safeToLong(hashMap.get("id")));
-            String templatePath = "/phieuDuTru/RptPhieuDSHangDuTru.docx";
+            Optional<ConfigTemplate> configTemplates = configTemplateRepository.findByMaNhaThuocAndPrintTypeAndMaLoaiAndType(
+                    phieuDuTru.getMaNhaThuoc(), loai, Long.valueOf(ENoteType.NoteReserve), checkType);
+            if (configTemplates.isPresent()) {
+                templatePath += configTemplates.get().getTemplateFileName();
+            }
             InputStream templateInputStream = FileUtils.getInputStreamByFileName(templatePath);
-            return FileUtils.convertDocxToPdf(templateInputStream, phieuDuTru);
+            return FileUtils.convertDocxToPdf(templateInputStream, phieuDuTru, null);
         } catch (Exception e) {
             e.printStackTrace();
         }
