@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
+
 @Service
 @Log4j2
 public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNoteReq, Long> implements SampleNoteService {
@@ -264,10 +265,14 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
             throw new Exception("Bad request.");
         try {
             String loai = FileUtils.safeToString(hashMap.get("loai"));
+            Object value = hashMap.get("amountPrint");
+            Long amountPrint = (value == null || "".equals(value.toString())) ? 1L : FileUtils.safeToLong(value.toString());
             String templatePath = "/donMau/";
             Integer checkType = 0;
             SampleNote sampleNote = this.detail(FileUtils.safeToLong(hashMap.get("id")));
-            boolean isConnectSampleNote = sampleNote.getStatusConnect() == 2L && userInfo.getNhaThuoc().getIsConnectivity();
+            boolean isConnectSampleNote = sampleNote.getStatusConnect() != null
+                    && sampleNote.getStatusConnect() == 2L
+                    && userInfo.getNhaThuoc().getIsConnectivity();
             if (loai.equals(FileUtils.InPhieuA4)){
                 checkType = handleInKhachQuen(sampleNote, isConnectSampleNote);
             }
@@ -283,7 +288,7 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
             sampleNote.setPharmacyName(userInfo.getNhaThuoc().getTenNhaThuoc());
             sampleNote.setPharmacyAddress(userInfo.getNhaThuoc().getDiaChi());
             sampleNote.setPharmacyPhoneNumber(userInfo.getNhaThuoc().getDienThoai());
-            return FileUtils.convertDocxToPdf(templateInputStream, sampleNote, null);
+            return FileUtils.convertDocxToPdf(templateInputStream, sampleNote, sampleNote.getBarcode(), amountPrint);
         } catch (Exception e) {
             e.printStackTrace();
         }

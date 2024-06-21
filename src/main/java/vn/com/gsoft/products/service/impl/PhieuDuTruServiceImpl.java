@@ -177,7 +177,7 @@ public class PhieuDuTruServiceImpl extends BaseServiceImpl<PhieuDuTru, PhieuDuTr
                 templatePath += configTemplates.get().getTemplateFileName();
             }
             InputStream templateInputStream = FileUtils.getInputStreamByFileName(templatePath);
-            return FileUtils.convertDocxToPdf(templateInputStream, phieuDuTru, null);
+            return FileUtils.convertDocxToPdf(templateInputStream, phieuDuTru, null, null);
         } catch (Exception e) {
             e.printStackTrace();
         }

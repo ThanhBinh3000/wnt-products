@@ -477,7 +477,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
                 phieuKiemKeChiTiets.setChenhLech(phieuKiemKeChiTiets.getThucTe() - phieuKiemKeChiTiets.getTonKho());
             }
             InputStream templateInputStream = FileUtils.getInputStreamByFileName(templatePath);
-            return FileUtils.convertDocxToPdf(templateInputStream, phieuKiemKes, null);
+            return FileUtils.convertDocxToPdf(templateInputStream, phieuKiemKes, null, null);
         } catch (Exception e) {
             e.printStackTrace();
         }

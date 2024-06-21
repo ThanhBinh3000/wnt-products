@@ -25,9 +25,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Locale;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -37,17 +35,18 @@ public class FileUtils {
     public static final String InPhieuA5 = "2";
     public static final String InKhachLe80mm = "3";
     public static final String InKhachLe58mm = "4";
-    public static final String InLieuDung = "5";
+    public static final String InMaVach = "5";
     public static final String InBuonA4 = "6";
     public static final String InBuonA5 = "7";
     public static final String InBuon80mm = "8";
     public static final String InCatLieu80mm = "9";
     public static final String InCatLieu58mm = "10";
+    private static final String InLieuDung = "11";
     private static final String[] units = {"", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"};
     private static final String[] tens = {"", "", "hai mươi", "ba mươi", "bốn mươi", "năm mươi", "sáu mươi", "bảy mươi", "tám mươi", "chín mươi"};
     private static final String[] thousands = {"", "nghìn", "triệu", "tỷ"};
 
-    public static ReportTemplateResponse convertDocxToPdf(InputStream inputFile, Object data, String barcode, Object... detail) throws Exception {
+    public static ReportTemplateResponse convertDocxToPdf(InputStream inputFile, Object data, String barcode, Long amountPrint) throws Exception {
         try (ByteArrayOutputStream outputStreamPdf = new ByteArrayOutputStream();
              ByteArrayOutputStream outputStreamWord = new ByteArrayOutputStream()) {
             ReportTemplateResponse reportTemplateResponse = new ReportTemplateResponse();
@@ -55,18 +54,17 @@ public class FileUtils {
             if (barcode != null) {
                 FieldsMetadata metadata = new FieldsMetadata();
                 metadata.addFieldAsImage("imageBarcode");
+                if (amountPrint > 1) {
+                    metadata.addFieldAsImage("imageBarcode1");
+                }
                 report.setFieldsMetadata(metadata);
             }
             IContext context = report.createContext();
-            HashMap<String, Object> hashMap = new HashMap<>();
-            hashMap.put("data", data);
-            hashMap.put("numberTool", new NumberTool());
-            hashMap.put("dateTool", new DateTool());
-            hashMap.put("mathTool", new MathTool());
-            hashMap.put("locale", new Locale("vi", "VN"));
-            for (int i = 0; i < detail.length; i++) {
-                hashMap.put("detail" + i, detail[i]);
-            }
+            context.put("data", data);
+            context.put("numberTool", new NumberTool());
+            context.put("dateTool", new DateTool());
+            context.put("mathTool", new MathTool());
+            context.put("locale", new Locale("vi", "VN"));
             if (barcode != null) {
                 String barcodeBase64 = generateBarcodeBase64(barcode, 300, 100);
                 byte[] imageBytes = Base64.getDecoder().decode(barcodeBase64);
@@ -74,10 +72,17 @@ public class FileUtils {
                      ByteArrayOutputStream imageOutputStream = new ByteArrayOutputStream()) {
                     BufferedImage image = ImageIO.read(bis);
                     ImageIO.write(image, "png", imageOutputStream);
-                    hashMap.put("imageBarcode", imageOutputStream.toByteArray());
+                    context.put("imageBarcode", imageOutputStream.toByteArray());
+                    if (amountPrint > 1) {
+                        context.put("imageBarcode1", imageOutputStream.toByteArray());
+                    }
                 }
             }
-            context.putMap(hashMap);
+            if (amountPrint != null){
+                Long mappedValue = (amountPrint % 2 == 0) ? amountPrint / 2 : (amountPrint + 1) / 2;
+                context.put("amount", mappedValue);
+                context.put("indexValue", amountPrint);
+            }
             report.process(context, outputStreamWord);
             Options options = Options.getTo(ConverterTypeTo.PDF).via(ConverterTypeVia.XWPF);
             report.convert(context, options, outputStreamPdf);
