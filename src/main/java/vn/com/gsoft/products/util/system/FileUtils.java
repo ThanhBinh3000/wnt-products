@@ -18,6 +18,7 @@ import org.apache.velocity.tools.generic.DateTool;
 import org.apache.velocity.tools.generic.MathTool;
 import org.apache.velocity.tools.generic.NumberTool;
 import org.springframework.stereotype.Component;
+import vn.com.gsoft.products.entity.ReportImage;
 import vn.com.gsoft.products.entity.ReportTemplateResponse;
 
 import javax.imageio.ImageIO;
@@ -25,6 +26,8 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 @Slf4j
@@ -46,36 +49,42 @@ public class FileUtils {
     private static final String[] tens = {"", "", "hai mươi", "ba mươi", "bốn mươi", "năm mươi", "sáu mươi", "bảy mươi", "tám mươi", "chín mươi"};
     private static final String[] thousands = {"", "nghìn", "triệu", "tỷ"};
 
-    public static ReportTemplateResponse convertDocxToPdf(InputStream inputFile, Object data, String barcode, Long amountPrint) throws Exception {
+    public static ReportTemplateResponse convertDocxToPdf(InputStream inputFile, Object data, String barcode, Long amountPrint, List<ReportImage> reportImage) throws Exception {
         try (ByteArrayOutputStream outputStreamPdf = new ByteArrayOutputStream();
              ByteArrayOutputStream outputStreamWord = new ByteArrayOutputStream()) {
             ReportTemplateResponse reportTemplateResponse = new ReportTemplateResponse();
             IXDocReport report = XDocReportRegistry.getRegistry().loadReport(inputFile, TemplateEngineKind.Velocity);
+            FieldsMetadata metadata = new FieldsMetadata();
             if (barcode != null) {
-                FieldsMetadata metadata = new FieldsMetadata();
                 metadata.addFieldAsImage("imageBarcode");
                 if (amountPrint > 1) {
                     metadata.addFieldAsImage("imageBarcode1");
                 }
-                report.setFieldsMetadata(metadata);
             }
+            if (reportImage != null) {
+                for (ReportImage image : reportImage) {
+                    metadata.addFieldAsImage(image.getNameImage());
+                }
+            }
+            report.setFieldsMetadata(metadata);
             IContext context = report.createContext();
             context.put("data", data);
             context.put("numberTool", new NumberTool());
             context.put("dateTool", new DateTool());
             context.put("mathTool", new MathTool());
             context.put("locale", new Locale("vi", "VN"));
+            String base64Image = null;
             if (barcode != null) {
-                String barcodeBase64 = generateBarcodeBase64(barcode, 300, 100);
-                byte[] imageBytes = Base64.getDecoder().decode(barcodeBase64);
-                try (ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
-                     ByteArrayOutputStream imageOutputStream = new ByteArrayOutputStream()) {
-                    BufferedImage image = ImageIO.read(bis);
-                    ImageIO.write(image, "png", imageOutputStream);
-                    context.put("imageBarcode", imageOutputStream.toByteArray());
-                    if (amountPrint > 1) {
-                        context.put("imageBarcode1", imageOutputStream.toByteArray());
-                    }
+                base64Image = generateBarcodeBase64(barcode);
+                processBase64Image(base64Image, "imageBarcode", context);
+                if (amountPrint > 1) {
+                    processBase64Image(base64Image, "imageBarcode1", context);
+                }
+            }
+            if (reportImage != null) {
+                for (ReportImage image : reportImage) {
+                    base64Image = Base64.getEncoder().encodeToString(Files.readAllBytes(Path.of(image.getPathImage())));
+                    processBase64Image(base64Image, image.getNameImage(), context);
                 }
             }
             if (amountPrint != null){
@@ -94,12 +103,22 @@ public class FileUtils {
         }
     }
 
-    public static String generateBarcodeBase64(String text, int width, int height) throws Exception {
-        BitMatrix bitMatrix = new MultiFormatWriter().encode(text, BarcodeFormat.CODE_128, width, height);
+    public static String generateBarcodeBase64(String text) throws Exception {
+        BitMatrix bitMatrix = new MultiFormatWriter().encode(text, BarcodeFormat.CODE_128, 300, 100);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         MatrixToImageWriter.writeToStream(bitMatrix, "png", baos);
         byte[] barcodeBytes = baos.toByteArray();
         return Base64.getEncoder().encodeToString(barcodeBytes);
+    }
+
+    private static void processBase64Image(String base64Image, String contextKey, IContext context) throws Exception {
+        byte[] imageBytes = Base64.getDecoder().decode(base64Image);
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
+             ByteArrayOutputStream imageOutputStream = new ByteArrayOutputStream()) {
+            BufferedImage image = ImageIO.read(bis);
+            ImageIO.write(image, "png", imageOutputStream);
+            context.put(contextKey, imageOutputStream.toByteArray());
+        }
     }
 
     public static String convertToBase64(byte[] byteArray) {

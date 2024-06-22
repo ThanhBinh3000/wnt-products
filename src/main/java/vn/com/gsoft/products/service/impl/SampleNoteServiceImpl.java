@@ -26,7 +26,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-
 @Service
 @Log4j2
 public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNoteReq, Long> implements SampleNoteService {
@@ -273,7 +272,7 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
             boolean isConnectSampleNote = sampleNote.getStatusConnect() != null
                     && sampleNote.getStatusConnect() == 2L
                     && userInfo.getNhaThuoc().getIsConnectivity();
-            if (loai.equals(FileUtils.InPhieuA4)){
+            if (loai.equals(FileUtils.InPhieuA4)) {
                 checkType = handleInKhachQuen(sampleNote, isConnectSampleNote);
             }
             if (loai.equals(FileUtils.InPhieuA5)) {
@@ -284,11 +283,15 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
             if (configTemplates.isPresent()) {
                 templatePath += configTemplates.get().getTemplateFileName();
             }
-            InputStream templateInputStream = FileUtils.getInputStreamByFileName(templatePath);
             sampleNote.setPharmacyName(userInfo.getNhaThuoc().getTenNhaThuoc());
             sampleNote.setPharmacyAddress(userInfo.getNhaThuoc().getDiaChi());
             sampleNote.setPharmacyPhoneNumber(userInfo.getNhaThuoc().getDienThoai());
-            return FileUtils.convertDocxToPdf(templateInputStream, sampleNote, sampleNote.getBarcode(), amountPrint);
+            List<ReportImage> reportImage = new ArrayList<>();
+            if ("10324".equals(sampleNote.getDrugStoreID())) {
+                reportImage.add(new ReportImage("imageLogo_10324", "src/main/resources/template/imageLogo_10324.png"));
+            }
+            InputStream templateInputStream = FileUtils.getInputStreamByFileName(templatePath);
+            return FileUtils.convertDocxToPdf(templateInputStream, sampleNote, sampleNote.getBarcode(), amountPrint, reportImage);
         } catch (Exception e) {
             e.printStackTrace();
         }
