@@ -4,6 +4,7 @@ package vn.com.gsoft.products.service;
 import jakarta.transaction.Transactional;
 import vn.com.gsoft.products.entity.PhieuKiemKes;
 import vn.com.gsoft.products.entity.PhieuNhaps;
+import vn.com.gsoft.products.entity.Process;
 import vn.com.gsoft.products.model.dto.PhieuNhapsReq;
 
 import java.util.concurrent.ExecutionException;
@@ -16,5 +17,5 @@ public interface PhieuNhapsService extends BaseService<PhieuNhaps, PhieuNhapsReq
     @Transactional
     PhieuNhaps updateByPhieuKiemKes(PhieuKiemKes e) throws Exception;
 
-    void updateInventory(PhieuNhaps e) throws ExecutionException, InterruptedException, TimeoutException;
+    Process updateInventory(PhieuNhaps e) throws Exception;
 }

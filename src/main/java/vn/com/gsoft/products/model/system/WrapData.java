@@ -1,11 +1,16 @@
 package vn.com.gsoft.products.model.system;
+
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
-public class WrapData {
+public class WrapData<T> {
     private String code;
     private Date sendDate;
-    private Object data;
+    private T data;
+    private String batchKey;
+    private Integer index;
+    private Integer total;
+    private Profile profile;
 }
