@@ -16,7 +16,6 @@ import java.util.Optional;
 public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long> {
     @Query("SELECT distinct c FROM Thuocs c " +
             "WHERE (c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuoc} OR c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuocCha} ) "
-            + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
             + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (:#{#param.maThuoc} IS NULL OR lower(c.maThuoc) LIKE lower(concat('%',CONCAT(:#{#param.maThuoc},'%'))))"
             + " AND (:#{#param.tenThuoc} IS NULL OR lower(c.tenThuoc) LIKE lower(concat('%',CONCAT(:#{#param.tenThuoc},'%'))))"
@@ -123,7 +122,7 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
 
     @Query("SELECT distinct c FROM Thuocs c " +
             "WHERE 1=1 "
-            + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+            + " AND (c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuoc} OR c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuocCha} ) "
             + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (:#{#param.maThuoc} IS NULL OR lower(c.maThuoc) LIKE lower(concat('%',CONCAT(:#{#param.maThuoc},'%'))))"
             + " AND (:#{#param.tenThuoc} IS NULL OR lower(c.tenThuoc) LIKE lower(concat('%',CONCAT(:#{#param.tenThuoc},'%'))))"
@@ -135,7 +134,6 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
             + " AND (:#{#param.soDuDauKy} IS NULL OR c.soDuDauKy = :#{#param.soDuDauKy}) "
             + " AND (:#{#param.giaDauKy} IS NULL OR c.giaDauKy = :#{#param.giaDauKy}) "
             + " AND (:#{#param.gioiHan} IS NULL OR c.gioiHan = :#{#param.gioiHan}) "
-            + " AND ((:#{#param.nhaThuocMaNhaThuoc} IS NULL OR c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuoc}) OR (:#{#param.nhaThuocMaNhaThuocCha} IS NOT NULL AND c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuocCha}))"
             + " AND (:#{#param.nhomThuocMaNhomThuoc} IS NULL OR c.nhomThuocMaNhomThuoc = :#{#param.nhomThuocMaNhomThuoc}) "
             + " AND (:#{#param.nuocMaNuoc} IS NULL OR c.nuocMaNuoc = :#{#param.nuocMaNuoc}) "
             + " AND (:#{#param.dangBaoCheMaDangBaoChe} IS NULL OR c.dangBaoCheMaDangBaoChe = :#{#param.dangBaoCheMaDangBaoChe}) "
@@ -238,7 +236,6 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
 
     @Query("SELECT distinct c FROM Thuocs c " +
             "WHERE c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuoc} "
-            + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
             + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (:#{#param.maThuoc} IS NULL OR lower(c.maThuoc) LIKE lower(concat('%',CONCAT(:#{#param.maThuoc},'%'))))"
             + " AND (:#{#param.tenThuoc} IS NULL OR lower(c.tenThuoc) LIKE lower(concat('%',CONCAT(:#{#param.tenThuoc},'%'))))"
@@ -348,7 +345,7 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
             " LEFT JOIN PhieuNhapChiTiets pnct on c.id = pnct.thuocThuocId" +
             " left join PhieuNhaps pn on pnct.phieuNhapMaPhieuNhap = pn.id " +
             " WHERE (c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuoc} OR c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuocCha} ) "
-            + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+            + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (c.id in (select i.drugID from Inventory i where (i.drugStoreID = :#{#param.nhaThuocMaNhaThuoc} OR i.drugStoreID = :#{#param.nhaThuocMaNhaThuocCha} ) and i.lastValue = 0)  ) "
             + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId})"
             + " AND (:#{#param.maThuoc} IS NULL OR lower(c.maThuoc) LIKE lower(concat('%',CONCAT(:#{#param.maThuoc},'%'))))"
