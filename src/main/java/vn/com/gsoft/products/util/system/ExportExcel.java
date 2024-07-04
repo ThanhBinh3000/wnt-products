@@ -123,7 +123,12 @@ public class ExportExcel {
 				if (colNum == 0) {
 					sheet.setColumnWidth(colNum, (columnWidth - 2) * 256);
 				} else {
-					sheet.setColumnWidth(colNum, (columnWidth + 4) * 256);
+					int i = (columnWidth + 4) * 256;
+					if(i > 65280){
+						sheet.setColumnWidth(colNum, 65000);
+					}else{
+						sheet.setColumnWidth(colNum, (columnWidth + 4) * 256);
+					}
 				}
 			}
 
