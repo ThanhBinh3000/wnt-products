@@ -13,11 +13,13 @@ import org.springframework.web.bind.annotation.*;
 import vn.com.gsoft.products.constant.PathContains;
 import vn.com.gsoft.products.model.dto.FileDto;
 import vn.com.gsoft.products.model.dto.ThuocsReq;
+import vn.com.gsoft.products.model.dto.dataBarcode;
 import vn.com.gsoft.products.model.system.BaseResponse;
 import vn.com.gsoft.products.service.ThuocsService;
 import vn.com.gsoft.products.util.system.ResponseUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -147,5 +149,15 @@ public class ThuocsController {
         }
     }
 
+    @PostMapping(value = PathContains.URL_PREVIEW + "-print", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> getDataBarcode(@RequestBody HashMap<String, Object> body) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.getDataBarcode(body)));
+    }
 
+    @PostMapping(value = PathContains.URL_PREVIEW, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> preview(@RequestBody List<dataBarcode> body) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.preview(body)));
+    }
 }

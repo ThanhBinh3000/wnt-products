@@ -464,4 +464,6 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
     Optional<Thuocs> findByNhaThuocMaNhaThuocAndFlagAndMaThuoc(String maNhaThuoc, Boolean flag, String maThuoc);
 
     Optional<Thuocs> findByIdAndRecordStatusId(Long id, Long recordStatusId);
+
+    List<Thuocs> findAllByNhomThuocMaNhomThuoc(Long idNhomThuoc);
 }

@@ -171,8 +171,11 @@ public class PhieuDuTruServiceImpl extends BaseServiceImpl<PhieuDuTru, PhieuDuTr
             Integer checkType = 0;
             String loai = FileUtils.safeToString(hashMap.get("loai"));
             PhieuDuTru phieuDuTru = this.detail(FileUtils.safeToLong(hashMap.get("id")));
-            Optional<ConfigTemplate> configTemplates = configTemplateRepository.findByMaNhaThuocAndPrintTypeAndMaLoaiAndType(
-                    phieuDuTru.getMaNhaThuoc(), loai, Long.valueOf(ENoteType.NoteReserve), checkType);
+            Optional<ConfigTemplate> configTemplates = null;
+            configTemplates = configTemplateRepository.findByMaNhaThuocAndPrintTypeAndMaLoaiAndType(phieuDuTru.getMaNhaThuoc(), loai, Long.valueOf(ENoteType.NoteReserve), checkType);
+            if (!configTemplates.isPresent()) {
+                configTemplates = configTemplateRepository.findByPrintTypeAndMaLoaiAndType(loai, Long.valueOf(ENoteType.NoteReserve), checkType);
+            }
             if (configTemplates.isPresent()) {
                 templatePath += configTemplates.get().getTemplateFileName();
             }

@@ -10,14 +10,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import vn.com.gsoft.products.constant.ENoteType;
 import vn.com.gsoft.products.constant.RecordStatusContains;
 import vn.com.gsoft.products.constant.StatusConfirmDrugContains;
 import vn.com.gsoft.products.constant.TypeServiceContains;
 import vn.com.gsoft.products.entity.*;
-import vn.com.gsoft.products.model.dto.FileDto;
-import vn.com.gsoft.products.model.dto.InventoryReq;
-import vn.com.gsoft.products.model.dto.NhomThuocsReq;
-import vn.com.gsoft.products.model.dto.ThuocsReq;
+import vn.com.gsoft.products.model.dto.*;
 import vn.com.gsoft.products.model.system.BaseResponse;
 import vn.com.gsoft.products.model.system.PaggingReq;
 import vn.com.gsoft.products.model.system.Profile;
@@ -25,8 +23,12 @@ import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.repository.feign.InventoryFeign;
 import vn.com.gsoft.products.service.ThuocsService;
 import vn.com.gsoft.products.util.system.ExportExcel;
+import vn.com.gsoft.products.util.system.FileUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -35,6 +37,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -66,9 +69,17 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
     @Autowired
     public FileServiceImpl fileService;
 
-	@Autowired
-	public InventoryFeign inventoryFeign;
+    @Autowired
+    public InventoryFeign inventoryFeign;
 
+    @Autowired
+    public PhieuNhapChiTietsRepository phieuNhapChiTietsRepository;
+
+    @Autowired
+    public PhieuXuatChiTietsRepository phieuXuatChiTietsRepository;
+
+    @Autowired
+    public ConfigTemplateRepository configTemplateRepository;
 
     @Override
     public Page<Thuocs> searchPage(ThuocsReq req) throws Exception {
@@ -557,56 +568,56 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         return thuocs;
     }
 
-	@Override
-	public Page<Thuocs> colectionPageHangDuTru(ThuocsReq req) throws Exception {
-		Profile userInfo = this.getLoggedUser();
-		if (userInfo == null)
-			throw new Exception("Bad request.");
-		Pageable pageable = PageRequest.of(req.getPaggingReq().getPage(), req.getPaggingReq().getLimit());
-		req.setNhaThuocMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
-		req.setNhaThuocMaNhaThuocCha(userInfo.getNhaThuoc().getMaNhaThuocCha());
-		if(req.getDataDelete() != null){
-			req.setRecordStatusId(req.getDataDelete() ? RecordStatusContains.DELETED : RecordStatusContains.ACTIVE);
-		}
-		Page<Thuocs> thuocs = hdrRepo.colectionPagePhieuDuTru(req,pageable);
-		thuocs.getContent().forEach( item -> {
-			if(item.getNhomThuocMaNhomThuoc()!=null){
-				Optional<NhomThuocs> byIdNt = nhomThuocsRepository.findById(item.getNhomThuocMaNhomThuoc());
-				byIdNt.ifPresent(nhomThuocs -> item.setTenNhomThuoc(nhomThuocs.getTenNhomThuoc()));
-			}
-			if(item.getDonViThuNguyenMaDonViTinh()!=null){
-				Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViThuNguyenMaDonViTinh());
-				byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhThuNguyen(donViTinhs.getTenDonViTinh()));
-			}
-			if(item.getDonViXuatLeMaDonViTinh()!=null){
-				Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViXuatLeMaDonViTinh());
-				byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhXuatLe(donViTinhs.getTenDonViTinh()));
-			}
-			if(item.getIdWarehouseLocation() != null ){
-				Optional<WarehouseLocation> byIdNt = warehouseLocationRepository.findById(item.getIdWarehouseLocation());
-				byIdNt.ifPresent(warehouseLocations -> item.setTenViTri(warehouseLocations.getNameWarehouse()));
-			}
-			InventoryReq inventoryReq = new InventoryReq();
-			inventoryReq.setDrugID(item.getId());
-			inventoryReq.setDrugStoreID(item.getNhaThuocMaNhaThuoc());
-			inventoryReq.setRecordStatusID(RecordStatusContains.ACTIVE);
-			HashMap<Integer, Double> inventory = getTotalInventory(inventoryReq);
-			item.setLastValue(inventory.get(item.getId().intValue()));
-		});
-		return thuocs;
-	}
+    @Override
+    public Page<Thuocs> colectionPageHangDuTru(ThuocsReq req) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        Pageable pageable = PageRequest.of(req.getPaggingReq().getPage(), req.getPaggingReq().getLimit());
+        req.setNhaThuocMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+        req.setNhaThuocMaNhaThuocCha(userInfo.getNhaThuoc().getMaNhaThuocCha());
+        if (req.getDataDelete() != null) {
+            req.setRecordStatusId(req.getDataDelete() ? RecordStatusContains.DELETED : RecordStatusContains.ACTIVE);
+        }
+        Page<Thuocs> thuocs = hdrRepo.colectionPagePhieuDuTru(req, pageable);
+        thuocs.getContent().forEach(item -> {
+            if (item.getNhomThuocMaNhomThuoc() != null) {
+                Optional<NhomThuocs> byIdNt = nhomThuocsRepository.findById(item.getNhomThuocMaNhomThuoc());
+                byIdNt.ifPresent(nhomThuocs -> item.setTenNhomThuoc(nhomThuocs.getTenNhomThuoc()));
+            }
+            if (item.getDonViThuNguyenMaDonViTinh() != null) {
+                Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViThuNguyenMaDonViTinh());
+                byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhThuNguyen(donViTinhs.getTenDonViTinh()));
+            }
+            if (item.getDonViXuatLeMaDonViTinh() != null) {
+                Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViXuatLeMaDonViTinh());
+                byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhXuatLe(donViTinhs.getTenDonViTinh()));
+            }
+            if (item.getIdWarehouseLocation() != null) {
+                Optional<WarehouseLocation> byIdNt = warehouseLocationRepository.findById(item.getIdWarehouseLocation());
+                byIdNt.ifPresent(warehouseLocations -> item.setTenViTri(warehouseLocations.getNameWarehouse()));
+            }
+            InventoryReq inventoryReq = new InventoryReq();
+            inventoryReq.setDrugID(item.getId());
+            inventoryReq.setDrugStoreID(item.getNhaThuocMaNhaThuoc());
+            inventoryReq.setRecordStatusID(RecordStatusContains.ACTIVE);
+            HashMap<Integer, Double> inventory = getTotalInventory(inventoryReq);
+            item.setLastValue(inventory.get(item.getId().intValue()));
+        });
+        return thuocs;
+    }
 
-	@Override
-	public HashMap<Integer, Double> getTotalInventory(InventoryReq inventoryReq) {
-		HashMap<Integer, Double> profile = inventoryFeign.getTotalInventory(inventoryReq);
-		return profile;
-	}
+    @Override
+    public HashMap<Integer, Double> getTotalInventory(InventoryReq inventoryReq) {
+        HashMap<Integer, Double> profile = inventoryFeign.getTotalInventory(inventoryReq);
+        return profile;
+    }
 
-	@Override
-	public Thuocs detail(Long id) throws Exception {
-		Profile userInfo = this.getLoggedUser();
-		if (userInfo == null)
-			throw new Exception("Bad request.");
+    @Override
+    public Thuocs detail(Long id) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
 
         Optional<Thuocs> optional = hdrRepo.findById(id);
         if (optional.isEmpty()) {
@@ -658,5 +669,75 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         Optional<Inventory> inventory = inventoryRepository.searchDetail(inventoryReq);
         inventory.ifPresent(thuocs::setInventory);
         return thuocs;
+    }
+
+    @Override
+    public List<dataBarcode> getDataBarcode(HashMap<String, Object> hashMap) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null) {
+            throw new Exception("Bad request.");
+        }
+        Long idPhieu = hashMap.get("idPhieu") != null ? FileUtils.safeToLong(hashMap.get("idPhieu")) : null;
+        Long loaiPhieu = hashMap.get("loaiPhieu") != null ? FileUtils.safeToLong(hashMap.get("loaiPhieu")) : null;
+        Long idNhomThuoc = hashMap.get("idNhomThuoc") != null ? FileUtils.safeToLong(hashMap.get("idNhomThuoc")) : null;
+        List<dataBarcode> barcodeDataList = new ArrayList<>();
+        if (loaiPhieu != null && loaiPhieu == 1L && idPhieu != null) {
+            List<PhieuNhapChiTiets> phieuNhapChiTiets = phieuNhapChiTietsRepository.findByPhieuNhapMaPhieuNhapAndRecordStatusId(idPhieu, RecordStatusContains.ACTIVE);
+            for (PhieuNhapChiTiets chiTiet : phieuNhapChiTiets) {
+                Optional<Thuocs> optional = Optional.ofNullable(this.detail(chiTiet.getThuocThuocId()));
+                optional.ifPresent(thuocs -> barcodeDataList.add(createDataBarcode(thuocs)));
+            }
+        } else if (loaiPhieu != null && loaiPhieu == 2L && idPhieu != null) {
+            List<PhieuXuatChiTiets> phieuXuatChiTiets = phieuXuatChiTietsRepository.findAllByPhieuXuatMaPhieuXuatAndRecordStatusId(idPhieu, RecordStatusContains.ACTIVE);
+            for (PhieuXuatChiTiets chiTiet : phieuXuatChiTiets) {
+                Optional<Thuocs> optional = Optional.ofNullable(this.detail(chiTiet.getThuocThuocId()));
+                optional.ifPresent(thuocs -> barcodeDataList.add(createDataBarcode(thuocs)));
+            }
+        }
+        if (idNhomThuoc != null) {
+            List<Thuocs> thuocList = hdrRepo.findAllByNhomThuocMaNhomThuoc(idNhomThuoc);
+            thuocList.forEach(thuoc -> barcodeDataList.add(createDataBarcode(thuoc)));
+        }
+        return barcodeDataList.stream()
+                .filter(item -> item.getMaVach() != null && !item.getMaVach().isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    private dataBarcode createDataBarcode(Thuocs thuocs) {
+        dataBarcode barcodeData = new dataBarcode();
+        Optional<DonViTinhs> donViTinhLe = donViTinhsRepository.findById(thuocs.getDonViXuatLeMaDonViTinh());
+        Optional<DonViTinhs> donViTinhBuon = donViTinhsRepository.findById(thuocs.getDonViThuNguyenMaDonViTinh());
+        barcodeData.setMaThuoc(thuocs.getMaThuoc());
+        barcodeData.setTenThuoc(thuocs.getTenThuoc());
+        barcodeData.setGiaBanLe(thuocs.getGiaBanLe());
+        barcodeData.setGiaBanBuon(thuocs.getGiaBanBuon());
+        barcodeData.setMaVach(thuocs.getBarCode());
+        donViTinhLe.ifPresent(donViTinh -> barcodeData.setDonViTinhLe(donViTinh.getTenDonViTinh()));
+        donViTinhBuon.ifPresent(donViTinh -> barcodeData.setDonViTinhBuon(donViTinh.getTenDonViTinh()));
+        return barcodeData;
+    }
+
+    @Override
+    public ReportTemplateResponse preview(List<dataBarcode> listReq) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null) {
+            throw new Exception("Bad request.");
+        }
+        String templateBasePath = "/maVachLieuDung/";
+        String templatePath = templateBasePath;
+        for (dataBarcode data : listReq) {
+            data.setTenNhaThuoc(data.getKhongInTenNhaThuoc() ? null : userInfo.getNhaThuoc().getTenNhaThuoc());
+            data.setDiaChiNhaThuoc(userInfo.getNhaThuoc().getDiaChi());
+            Optional<ConfigTemplate> configTemplates = configTemplateRepository.findByPrintTypeAndMaLoaiAndType(data.getLoaiIn(), Long.valueOf(ENoteType.MedicineBarcodeSample), 0);
+            if (configTemplates.isPresent()) {
+                templatePath = templateBasePath + configTemplates.get().getTemplateFileName();
+            }
+            try (InputStream templateInputStream = FileUtils.getInputStreamByFileName(templatePath)) {
+                return FileUtils.convertDocxToPdf(templateInputStream, data, data.getMaVach(), null, null, listReq);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 }

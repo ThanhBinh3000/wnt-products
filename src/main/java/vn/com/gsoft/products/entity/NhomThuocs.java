@@ -24,7 +24,4 @@ public class NhomThuocs extends BaseEntity {
     private Long archivedId;
     private Long storeId;
     private Long typeGroupProduct;
-
-
-
 }
