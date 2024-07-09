@@ -4,6 +4,7 @@ package vn.com.gsoft.products.service;
 import jakarta.transaction.Transactional;
 import vn.com.gsoft.products.entity.PhieuKiemKes;
 import vn.com.gsoft.products.entity.PhieuXuats;
+import vn.com.gsoft.products.entity.Process;
 import vn.com.gsoft.products.model.dto.PhieuXuatsReq;
 
 import java.util.concurrent.ExecutionException;
@@ -17,5 +18,5 @@ public interface PhieuXuatsService extends BaseService<PhieuXuats, PhieuXuatsReq
     @Transactional
     PhieuXuats updateByPhieuKiemKes(PhieuKiemKes e) throws Exception;
 
-    void updateInventory(PhieuXuats e) throws InterruptedException, ExecutionException, TimeoutException;
+    Process updateInventory(PhieuXuats e) throws Exception;
 }

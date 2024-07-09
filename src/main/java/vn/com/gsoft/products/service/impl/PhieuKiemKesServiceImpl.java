@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.com.gsoft.products.constant.AppConstants;
+import vn.com.gsoft.products.constant.ENoteType;
 import vn.com.gsoft.products.constant.RecordStatusContains;
 import vn.com.gsoft.products.entity.*;
 import vn.com.gsoft.products.model.dto.PhieuKiemKesReq;
@@ -19,7 +20,6 @@ import vn.com.gsoft.products.service.*;
 import vn.com.gsoft.products.util.system.FileUtils;
 
 import java.io.InputStream;
-import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -47,6 +47,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
     private PhieuKiemKeChiTietsService phieuKiemKeChiTietsService;
     private PhieuXuatChiTietsService phieuXuatChiTietsService;
     private PhieuNhapChiTietsService phieuNhapChiTietsService;
+    private ConfigTemplateRepository configTemplateRepository;
 
     @Autowired
     public PhieuKiemKesServiceImpl(PhieuKiemKesRepository hdrRepo, UserProfileRepository userProfileRepository,
@@ -64,7 +65,8 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
                                    PhieuKiemKeChiTietsService phieuKiemKeChiTietsService,
                                    PhieuXuatChiTietsService phieuXuatChiTietsService,
                                    PhieuNhapChiTietsService phieuNhapChiTietsService,
-                                   NhomThuocsRepository nhomThuocsRepository) {
+                                   NhomThuocsRepository nhomThuocsRepository,
+                                   ConfigTemplateRepository configTemplateRepository) {
         super(hdrRepo);
         this.hdrRepo = hdrRepo;
         this.userProfileRepository = userProfileRepository;
@@ -83,6 +85,7 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         this.phieuKiemKeChiTietsService = phieuKiemKeChiTietsService;
         this.phieuXuatChiTietsService = phieuXuatChiTietsService;
         this.phieuNhapChiTietsService = phieuNhapChiTietsService;
+        this.configTemplateRepository = configTemplateRepository;
     }
 
     @Override
@@ -193,6 +196,10 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
                     if (thuocs.get().getNhomThuocMaNhomThuoc() != null && thuocs.get().getNhomThuocMaNhomThuoc() > 0) {
                         Optional<NhomThuocs> nhomThuocs = nhomThuocsRepository.findById(thuocs.get().getNhomThuocMaNhomThuoc());
                         nhomThuocs.ifPresent(value -> ct.setTenNhomThuoc(value.getTenNhomThuoc()));
+                    }
+                    Optional<DonViTinhs> byId = donViTinhsRepository.findById(thuocs.get().getDonViThuNguyenMaDonViTinh());
+                    if (byId.isPresent()) {
+                        ct.setTenDonViTinh(byId.get().getTenDonViTinh());
                     }
                 }
             }
@@ -454,15 +461,26 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
         if (userInfo == null)
             throw new Exception("Bad request.");
         try {
+            Integer checkType = 0;
+            String templatePath = "/phieuKiemKe/";
+            String loai = FileUtils.safeToString(hashMap.get("loai"));
             PhieuKiemKes phieuKiemKes = this.detail(FileUtils.safeToLong(hashMap.get("id")));
-            String templatePath = "/template/phieuKiemKe/phieu_kiem_ke.docx";
-            InputStream templateInputStream = FileUtils.templateInputStream(templatePath);
-            phieuKiemKes.setTrangThai(phieuKiemKes.getDaCanKho() ? "Đã cân kho" : "Chưa cân kho");
-            return FileUtils.convertDocxToPdf(templateInputStream, phieuKiemKes);
+            if (phieuKiemKes.getDaCanKho()) {
+                checkType = 1;
+            }
+            Optional<ConfigTemplate> configTemplates = configTemplateRepository.findByMaNhaThuocAndPrintTypeAndMaLoaiAndType(
+                    phieuKiemKes.getNhaThuocMaNhaThuoc(), loai, Long.valueOf(ENoteType.InventoryForm), checkType);
+            if (configTemplates.isPresent()) {
+                templatePath += configTemplates.get().getTemplateFileName();
+            }
+            for (PhieuKiemKeChiTiets phieuKiemKeChiTiets : phieuKiemKes.getChiTiets()) {
+                phieuKiemKeChiTiets.setChenhLech(phieuKiemKeChiTiets.getThucTe() - phieuKiemKeChiTiets.getTonKho());
+            }
+            InputStream templateInputStream = FileUtils.getInputStreamByFileName(templatePath);
+            return FileUtils.convertDocxToPdf(templateInputStream, phieuKiemKes, null, null, null);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
-
 }

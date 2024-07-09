@@ -16,7 +16,8 @@ import vn.com.gsoft.products.model.system.WrapData;
 import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.service.KafkaProducer;
 import vn.com.gsoft.products.service.PhieuNhapsService;
-
+import vn.com.gsoft.products.entity.Process;
+import vn.com.gsoft.products.entity.ProcessDtl;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -237,19 +238,28 @@ public class PhieuNhapsServiceImpl extends BaseServiceImpl<PhieuNhaps, PhieuNhap
     }
 
     @Override
-    public void updateInventory(PhieuNhaps e) throws ExecutionException, InterruptedException, TimeoutException {
-        Gson gson = new Gson();
+    public Process updateInventory(PhieuNhaps e) throws Exception {
+        int size = e.getChiTiets().size();
+        int index = 1;
+        UUID uuid = UUID.randomUUID();
+        String batchKey = uuid.toString();
+        Profile userInfo = this.getLoggedUser();
+        Process process = kafkaProducer.createProcess(batchKey, userInfo.getNhaThuoc().getMaNhaThuoc(), new Gson().toJson(e), new Date(),size, userInfo.getId());
         for (PhieuNhapChiTiets chiTiet : e.getChiTiets()) {
             String key = e.getNhaThuocMaNhaThuoc() + "-" + chiTiet.getThuocThuocId();
-            WrapData data = new WrapData();
+            WrapData<PhieuNhaps> data = new WrapData<>();
             PhieuNhaps px = new PhieuNhaps();
             BeanUtils.copyProperties(e, px);
             px.setChiTiets(List.copyOf(Collections.singleton(chiTiet)));
             data.setCode(InventoryConstant.NHAP);
             data.setSendDate(new Date());
             data.setData(px);
-            this.kafkaProducer.sendInternal(topicName, key, gson.toJson(data));
+            data.setTotal(size);
+            data.setIndex(index++);
+            kafkaProducer.createProcessDtl(process, data);
+            this.kafkaProducer.sendInternal(topicName, key, new Gson().toJson(data));
         }
+        return process;
     }
 
 }

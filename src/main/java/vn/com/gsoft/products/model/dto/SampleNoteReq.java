@@ -1,5 +1,6 @@
 package vn.com.gsoft.products.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import vn.com.gsoft.products.entity.SampleNoteDetail;
 import vn.com.gsoft.products.model.system.BaseRequest;
@@ -36,6 +37,10 @@ public class SampleNoteReq extends BaseRequest {
     private Integer formOfTreatment;
     private Integer typeSampleNote;
     private Long referenceId;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
+    private Date fromDateNote;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
+    private Date toDateNote;
 
     private List<SampleNoteDetail> chiTiets;
 }

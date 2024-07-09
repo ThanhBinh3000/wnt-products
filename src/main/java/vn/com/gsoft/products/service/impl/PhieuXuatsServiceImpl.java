@@ -10,6 +10,7 @@ import vn.com.gsoft.products.constant.ENoteType;
 import vn.com.gsoft.products.constant.InventoryConstant;
 import vn.com.gsoft.products.constant.RecordStatusContains;
 import vn.com.gsoft.products.entity.*;
+import vn.com.gsoft.products.entity.Process;
 import vn.com.gsoft.products.model.dto.PhieuXuatsReq;
 import vn.com.gsoft.products.model.system.ApplicationSetting;
 import vn.com.gsoft.products.model.system.Profile;
@@ -276,18 +277,27 @@ public class PhieuXuatsServiceImpl extends BaseServiceImpl<PhieuXuats, PhieuXuat
         return true;
     }
     @Override
-    public void updateInventory(PhieuXuats e) throws InterruptedException, ExecutionException, TimeoutException {
-        Gson gson = new Gson();
+    public Process updateInventory(PhieuXuats e) throws Exception {
+        int size = e.getChiTiets().size();
+        int index = 1;
+        UUID uuid = UUID.randomUUID();
+        String batchKey = uuid.toString();
+        Profile userInfo = this.getLoggedUser();
+        Process process = kafkaProducer.createProcess(batchKey, userInfo.getNhaThuoc().getMaNhaThuoc(), new Gson().toJson(e), new Date(),size, userInfo.getId());
         for (PhieuXuatChiTiets chiTiet : e.getChiTiets()) {
             String key = e.getNhaThuocMaNhaThuoc() + "-" + chiTiet.getThuocThuocId();
-            WrapData data = new WrapData();
+            WrapData<PhieuXuats> data = new WrapData<>();
             PhieuXuats px = new PhieuXuats();
             BeanUtils.copyProperties(e, px);
             px.setChiTiets(List.copyOf(Collections.singleton(chiTiet)));
             data.setCode(InventoryConstant.XUAT);
             data.setSendDate(new Date());
             data.setData(px);
-            this.kafkaProducer.sendInternal(topicName, key, gson.toJson(data));
+            data.setTotal(size);
+            data.setIndex(index++);
+            kafkaProducer.createProcessDtl(process, data);
+            this.kafkaProducer.sendInternal(topicName, key, new Gson().toJson(data));
         }
+        return process;
     }
 }

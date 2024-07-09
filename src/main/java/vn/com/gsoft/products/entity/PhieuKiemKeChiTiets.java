@@ -51,5 +51,9 @@ public class PhieuKiemKeChiTiets extends BaseEntity{
     private String tenThuoc;
     @Transient
     private String tenNhomThuoc;
+    @Transient
+    private Double chenhLech;
+    @Transient
+    private String tenDonViTinh;
 }
 
