@@ -218,4 +218,6 @@ public class NhaThuocs extends BaseEntity {
 
     @Transient
     private Long resultBusinessId;
+
+    public boolean isConnectivity() { return isConnectivity; }
 }

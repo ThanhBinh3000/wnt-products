@@ -37,4 +37,6 @@ public interface NhaThuocsRepository extends BaseRepository<NhaThuocs, NhaThuocs
     List<NhaThuocs> findByMaNhaThuocIn(Set<String> maNhaThuocs);
 
     NhaThuocs findByMaNhaThuoc(String maNhaThuocs);
+
+    List<NhaThuocs> findByMaNhaThuocChaAndHoatDong(String maNhaThuocCha, Boolean hoatDong);
 }

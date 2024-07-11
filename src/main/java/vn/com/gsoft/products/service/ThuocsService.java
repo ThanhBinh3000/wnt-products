@@ -35,6 +35,9 @@ public interface ThuocsService extends BaseService<Thuocs, ThuocsReq, Long> {
 
     HashMap<Integer, Double> getTotalInventory(InventoryReq inventoryReq) throws Exception;
 
+    // xem chi tiết số tồn ở các kho
+    Object getDataDetailLastValueWarehouse(Long thuocId) throws Exception;
+
     List<dataBarcode> getDataBarcode(HashMap<String, Object> hashMap) throws Exception;
 
     ReportTemplateResponse preview(List<dataBarcode> dataBarcodes) throws Exception;
