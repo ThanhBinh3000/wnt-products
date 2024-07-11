@@ -2,6 +2,7 @@ package vn.com.gsoft.products.service.impl;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.TypedQuery;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
@@ -39,6 +40,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -68,12 +70,15 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
     public InventoryRepository inventoryRepository;
 
     @Autowired
+    public NhaThuocsRepository nhaThuocsRepository;
+
+    @Autowired
     public FileServiceImpl fileService;
 
     @Autowired
     public InventoryFeign inventoryFeign;
 
-
+    //region Public Methods
     @Override
     public Page<Thuocs> searchPage(ThuocsReq req) throws Exception {
         Profile userInfo = this.getLoggedUser();
@@ -538,6 +543,43 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         return profile;
     }
 
+    // xem chi tiết số tồn ở các kho
+    @Override
+    public Object getDataDetailLastValueWarehouse(Long thuocId) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        var lstInventory = new Object();
+        try {
+            List<NhaThuocs> drugStores = new ArrayList<>();
+            for (NhaThuocs ds : nhaThuocsRepository.findByMaNhaThuocChaAndHoatDong(userInfo.getNhaThuoc().getMaNhaThuocCha(), true)) {
+                if (!ds.isConnectivity()) {
+                    drugStores.add(ds);
+                }
+            }
+
+            List<String> codeDrugStores = drugStores.stream()
+                    .map(NhaThuocs::getMaNhaThuoc)
+                    .collect(Collectors.toList());
+
+            List<Object[]> items = inventoryRepository.findInventoryDetails(codeDrugStores, thuocId, RecordStatusContains.ACTIVE);
+
+            lstInventory = items.stream()
+                    .collect(Collectors.groupingBy(item -> (String) item[0]))
+                    .entrySet().stream()
+                    .map(e -> {
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("nameStore", e.getKey());
+                        map.put("value", e.getValue().stream().map(item -> item[1]).findFirst().orElse(null));
+                        return map;
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception ex) {
+            log.error("GetDataDetailLastValueWarehouse {} error: {}", userInfo.getNhaThuoc().getMaNhaThuoc(), ex);
+        }
+        return  lstInventory;
+    }
+
     @Override
     public Thuocs detail(Long id) throws Exception {
         Profile userInfo = this.getLoggedUser();
@@ -595,6 +637,7 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         inventory.ifPresent(thuocs::setInventory);
         return thuocs;
     }
+    //endregion
 
     //region Private Methods
     private List<Object[]> convertToExcelModel(List<Thuocs> data, String[] rowsName, boolean duLieuLoi) {

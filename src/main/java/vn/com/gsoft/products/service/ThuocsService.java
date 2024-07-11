@@ -32,4 +32,7 @@ public interface ThuocsService extends BaseService<Thuocs, ThuocsReq, Long> {
 
     Page<Thuocs> colectionPageHangDuTru(ThuocsReq objReq) throws Exception;
     HashMap<Integer, Double> getTotalInventory(InventoryReq inventoryReq) throws Exception;
+
+    // xem chi tiết số tồn ở các kho
+    Object getDataDetailLastValueWarehouse(Long thuocId) throws Exception;
 }
