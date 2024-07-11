@@ -1,5 +1,6 @@
 package vn.com.gsoft.products.service.impl;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,16 +12,16 @@ import vn.com.gsoft.products.constant.ENoteType;
 import vn.com.gsoft.products.constant.RecordStatusContains;
 import vn.com.gsoft.products.entity.*;
 import vn.com.gsoft.products.model.dto.PhieuDuTruReq;
+import vn.com.gsoft.products.model.system.PaggingReq;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.service.PhieuDuTruService;
+import vn.com.gsoft.products.util.system.ExportExcel;
 import vn.com.gsoft.products.util.system.FileUtils;
 
 import java.io.InputStream;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.text.DecimalFormat;
+import java.util.*;
 
 
 @Service
@@ -94,6 +95,28 @@ public class PhieuDuTruServiceImpl extends BaseServiceImpl<PhieuDuTru, PhieuDuTr
         return save;
     }
 
+    @Override
+    public List<PhieuDuTru> createNhaCC(List<PhieuDuTruReq> req) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null) {
+            throw new Exception("Bad request.");
+        }
+        List<PhieuDuTru> savedRecords = new ArrayList<>();
+        for (PhieuDuTruReq data : req) {
+            data.setMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+            data.setRecordStatusId(RecordStatusContains.ACTIVE);
+            PhieuDuTru hdr = new PhieuDuTru();
+            BeanUtils.copyProperties(data, hdr, "id");
+            hdr.setCreated(new Date());
+            hdr.setCreatedByUserId(userInfo.getId());
+            PhieuDuTru save = hdrRepo.save(hdr);
+            List<PhieuDuTruChiTiet> phieuNhapChiTiets = saveChildren(save.getId(), data);
+            save.setChiTiets(phieuNhapChiTiets);
+            savedRecords.add(hdrRepo.save(save));
+        }
+        return savedRecords;
+    }
+
     private List<PhieuDuTruChiTiet> saveChildren(Long idHdr, PhieuDuTruReq req) {
         // save chi tiết
         dtlRepo.deleteAllByMaPhieuDuTru(idHdr);
@@ -157,33 +180,73 @@ public class PhieuDuTruServiceImpl extends BaseServiceImpl<PhieuDuTru, PhieuDuTr
                 Optional<DonViTinhs> donViTinhs = donViTinhsRepository.findById(ct.getMaDonViTon());
                 donViTinhs.ifPresent(viTinhs -> ct.setMaDonViTonText(viTinhs.getTenDonViTinh()));
             }
+            if (phieuDuTru.getSupplierId() != null && phieuDuTru.getSupplierId() > 0) {
+                Optional<NhaCungCaps> nhaCungCaps = nhaCungCapsRepository.findById(phieuDuTru.getSupplierId());
+                nhaCungCaps.ifPresent(cungCap -> ct.setNhaCungCapText(cungCap.getTenNhaCungCap()));
+            }
         }
         return phieuDuTru;
     }
 
     @Override
-    public ReportTemplateResponse preview(HashMap<String, Object> hashMap) throws Exception {
+    public ReportTemplateResponse preview(PhieuDuTruReq req) throws Exception {
         Profile userInfo = this.getLoggedUser();
-        if (userInfo == null)
+        if (userInfo == null) {
             throw new Exception("Bad request.");
+        }
         try {
             String templatePath = "/phieuDuTru/";
             Integer checkType = 0;
-            String loai = FileUtils.safeToString(hashMap.get("loai"));
-            PhieuDuTru phieuDuTru = this.detail(FileUtils.safeToLong(hashMap.get("id")));
             Optional<ConfigTemplate> configTemplates = null;
-            configTemplates = configTemplateRepository.findByMaNhaThuocAndPrintTypeAndMaLoaiAndType(phieuDuTru.getMaNhaThuoc(), loai, Long.valueOf(ENoteType.NoteReserve), checkType);
+            configTemplates = configTemplateRepository.findByMaNhaThuocAndPrintTypeAndMaLoaiAndType(userInfo.getNhaThuoc().getMaNhaThuoc(), req.getLoaiIn(), Long.valueOf(ENoteType.NoteReserve), checkType);
             if (!configTemplates.isPresent()) {
-                configTemplates = configTemplateRepository.findByPrintTypeAndMaLoaiAndType(loai, Long.valueOf(ENoteType.NoteReserve), checkType);
+                configTemplates = configTemplateRepository.findByPrintTypeAndMaLoaiAndType(req.getLoaiIn(), Long.valueOf(ENoteType.NoteReserve), checkType);
             }
             if (configTemplates.isPresent()) {
                 templatePath += configTemplates.get().getTemplateFileName();
             }
+            req.setMaNhaThuocText(userInfo.getNhaThuoc().getTenNhaThuoc());
+            req.setDiaChiNhaThuoc(userInfo.getNhaThuoc().getDiaChi());
+            req.setSdtNhaThuoc(userInfo.getNhaThuoc().getDienThoai());
+            System.out.println(req + "haha");
             InputStream templateInputStream = FileUtils.getInputStreamByFileName(templatePath);
-            return FileUtils.convertDocxToPdf(templateInputStream, phieuDuTru, null, null, null);
+            return FileUtils.convertDocxToPdf(templateInputStream, req, null, null, null);
         } catch (Exception e) {
             e.printStackTrace();
+            throw new Exception("Lỗi trong quá trình tải file.", e);
         }
-        return null;
+    }
+
+    @Override
+    public void export(PhieuDuTruReq req, HttpServletResponse response) throws Exception {
+        PaggingReq paggingReq = new PaggingReq();
+        paggingReq.setPage(0);
+        paggingReq.setLimit(Integer.MAX_VALUE);
+        req.setPaggingReq(paggingReq);
+        List<PhieuDuTruChiTiet> dataPage = req.getChiTiets();
+        String title = "Phiếu dự trù thuốc";
+        String[] rowsName = new String[]{"Mã thuốc", "Tên thuốc", "Nhóm thuốc", "Đơn vị tồn", "Số lượng",
+                "Tồn kho", "Dự trù", "Đơn vị dự trù", "Đơn giá", "Thành thiền"};
+        String fileName = "DsPhieuDuTru.xlsx";
+        List<Object[]> dataList = new ArrayList<Object[]>();
+        DecimalFormat decimalFormat = new DecimalFormat("#,##0");
+        Object[] objs = null;
+        for (int i = 0; i < dataPage.size(); i++) {
+            PhieuDuTruChiTiet data = dataPage.get(i);
+            objs = new Object[rowsName.length];
+            objs[0] = data.getMaThuocText();
+            objs[1] = data.getTenThuocText();
+            objs[2] = data.getTenNhomThuoc();
+            objs[3] = data.getMaDonViTonText();
+            objs[4] = decimalFormat.format(data.getSoLuongCanhBao());
+            objs[5] = decimalFormat.format(data.getTonKho());
+            objs[6] = decimalFormat.format(data.getDuTru());
+            objs[7] = data.getMaDonViDuTruText();
+            objs[8] = decimalFormat.format(data.getDonGia());
+            objs[9] = decimalFormat.format(data.getDonGia().multiply(data.getDuTru()));
+            dataList.add(objs);
+        }
+        ExportExcel ex = new ExportExcel(title, fileName, rowsName, dataList, response);
+        ex.export();
     }
 }

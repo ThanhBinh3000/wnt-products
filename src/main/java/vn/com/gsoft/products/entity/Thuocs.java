@@ -256,6 +256,9 @@ public class Thuocs extends BaseEntity{
     private String tenViTri;
 
     @Transient
+    private String nhaCungCapText;
+
+    @Transient
     private List<DonViTinhs> listDonViTinhs;
 
     @Transient
