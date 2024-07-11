@@ -93,4 +93,12 @@ public interface InventoryRepository extends BaseRepository<Inventory, Inventory
     )
     Optional<Inventory> searchDetail(@Param("param") InventoryReq param);
 
+    @Query("SELECT s.tenNhaThuoc, i.lastValue " +
+            "FROM Inventory i JOIN NhaThuocs s ON i.drugStoreID = s.maNhaThuoc " +
+            "WHERE i.drugStoreID IN :codeDrugStores " +
+            "AND i.drugID = :id " +
+            "AND i.recordStatusID = :recordStatusID")
+    List<Object[]> findInventoryDetails(@Param("codeDrugStores") List<String> codeDrugStores,
+                                        @Param("id") long id,
+                                        @Param("recordStatusID") long recordStatusID);
 }
