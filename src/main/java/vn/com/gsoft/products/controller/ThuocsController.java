@@ -147,5 +147,9 @@ public class ThuocsController {
         }
     }
 
-
+    @GetMapping(value = PathContains.URL_DETAILLASTVALUEWAREHOUSE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> getDataDetailLastValueWarehouse(@PathVariable("id") Long id) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.getDataDetailLastValueWarehouse(id)));
+    }
 }

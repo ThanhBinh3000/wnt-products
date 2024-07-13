@@ -84,14 +84,9 @@ public class ExportExcel {
 
 				for (int j = 0; j < obj.length; j++) {
 					XSSFCell cell = null; // Set cell data type
-					if (j == 0) {
-						cell = row.createCell(j, CellType.NUMERIC);
-						cell.setCellValue(i + 1);
-					} else {
-						cell = row.createCell(j, CellType.STRING);
-						if (!"".equals(obj[j]) && obj[j] != null) {
-							cell.setCellValue(obj[j].toString()); // Set cell value
-						}
+					cell = row.createCell(j, CellType.STRING);
+					if (!"".equals(obj[j]) && obj[j] != null) {
+						cell.setCellValue(obj[j].toString()); // Set cell value
 					}
 					cell.setCellStyle(style); // Set cell style
 				}
@@ -117,8 +112,12 @@ public class ExportExcel {
 						}
 					}
 				}
-				columnWidth = Math.min(255, columnWidth); // Ensure column width does not exceed 255 characters
-				sheet.setColumnWidth(colNum, columnWidth * 256);
+				int i = (columnWidth + 4) * 256;
+				if(i > 65280){
+					sheet.setColumnWidth(colNum, 65000);
+				}else{
+					sheet.setColumnWidth(colNum, (columnWidth + 4) * 256);
+				}
 			}
 
 			if (workbook != null) {
