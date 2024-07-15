@@ -271,6 +271,10 @@ public class Thuocs extends BaseEntity{
     @Transient
     private Inventory inventory;
     @Transient
+    private List<ReplaceGoodsAndBundleGoods> bundleGoods;
+    @Transient
+    private List<ReplaceGoodsAndBundleGoods> replaceGoods;
+    @Transient
     private double lastValue;
     // @Override
     @Override

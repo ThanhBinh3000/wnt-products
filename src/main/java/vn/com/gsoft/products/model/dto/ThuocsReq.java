@@ -1,11 +1,14 @@
 package vn.com.gsoft.products.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.Transient;
 import lombok.Data;
+import vn.com.gsoft.products.entity.ReplaceGoodsAndBundleGoods;
 import vn.com.gsoft.products.model.system.BaseRequest;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class ThuocsReq extends BaseRequest {
@@ -125,5 +128,7 @@ public class ThuocsReq extends BaseRequest {
     private Boolean dataDelete;
 
     private Long nhaCungCapMaNhaCungCap;
+    private List<ReplaceGoodsAndBundleGoodsReq> bundleGoods;
+    private List<ReplaceGoodsAndBundleGoodsReq> replaceGoods;
 }
 

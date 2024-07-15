@@ -9,6 +9,7 @@ import vn.com.gsoft.products.entity.DonViTinhs;
 import vn.com.gsoft.products.model.dto.DonViTinhsReq;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface DonViTinhsRepository extends BaseRepository<DonViTinhs, DonViTinhsReq, Long> {
@@ -39,4 +40,5 @@ public interface DonViTinhsRepository extends BaseRepository<DonViTinhs, DonViTi
   )
   List<DonViTinhs> searchList(@Param("param") DonViTinhsReq param);
 
+  Optional<DonViTinhs> findByTenDonViTinhAndMaNhaThuoc(String tenDviTinh, String maNhaThuoc);
 }
