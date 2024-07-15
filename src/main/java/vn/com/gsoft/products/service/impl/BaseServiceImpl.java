@@ -173,11 +173,11 @@ public class BaseServiceImpl<E extends BaseEntity,R extends BaseRequest, PK exte
     }
 
     @Override
-    public <T> List<T> handleImportExcel(Workbook workbook, List<String> propertyNames, Supplier<T> supplier) throws Exception {
+    public <T> List<T> handleImportExcel(Workbook workbook, List<String> propertyNames, Supplier<T> supplier, int line) throws Exception {
         List<T> list = new ArrayList<>();
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> iterator = sheet.iterator();
-        for (int i = 0; i < 2 && iterator.hasNext(); i++) {
+        for (int i = 0; i < line && iterator.hasNext(); i++) {
             iterator.next();
         }
         while (iterator.hasNext()) {

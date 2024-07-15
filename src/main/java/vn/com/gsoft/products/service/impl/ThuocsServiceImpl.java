@@ -843,7 +843,7 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
                     "importers", "smallestPackingUnit", "declaredPrice", "connectivityCode", "productTypeId", "organizeDeclaration", "countryRegistration", "addressRegistration", "addressManufacture",
                     "classification", "identifier", "forWholesale", "saleDescription",
                     "storageConditions", "storageLocation");
-            List<Thuocs> thuocs = new ArrayList<>(handleImportExcel(workbook, propertyNames,thuocsSupplier));
+            List<Thuocs> thuocs = new ArrayList<>(handleImportExcel(workbook, propertyNames,thuocsSupplier, 2));
             return pushToKafka(thuocs);
         } catch (Exception e) {
             log.error(e.getMessage());
