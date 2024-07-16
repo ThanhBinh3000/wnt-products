@@ -1,9 +1,6 @@
 package vn.com.gsoft.products.service.impl;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import jakarta.persistence.TypedQuery;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -18,9 +15,12 @@ import org.springframework.stereotype.Service;
 import vn.com.gsoft.products.constant.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.com.gsoft.products.entity.*;
+import vn.com.gsoft.products.model.dto.FileDto;
+import vn.com.gsoft.products.model.dto.InventoryReq;
+import vn.com.gsoft.products.model.dto.ThuocsReq;
+import vn.com.gsoft.products.model.dto.dataBarcode;
 import vn.com.gsoft.products.entity.Process;
 import vn.com.gsoft.products.model.dto.*;
-import vn.com.gsoft.products.model.system.BaseResponse;
 import vn.com.gsoft.products.model.system.PaggingReq;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.model.system.WrapData;
@@ -29,7 +29,9 @@ import vn.com.gsoft.products.repository.feign.InventoryFeign;
 import vn.com.gsoft.products.service.KafkaProducer;
 import vn.com.gsoft.products.service.ThuocsService;
 import vn.com.gsoft.products.util.system.ExportExcel;
+import vn.com.gsoft.products.util.system.FileUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -88,6 +90,19 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
     public InventoryFeign inventoryFeign;
     @Autowired
     public ReplaceGoodsAndBundleGoodsRepository replaceGoodsAndBundleGoodsRepository;
+
+    @Autowired
+    public PhieuNhapChiTietsRepository phieuNhapChiTietsRepository;
+
+    @Autowired
+    public PhieuXuatChiTietsRepository phieuXuatChiTietsRepository;
+
+    @Autowired
+    public ConfigTemplateRepository configTemplateRepository;
+
+    @Autowired
+    public NhaCungCapsRepository nhaCungCapsRepository;
+
 
     //region Public Methods
     @Override
@@ -828,6 +843,90 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         return dataList;
     }
     //endregion
+
+    @Override
+    public List<dataBarcode> getDataBarcode(HashMap<String, Object> hashMap) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null) {
+            throw new Exception("Bad request.");
+        }
+        Long idPhieu = hashMap.get("idPhieu") != null ? FileUtils.safeToLong(hashMap.get("idPhieu")) : null;
+        Long loaiPhieu = hashMap.get("loaiPhieu") != null ? FileUtils.safeToLong(hashMap.get("loaiPhieu")) : null;
+        Long idNhomThuoc = hashMap.get("idNhomThuoc") != null ? FileUtils.safeToLong(hashMap.get("idNhomThuoc")) : null;
+        List<dataBarcode> barcodeDataList = new ArrayList<>();
+        if (loaiPhieu != null && loaiPhieu == 1L && idPhieu != null) {
+            List<PhieuNhapChiTiets> phieuNhapChiTiets = phieuNhapChiTietsRepository.findByPhieuNhapMaPhieuNhapAndRecordStatusId(idPhieu, RecordStatusContains.ACTIVE);
+          if (!phieuNhapChiTiets.isEmpty()) {
+              for (PhieuNhapChiTiets chiTiet : phieuNhapChiTiets) {
+                  Optional<Thuocs> optional = Optional.ofNullable(this.detail(chiTiet.getThuocThuocId()));
+                  optional.ifPresent(thuocs -> barcodeDataList.add(createDataBarcode(thuocs)));
+              }
+          }
+        } else if (loaiPhieu != null && loaiPhieu == 2L && idPhieu != null) {
+            List<PhieuXuatChiTiets> phieuXuatChiTiets = phieuXuatChiTietsRepository.findAllByPhieuXuatMaPhieuXuatAndRecordStatusId(idPhieu, RecordStatusContains.ACTIVE);
+           if (!phieuXuatChiTiets.isEmpty()) {
+               for (PhieuXuatChiTiets chiTiet : phieuXuatChiTiets) {
+                   Optional<Thuocs> optional = Optional.ofNullable(this.detail(chiTiet.getThuocThuocId()));
+                   optional.ifPresent(thuocs -> barcodeDataList.add(createDataBarcode(thuocs)));
+               }
+           }
+        }
+        if (idNhomThuoc != null) {
+            List<Thuocs> thuocList = hdrRepo.findAllByNhomThuocMaNhomThuoc(idNhomThuoc);
+            if (!thuocList.isEmpty()) {
+                thuocList.forEach(thuoc -> barcodeDataList.add(createDataBarcode(thuoc)));
+            }
+        }
+        return barcodeDataList.stream()
+                .filter(item -> item.getMaVach() != null && !item.getMaVach().isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    private dataBarcode createDataBarcode(Thuocs thuocs) {
+        dataBarcode barcodeData = new dataBarcode();
+        barcodeData.setMaThuoc(thuocs.getMaThuoc());
+        barcodeData.setTenThuoc(thuocs.getTenThuoc());
+        barcodeData.setGiaBanLe(thuocs.getGiaBanLe());
+        barcodeData.setGiaBanBuon(thuocs.getGiaBanBuon());
+        barcodeData.setMaVach(thuocs.getBarCode());
+        if (thuocs.getDonViXuatLeMaDonViTinh() != null) {
+            Optional<DonViTinhs> donViTinhLe = donViTinhsRepository.findById(thuocs.getDonViXuatLeMaDonViTinh());
+            donViTinhLe.ifPresent(donViTinh -> barcodeData.setDonViTinhLe(donViTinh.getTenDonViTinh()));
+        }
+        if (thuocs.getDonViThuNguyenMaDonViTinh() != null) {
+            Optional<DonViTinhs> donViTinhBuon = donViTinhsRepository.findById(thuocs.getDonViThuNguyenMaDonViTinh());
+            donViTinhBuon.ifPresent(donViTinh -> barcodeData.setDonViTinhBuon(donViTinh.getTenDonViTinh()));
+        }
+        return barcodeData;
+    }
+
+    @Override
+    public ReportTemplateResponse preview(List<dataBarcode> listReq) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null) {
+            throw new Exception("Bad request.");
+        }
+        String templatePath = "/maVachLieuDung/";
+        Integer checkType = 0;
+        for (dataBarcode data : listReq) {
+            data.setTenNhaThuoc(data.getKhongInTenNhaThuoc() ? null : userInfo.getNhaThuoc().getTenNhaThuoc());
+            data.setDiaChiNhaThuoc(userInfo.getNhaThuoc().getDiaChi());
+            Optional<ConfigTemplate> configTemplates = null;
+            configTemplates = configTemplateRepository.findByMaNhaThuocAndPrintTypeAndMaLoaiAndType(userInfo.getNhaThuoc().getMaNhaThuoc(), data.getLoaiIn(), Long.valueOf(ENoteType.MedicineBarcodeSample), checkType);
+            if (!configTemplates.isPresent()) {
+                configTemplates = configTemplateRepository.findByPrintTypeAndMaLoaiAndType(data.getLoaiIn(), Long.valueOf(ENoteType.MedicineBarcodeSample), checkType);
+            }
+            if (configTemplates.isPresent()) {
+                templatePath += configTemplates.get().getTemplateFileName();
+            }
+            try (InputStream templateInputStream = FileUtils.getInputStreamByFileName(templatePath)) {
+                return FileUtils.convertDocxToPdf(templateInputStream, data, data.getMaVach(), null, null, listReq);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
 
     @Override
     public Process importExcel(MultipartFile file) throws Exception {

@@ -18,8 +18,8 @@ import org.apache.velocity.tools.generic.DateTool;
 import org.apache.velocity.tools.generic.MathTool;
 import org.apache.velocity.tools.generic.NumberTool;
 import org.springframework.stereotype.Component;
-import vn.com.gsoft.products.entity.ReportImage;
 import vn.com.gsoft.products.entity.ReportTemplateResponse;
+import vn.com.gsoft.products.model.dto.ReportImage;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -45,11 +45,20 @@ public class FileUtils {
     public static final String InCatLieu80mm = "9";
     public static final String InCatLieu58mm = "10";
     private static final String InLieuDung = "11";
-    private static final String[] units = {"", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"};
-    private static final String[] tens = {"", "", "hai mươi", "ba mươi", "bốn mươi", "năm mươi", "sáu mươi", "bảy mươi", "tám mươi", "chín mươi"};
-    private static final String[] thousands = {"", "nghìn", "triệu", "tỷ"};
+    private static final String[] units = {
+            "", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín",
+            "mười", "mười một", "mười hai", "mười ba", "mười bốn", "mười lăm",
+            "mười sáu", "mười bảy", "mười tám", "mười chín"
+    };
+    private static final String[] tens = {
+            "", "mười", "hai mươi", "ba mươi", "bốn mươi", "năm mươi",
+            "sáu mươi", "bảy mươi", "tám mươi", "chín mươi"
+    };
+    private static final String[] thousands = {
+            "", "nghìn", "triệu", "tỷ", "nghìn tỷ", "triệu tỷ"
+    };
 
-    public static ReportTemplateResponse convertDocxToPdf(InputStream inputFile, Object data, String barcode, Long amountPrint, List<ReportImage> reportImage) throws Exception {
+    public static ReportTemplateResponse convertDocxToPdf(InputStream inputFile, Object data, String barcode, Long amountPrint, List<ReportImage> reportImage, Object... detail) throws Exception {
         try (ByteArrayOutputStream outputStreamPdf = new ByteArrayOutputStream();
              ByteArrayOutputStream outputStreamWord = new ByteArrayOutputStream()) {
             ReportTemplateResponse reportTemplateResponse = new ReportTemplateResponse();
@@ -57,7 +66,7 @@ public class FileUtils {
             FieldsMetadata metadata = new FieldsMetadata();
             if (barcode != null) {
                 metadata.addFieldAsImage("imageBarcode");
-                if (amountPrint > 1) {
+                if (amountPrint != null && amountPrint > 1) {
                     metadata.addFieldAsImage("imageBarcode1");
                 }
             }
@@ -73,11 +82,18 @@ public class FileUtils {
             context.put("dateTool", new DateTool());
             context.put("mathTool", new MathTool());
             context.put("locale", new Locale("vi", "VN"));
+            context.put("br", "\n");
+            if (detail != null && detail.length > 0) {
+                Object[] detailArray = detail.clone().clone();
+                for (int i = 0; i < detailArray.length; i++) {
+                    context.put("detail" + i, detailArray[i]);
+                }
+            }
             String base64Image = null;
             if (barcode != null) {
                 base64Image = generateBarcodeBase64(barcode);
                 processBase64Image(base64Image, "imageBarcode", context);
-                if (amountPrint > 1) {
+                if (amountPrint != null && amountPrint > 1) {
                     processBase64Image(base64Image, "imageBarcode1", context);
                 }
             }
@@ -128,14 +144,14 @@ public class FileUtils {
     public static InputStream getInputStreamByFileName(String fileName) throws FileNotFoundException {
         if (StringUtils.isNotEmpty(fileName) && fileName.contains(".")) {
             log.info("Find template {}", fileName);
-            ClassLoader cl = Component.class.getClassLoader();
-            InputStream is = cl.getResourceAsStream("\\template\\" + fileName);
-            if (is == null) {
+            ClassLoader classLoader = Component.class.getClassLoader();
+            InputStream inputStream = classLoader.getResourceAsStream("\\template\\" + fileName);
+            if (inputStream == null) {
                 log.info("Find template in template folder {}", fileName);
-                String f = new File("").getAbsolutePath() + File.separator + "template" + File.separator + fileName;
-                return new FileInputStream(f);
+                String string = new File("").getAbsolutePath() + File.separator + "template" + File.separator + fileName;
+                return new FileInputStream(string);
             }
-            return is;
+            return inputStream;
         } else {
             return null;
         }
@@ -177,6 +193,9 @@ public class FileUtils {
     }
 
     private static String convertLessThanOneThousand(int number) {
+        if (number < 0 || number >= 1000) {
+            throw new IllegalArgumentException("Number out of range: " + number);
+        }
         StringBuilder current = new StringBuilder();
         if (number % 100 < 20) {
             current.append(units[number % 100]);

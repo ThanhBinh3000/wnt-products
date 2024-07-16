@@ -7,13 +7,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import vn.com.gsoft.products.entity.Inventory;
 import vn.com.gsoft.products.entity.Process;
+import vn.com.gsoft.products.entity.ReportTemplateResponse;
 import vn.com.gsoft.products.entity.Thuocs;
 import vn.com.gsoft.products.model.dto.FileDto;
 import vn.com.gsoft.products.model.dto.InventoryReq;
 import vn.com.gsoft.products.model.dto.ThuocsReq;
+import vn.com.gsoft.products.model.dto.dataBarcode;
 
 import java.util.HashMap;
-import java.util.Optional;
+import java.util.List;
 
 public interface ThuocsService extends BaseService<Thuocs, ThuocsReq, Long> {
     @Transactional(rollbackFor = {Exception.class, Throwable.class})
@@ -40,4 +42,8 @@ public interface ThuocsService extends BaseService<Thuocs, ThuocsReq, Long> {
 
     // xem chi tiết số tồn ở các kho
     Object getDataDetailLastValueWarehouse(Long thuocId) throws Exception;
+
+    List<dataBarcode> getDataBarcode(HashMap<String, Object> hashMap) throws Exception;
+
+    ReportTemplateResponse preview(List<dataBarcode> dataBarcodes) throws Exception;
 }

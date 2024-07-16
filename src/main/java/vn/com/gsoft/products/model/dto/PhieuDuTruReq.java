@@ -18,7 +18,11 @@ public class PhieuDuTruReq extends BaseRequest {
     private Long recordStatusID;
     private Long supplierId;
     private String linkShare;
-
+    private String loaiIn;
+    private String createdByUseText;
+    private String supplierText;
+    private String maNhaThuocText;
+    private String diaChiNhaThuoc;
+    private String sdtNhaThuoc;
     private List<PhieuDuTruChiTiet> chiTiets;
-
 }

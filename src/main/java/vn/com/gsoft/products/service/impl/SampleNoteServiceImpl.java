@@ -11,6 +11,7 @@ import vn.com.gsoft.products.constant.ENoteType;
 import vn.com.gsoft.products.constant.RecordStatusContains;
 import vn.com.gsoft.products.entity.*;
 import vn.com.gsoft.products.model.dto.InventoryReq;
+import vn.com.gsoft.products.model.dto.ReportImage;
 import vn.com.gsoft.products.model.dto.SampleNoteReq;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.*;
@@ -278,8 +279,11 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
             if (loai.equals(FileUtils.InPhieuA5)) {
                 checkType = handleInKhachLeA5(userInfo, sampleNote, isConnectSampleNote);
             }
-            Optional<ConfigTemplate> configTemplates = configTemplateRepository.findByMaNhaThuocAndPrintTypeAndMaLoaiAndType(
-                    sampleNote.getDrugStoreID(), loai, Long.valueOf(ENoteType.SampleForm), checkType);
+            Optional<ConfigTemplate> configTemplates = null;
+            configTemplates = configTemplateRepository.findByMaNhaThuocAndPrintTypeAndMaLoaiAndType(sampleNote.getDrugStoreID(), loai, Long.valueOf(ENoteType.SampleForm), checkType);
+            if (!configTemplates.isPresent()) {
+                configTemplates = configTemplateRepository.findByPrintTypeAndMaLoaiAndType(loai, Long.valueOf(ENoteType.SampleForm), checkType);
+            }
             if (configTemplates.isPresent()) {
                 templatePath += configTemplates.get().getTemplateFileName();
             }

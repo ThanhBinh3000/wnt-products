@@ -45,5 +45,7 @@ public class PhieuDuTruChiTiet extends BaseEntity {
     private String maDonViDuTruText;
     @Transient
     private String tenNhomThuoc;
+    @Transient
+    private String nhaCungCapText;
 }
 

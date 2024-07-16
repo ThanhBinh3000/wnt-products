@@ -1,5 +1,7 @@
 package vn.com.gsoft.products.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,12 +11,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.com.gsoft.products.constant.PathContains;
 import vn.com.gsoft.products.model.dto.PhieuDuTruReq;
-import vn.com.gsoft.products.model.dto.PhieuKiemKesReq;
 import vn.com.gsoft.products.model.system.BaseResponse;
 import vn.com.gsoft.products.service.PhieuDuTruService;
 import vn.com.gsoft.products.util.system.ResponseUtils;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -87,7 +90,31 @@ public class PhieuDuTruController {
 
     @PostMapping(value = PathContains.URL_PREVIEW, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<BaseResponse> preview(@RequestBody HashMap<String, Object> body) throws Exception {
-        return ResponseEntity.ok(ResponseUtils.ok(service.preview(body)));
+    public ResponseEntity<BaseResponse> preview(@RequestBody PhieuDuTruReq object) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.preview(object)));
+    }
+
+    @PostMapping(value = PathContains.URL_CREATE + "-nha-cung-cap", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<BaseResponse> createNhaCC(@Valid @RequestBody List<PhieuDuTruReq> objReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.createNhaCC(objReq)));
+    }
+
+    @PostMapping(value = PathContains.URL_EXPORT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public void exportList(@RequestBody PhieuDuTruReq objReq, HttpServletResponse response) throws Exception {
+        try {
+            service.export(objReq, response);
+        } catch (Exception e) {
+            log.error("Kết xuất danh sách dánh  : {}", e);
+            final Map<String, Object> body = new HashMap<>();
+            body.put("statusCode", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            body.put("msg", e.getMessage());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding("UTF-8");
+            final ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(response.getOutputStream(), body);
+
+        }
     }
 }

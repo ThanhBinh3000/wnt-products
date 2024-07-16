@@ -468,8 +468,11 @@ public class PhieuKiemKesServiceImpl extends BaseServiceImpl<PhieuKiemKes, Phieu
             if (phieuKiemKes.getDaCanKho()) {
                 checkType = 1;
             }
-            Optional<ConfigTemplate> configTemplates = configTemplateRepository.findByMaNhaThuocAndPrintTypeAndMaLoaiAndType(
-                    phieuKiemKes.getNhaThuocMaNhaThuoc(), loai, Long.valueOf(ENoteType.InventoryForm), checkType);
+            Optional<ConfigTemplate> configTemplates = null;
+            configTemplates = configTemplateRepository.findByMaNhaThuocAndPrintTypeAndMaLoaiAndType(phieuKiemKes.getNhaThuocMaNhaThuoc(), loai, Long.valueOf(ENoteType.InventoryForm), checkType);
+            if (!configTemplates.isPresent()) {
+                configTemplates = configTemplateRepository.findByPrintTypeAndMaLoaiAndType(loai, Long.valueOf(ENoteType.InventoryForm), checkType);
+            }
             if (configTemplates.isPresent()) {
                 templatePath += configTemplates.get().getTemplateFileName();
             }

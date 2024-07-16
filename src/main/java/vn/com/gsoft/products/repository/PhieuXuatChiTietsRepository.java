@@ -198,4 +198,6 @@ public interface PhieuXuatChiTietsRepository extends BaseRepository<PhieuXuatChi
     List<PhieuXuatChiTiets> findByMaNhaThuocAndThuocThuocIdAndCreatedAndAndRecordStatusId(String maNhaThuoc, Long thuocThuocId, Date created, long active);
 
     void deleteByThuocThuocId(Long thuocThuocId);
+
+    List<PhieuXuatChiTiets> findAllByPhieuXuatMaPhieuXuatAndRecordStatusId(Long phieuXuatMaPhieuXuat, Long status);
 }
