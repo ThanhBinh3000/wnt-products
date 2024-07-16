@@ -208,7 +208,6 @@ public class PhieuDuTruServiceImpl extends BaseServiceImpl<PhieuDuTru, PhieuDuTr
             req.setMaNhaThuocText(userInfo.getNhaThuoc().getTenNhaThuoc());
             req.setDiaChiNhaThuoc(userInfo.getNhaThuoc().getDiaChi());
             req.setSdtNhaThuoc(userInfo.getNhaThuoc().getDienThoai());
-            System.out.println(req + "haha");
             InputStream templateInputStream = FileUtils.getInputStreamByFileName(templatePath);
             return FileUtils.convertDocxToPdf(templateInputStream, req, null, null, null);
         } catch (Exception e) {

@@ -1,9 +1,6 @@
 package vn.com.gsoft.products.service.impl;
 
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import jakarta.persistence.TypedQuery;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -16,7 +13,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.com.gsoft.products.constant.*;
-import vn.com.gsoft.products.constant.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.com.gsoft.products.entity.*;
 import vn.com.gsoft.products.model.dto.FileDto;
@@ -25,7 +21,6 @@ import vn.com.gsoft.products.model.dto.ThuocsReq;
 import vn.com.gsoft.products.model.dto.dataBarcode;
 import vn.com.gsoft.products.entity.Process;
 import vn.com.gsoft.products.model.dto.*;
-import vn.com.gsoft.products.model.system.BaseResponse;
 import vn.com.gsoft.products.model.system.PaggingReq;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.model.system.WrapData;
@@ -37,7 +32,6 @@ import vn.com.gsoft.products.util.system.ExportExcel;
 import vn.com.gsoft.products.util.system.FileUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
