@@ -8,9 +8,12 @@ import org.springframework.stereotype.Service;
 import vn.com.gsoft.products.constant.RecordStatusContains;
 import vn.com.gsoft.products.entity.DonViTinhs;
 import vn.com.gsoft.products.entity.ProductTypes;
+import vn.com.gsoft.products.entity.Thuocs;
 import vn.com.gsoft.products.model.dto.DonViTinhsReq;
 import vn.com.gsoft.products.model.dto.ProductTypesReq;
+import vn.com.gsoft.products.model.dto.ThuocsReq;
 import vn.com.gsoft.products.model.system.Profile;
+import vn.com.gsoft.products.repository.BaseRepository;
 import vn.com.gsoft.products.repository.DonViTinhsRepository;
 import vn.com.gsoft.products.repository.ProductTypesRepository;
 import vn.com.gsoft.products.service.DonViTinhsService;
@@ -20,10 +23,14 @@ import java.util.List;
 
 @Service
 @Log4j2
-public class ProductTypesServiceImpl implements ProductTypesService {
+public class ProductTypesServiceImpl extends BaseServiceImpl<ProductTypes, ProductTypesReq, Long> implements ProductTypesService {
 
 	@Autowired
 	private ProductTypesRepository hdrRepo;
+
+	public ProductTypesServiceImpl(ProductTypesRepository repository) {
+		super(repository);
+	}
 
 	@Override
 	public Page<ProductTypes> searchPage(ProductTypesReq req) throws Exception {

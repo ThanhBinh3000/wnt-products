@@ -90,4 +90,20 @@ public class KafkaProducerImpl implements KafkaProducer {
         processDtl.setStatus(0); // 0: khởi tạo, 1: running , 2:done
         return processDtlRepository.save(processDtl);
     }
+
+    @Override
+    public Process createProcess(String batchKey, String maNhaThuoc, String json, Date date, int size) throws Exception {
+        // check batchKey
+        Optional<Process> checkOpt = processRepository.findByBatchKey(batchKey);
+        if (checkOpt.isPresent()) {
+            throw new Exception("Lỗi trùng batchKey!");
+        }
+        Process process = new Process();
+        process.setMaNhaThuoc(maNhaThuoc);
+        process.setBatchKey(batchKey);
+        process.setStartDate(date);
+        process.setTotal(size);
+        process.setStatus(0);
+        return processRepository.save(process);
+    }
 }

@@ -1,28 +1,43 @@
 package vn.com.gsoft.products.service.impl;
 
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import jakarta.persistence.TypedQuery;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.com.gsoft.products.constant.*;
+import vn.com.gsoft.products.constant.*;
+import org.springframework.web.multipart.MultipartFile;
 import vn.com.gsoft.products.entity.*;
 import vn.com.gsoft.products.model.dto.FileDto;
 import vn.com.gsoft.products.model.dto.InventoryReq;
 import vn.com.gsoft.products.model.dto.ThuocsReq;
 import vn.com.gsoft.products.model.dto.dataBarcode;
+import vn.com.gsoft.products.entity.Process;
+import vn.com.gsoft.products.model.dto.*;
+import vn.com.gsoft.products.model.system.BaseResponse;
 import vn.com.gsoft.products.model.system.PaggingReq;
 import vn.com.gsoft.products.model.system.Profile;
+import vn.com.gsoft.products.model.system.WrapData;
 import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.repository.feign.InventoryFeign;
+import vn.com.gsoft.products.service.KafkaProducer;
 import vn.com.gsoft.products.service.ThuocsService;
 import vn.com.gsoft.products.util.system.ExportExcel;
 import vn.com.gsoft.products.util.system.FileUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -34,6 +49,7 @@ import java.util.List;
 import java.util.Optional;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -43,6 +59,11 @@ import java.util.stream.Collectors;
 public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> implements ThuocsService {
 
     private ThuocsRepository hdrRepo;
+
+    @Autowired
+    private KafkaProducer kafkaProducer;
+    @Value("${wnt.kafka.internal.consumer.topic.import-master}")
+    private String topicName;
 
     @Autowired
     public ThuocsServiceImpl(ThuocsRepository hdrRepo) {
@@ -73,6 +94,8 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
 
     @Autowired
     public InventoryFeign inventoryFeign;
+    @Autowired
+    public ReplaceGoodsAndBundleGoodsRepository replaceGoodsAndBundleGoodsRepository;
 
     @Autowired
     public PhieuNhapChiTietsRepository phieuNhapChiTietsRepository;
@@ -188,6 +211,23 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         return update(req, "thuốc");
     }
 
+//    private void InsertReplaceAndBundleGood(int[] ids, int type, int drugId, string storeCode)
+//    {
+//        var repo = IoC.Resolve<BaseRepositoryV2<MedDbContext, ReplaceGoodsAndBundleGoods>>();
+//        ids.ForEach(x =>
+//                {
+//                        var item = new ReplaceGoodsAndBundleGoods()
+//                {
+//                    DrugId = x,
+//                    DrugIdMap = drugId,
+//                    TypeId = type,
+//                    DrugStoreCode = storeCode
+//                };
+//        repo.Insert(item);
+//        repo.Commit();
+//            });
+//    }
+
     @Override
     public Thuocs create(ThuocsReq req, String object) throws Exception {
         Profile userInfo = this.getLoggedUser();
@@ -255,19 +295,22 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
             hdr.setGroupIdMapping(hdr.getId());
             hdr = hdrRepo.save(hdr);
         }
+//        List<ReplaceGoodsAndBundleGoods> listReplaceGoods = replaceGoodsAndBundleGoodsRepository.findReplaceGoodsAndBundleGoodsByDrugStoreCodeAndAndDrugIdMap(storeCode, req.getId());
+//        replaceGoodsAndBundleGoodsRepository.deleteAll(listReplaceGoods);
+        saveReplaceGoodsAndBundleGoods(req, hdr.getId(), storeCode);
         return hdr;
     }
 
     @Override
     public Thuocs update(ThuocsReq req, String object) throws Exception {
         Profile userInfo = this.getLoggedUser();
+        String storeCode = userInfo.getNhaThuoc().getMaNhaThuoc();
         if (userInfo == null)
             throw new Exception("Bad request.");
         Optional<Thuocs> optional = hdrRepo.findById(req.getId());
         if (optional.isEmpty()) {
             throw new Exception("Không tìm thấy dữ liệu.");
         } else {
-            String storeCode = userInfo.getNhaThuoc().getMaNhaThuoc();
             String parentStoreCode = userInfo.getNhaThuoc().getMaNhaThuocCha() != null && !userInfo.getNhaThuoc().getMaNhaThuocCha().isEmpty()
                     ? userInfo.getNhaThuoc().getMaNhaThuocCha() : storeCode;
             String maThuoc = req.getMaThuoc();
@@ -319,7 +362,34 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
             hdr.setDonViThuNguyenMaDonViTinh(null);
         }
         hdr = hdrRepo.save(hdr);
+        List<ReplaceGoodsAndBundleGoods> listReplaceGoods = replaceGoodsAndBundleGoodsRepository.findReplaceGoodsAndBundleGoodsByDrugStoreCodeAndDrugIdMap(storeCode, hdr.getId());
+        replaceGoodsAndBundleGoodsRepository.deleteAll(listReplaceGoods);
+        saveReplaceGoodsAndBundleGoods(req, hdr.getId(), storeCode);
         return hdr;
+    }
+
+    private void saveReplaceGoodsAndBundleGoods(ThuocsReq req, Long drugId, String storeCode){
+        if(!req.getReplaceGoods().isEmpty()){
+            for (ReplaceGoodsAndBundleGoodsReq replaceGood : req.getReplaceGoods()) {
+                ReplaceGoodsAndBundleGoods replaceGoodsData = new ReplaceGoodsAndBundleGoods();
+                BeanUtils.copyProperties(replaceGood, replaceGoodsData);
+                replaceGoodsData.setDrugIdMap(drugId);
+                replaceGoodsData.setTypeId(GoodsTypeMap.REPLACE_GOOD);
+                replaceGoodsData.setDrugStoreCode(storeCode);
+                replaceGoodsAndBundleGoodsRepository.save(replaceGoodsData);
+            }
+        }
+
+        if(!req.getBundleGoods().isEmpty()){
+            for (ReplaceGoodsAndBundleGoodsReq bundleGood : req.getBundleGoods()) {
+                ReplaceGoodsAndBundleGoods bundleGoodsData = new ReplaceGoodsAndBundleGoods();
+                BeanUtils.copyProperties(bundleGood, bundleGoodsData);
+                bundleGoodsData.setDrugIdMap(drugId);
+                bundleGoodsData.setTypeId(GoodsTypeMap.BUNDLE_GOOD);
+                bundleGoodsData.setDrugStoreCode(storeCode);
+                replaceGoodsAndBundleGoodsRepository.save(bundleGoodsData);
+            }
+        }
     }
 
     @Override
@@ -497,10 +567,6 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
                 Optional<WarehouseLocation> byIdNt = warehouseLocationRepository.findById(item.getIdWarehouseLocation());
                 byIdNt.ifPresent(warehouseLocations -> item.setTenViTri(warehouseLocations.getNameWarehouse()));
             }
-            if (item.getMaNhaCungCap() != null) {
-                Optional<NhaCungCaps> byIdNt = nhaCungCapsRepository.findById(item.getMaNhaCungCap().longValue());
-                byIdNt.ifPresent(nhaCungCaps -> item.setNhaCungCapText(nhaCungCaps.getTenNhaCungCap()));
-            }
             InventoryReq inventoryReq = new InventoryReq();
             inventoryReq.setDrugID(item.getId());
             inventoryReq.setDrugStoreID(item.getNhaThuocMaNhaThuoc());
@@ -540,10 +606,6 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
                 Optional<WarehouseLocation> byIdNt = warehouseLocationRepository.findById(item.getIdWarehouseLocation());
                 byIdNt.ifPresent(warehouseLocations -> item.setTenViTri(warehouseLocations.getNameWarehouse()));
             }
-            if (item.getMaNhaCungCap() != null) {
-                Optional<NhaCungCaps> byIdNt = nhaCungCapsRepository.findById(item.getMaNhaCungCap().longValue());
-                byIdNt.ifPresent(nhaCungCaps -> item.setNhaCungCapText(nhaCungCaps.getTenNhaCungCap()));
-            }
             InventoryReq inventoryReq = new InventoryReq();
             inventoryReq.setDrugID(item.getId());
             inventoryReq.setDrugStoreID(item.getNhaThuocMaNhaThuoc());
@@ -559,6 +621,7 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         HashMap<Integer, Double> profile = inventoryFeign.getTotalInventory(inventoryReq);
         return profile;
     }
+
 
     // xem chi tiết số tồn ở các kho
     @Override
@@ -594,14 +657,15 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         } catch (Exception ex) {
             log.error("GetDataDetailLastValueWarehouse {} error: {}", userInfo.getNhaThuoc().getMaNhaThuoc(), ex);
         }
-        return lstInventory;
+        return  lstInventory;
     }
 
-    @Override
-    public Thuocs detail(Long id) throws Exception {
-        Profile userInfo = this.getLoggedUser();
-        if (userInfo == null)
-            throw new Exception("Bad request.");
+	@Override
+	public Thuocs detail(Long id) throws Exception {
+		Profile userInfo = this.getLoggedUser();
+		if (userInfo == null)
+			throw new Exception("Bad request.");
+        String storeCode = userInfo.getNhaThuoc().getMaNhaThuoc();
 
         Optional<Thuocs> optional = hdrRepo.findById(id);
         if (optional.isEmpty()) {
@@ -652,8 +716,28 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         inventoryReq.setRecordStatusID(RecordStatusContains.ACTIVE);
         Optional<Inventory> inventory = inventoryRepository.searchDetail(inventoryReq);
         inventory.ifPresent(thuocs::setInventory);
+
+        List<ReplaceGoodsAndBundleGoods> replaceGoods = replaceGoodsAndBundleGoodsRepository.findReplaceGoodsAndBundleGoodsByDrugStoreCodeAndDrugIdMapAndTypeId(storeCode, thuocs.getId(), GoodsTypeMap.REPLACE_GOOD);
+        for (ReplaceGoodsAndBundleGoods replaceGood : replaceGoods) {
+            Optional<Thuocs> obj = hdrRepo.findById(replaceGood.getDrugId());
+            if(obj.isPresent()){
+                replaceGood.setMaThuoc(obj.get().getMaThuoc());
+                replaceGood.setTenThuoc(obj.get().getTenThuoc());
+            }
+        }
+        List<ReplaceGoodsAndBundleGoods> bundleGoods = replaceGoodsAndBundleGoodsRepository.findReplaceGoodsAndBundleGoodsByDrugStoreCodeAndDrugIdMapAndTypeId(storeCode, thuocs.getId(), GoodsTypeMap.BUNDLE_GOOD);
+        for (ReplaceGoodsAndBundleGoods bundleGood : bundleGoods) {
+            Optional<Thuocs> obj = hdrRepo.findById(bundleGood.getDrugId());
+            if(obj.isPresent()){
+                bundleGood.setMaThuoc(obj.get().getMaThuoc());
+                bundleGood.setTenThuoc(obj.get().getTenThuoc());
+            }
+        }
+        thuocs.setReplaceGoods(replaceGoods);
+        thuocs.setBundleGoods(bundleGoods);
         return thuocs;
     }
+
     //endregion
 
     //region Private Methods
@@ -730,7 +814,7 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
             objs[11] = thuoc.getTenDonViTinhXuatLe();
             objs[12] = thuoc.getTenDonViTinhThuNguyen();
             objs[13] = thuoc.getGioiHan();
-            objs[14] = thuoc.getHeSo() != null ? decimalFormat.format(thuoc.getHeSo()) : "1";
+            objs[14] = thuoc.getHeSo() != null ? decimalFormat.format(thuoc.getHeSo()): "1";
             objs[15] = thuoc.getSoDuDauKy() != null ? decimalFormat.format(thuoc.getSoDuDauKy()) : "0";
             objs[16] = thuoc.getGiaDauKy() != null ? decimalFormat.format(thuoc.getGiaDauKy()) : "0";
             objs[17] = thuoc.getBarCode();
@@ -848,5 +932,57 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
             }
         }
         return null;
+    }
+
+    @Override
+    public Process importExcel(MultipartFile file) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        Supplier<Thuocs> thuocsSupplier = Thuocs::new;
+        InputStream inputStream = file.getInputStream();
+        try (Workbook workbook = new XSSFWorkbook(inputStream)) {
+            List<String> propertyNames = Arrays.asList("maThuoc", "tenNhomThuoc", "tenThuoc", "thongTin"
+                    , "giaNhap", "giaBanLe", "scorable", "moneyToOneScoreRate", "discountByRevenue", "discount", "giaBanBuon", "tenDonViTinhXuatLe",
+                    "tenDonViTinhThuNguyen", "gioiHan", "heSo", "soDuDauKy", "giaDauKy", "barCode", "serialNumber", "hanDung", "dosageForms", "registeredNo", "activeSubstance", "contents", "packingWay", "countryOfManufacturer", "manufacturer",
+                    "importers", "smallestPackingUnit", "declaredPrice", "connectivityCode", "productTypeId", "organizeDeclaration", "countryRegistration", "addressRegistration", "addressManufacture",
+                    "classification", "identifier", "forWholesale", "saleDescription",
+                    "storageConditions", "storageLocation");
+            List<Thuocs> thuocs = new ArrayList<>(handleImportExcel(workbook, propertyNames,thuocsSupplier, 2));
+            return pushToKafka(thuocs);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private Process pushToKafka(List<Thuocs> thuocs) throws Exception {
+        int size = thuocs.size();
+        int index = 1;
+        UUID uuid = UUID.randomUUID();
+        String bathKey = uuid.toString();
+        Profile userInfo = this.getLoggedUser();
+        Process process = kafkaProducer.createProcess(bathKey, userInfo.getNhaThuoc().getMaNhaThuoc(), new Gson().toJson(thuocs), new Date(),size);
+        for(Thuocs bs :thuocs){
+            Optional<DonViTinhs> dvt = donViTinhsRepository.findByTenDonViTinhAndMaNhaThuoc(bs.getTenDonViTinhThuNguyen(), this.getLoggedUser().getNhaThuoc().getMaNhaThuoc());
+            if (dvt.isPresent()) {
+                bs.setDonViThuNguyenMaDonViTinh(dvt.get().getId());
+                bs.setFlag(false);
+                bs.setGroupIdMapping(0L);
+            }
+            String key = bs.getMaThuoc();
+            WrapData data = new WrapData();
+            data.setBatchKey(bathKey);
+            data.setCode(ImportConstant.THUOC);
+            data.setSendDate(new Date());
+            data.setData(bs);
+            data.setTotal(size);
+            data.setIndex(index++);
+            data.setProfile(this.getLoggedUser());
+            kafkaProducer.createProcessDtl(process, data);
+            kafkaProducer.sendInternal(topicName, key, new Gson().toJson(data));
+        }
+        return process;
     }
 }

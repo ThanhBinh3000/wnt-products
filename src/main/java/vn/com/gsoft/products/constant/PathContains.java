@@ -18,6 +18,7 @@ public class PathContains {
     public static final String URL_EXPORT = "/export";
     public static final String URL_PREVIEW = "/preview";
     public static final String URL_DETAILLASTVALUEWAREHOUSE = "/get-data-detail-last-value-warehouse/{id}";
+    public static final String URL_IMPORT = "/import";
 
     public static final String URL_NHOM_NHA_CUNG_CAP = "/nhom-nha-cung-cap";
     public static final String URL_NHOM_BAC_SI = "/nhom-bac-si";
