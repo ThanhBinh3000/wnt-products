@@ -312,8 +312,8 @@ public class Thuocs extends BaseEntity{
     public int getRpHashCode() {
         int result = heSo.hashCode();
         result = (result * 397) ^ heSo.hashCode();
-        result = (result * 397) ^ soDuDauKy.hashCode();
-        result = (result * 397) ^ giaDauKy.hashCode();
+        result = (result * 397) ^ (soDuDauKy != null ? soDuDauKy.hashCode() : 0);
+        result = (result * 397) ^ (giaDauKy != null ? giaDauKy.hashCode() : 0);
         result = (result * 397) ^ (donViXuatLeMaDonViTinh != null ? donViXuatLeMaDonViTinh.hashCode() : 0);
         result = (result * 397) ^ (donViThuNguyenMaDonViTinh != null ? donViThuNguyenMaDonViTinh.hashCode() : 0);
         result = (int) ((result * 397) ^ super.getRecordStatusId());

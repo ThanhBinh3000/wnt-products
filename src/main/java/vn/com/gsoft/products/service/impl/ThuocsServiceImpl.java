@@ -672,7 +672,7 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         Thuocs thuocs = optional.get();
         //fill dvt
         List<DonViTinhs> dviTinh = new ArrayList<>();
-        if (thuocs.getDonViXuatLeMaDonViTinh() > 0) {
+        if (thuocs.getDonViXuatLeMaDonViTinh() != null && thuocs.getDonViXuatLeMaDonViTinh() > 0) {
             Optional<DonViTinhs> byId = donViTinhsRepository.findById(thuocs.getDonViXuatLeMaDonViTinh());
             if (byId.isPresent()) {
                 byId.get().setFactor(1);
@@ -694,7 +694,7 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         }
         thuocs.setListDonViTinhs(dviTinh);
         //fill vi tri tu/kho
-        if (thuocs.getIdWarehouseLocation() > 0) {
+        if (thuocs.getIdWarehouseLocation() != null && thuocs.getIdWarehouseLocation() > 0) {
             Optional<WarehouseLocation> byId = warehouseLocationRepository.findById(thuocs.getIdWarehouseLocation());
             if (byId.isPresent()) {
                 thuocs.setTenViTri(byId.get().getNameWarehouse());
