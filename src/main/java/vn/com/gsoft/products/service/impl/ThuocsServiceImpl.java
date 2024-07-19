@@ -959,9 +959,11 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         Profile userInfo = this.getLoggedUser();
         Process process = kafkaProducer.createProcess(bathKey, userInfo.getNhaThuoc().getMaNhaThuoc(), new Gson().toJson(thuocs), new Date(),size);
         for(Thuocs bs :thuocs){
-            Optional<DonViTinhs> dvt = donViTinhsRepository.findByTenDonViTinhAndMaNhaThuoc(bs.getTenDonViTinhThuNguyen(), this.getLoggedUser().getNhaThuoc().getMaNhaThuoc());
-            if (dvt.isPresent()) {
-                bs.setDonViThuNguyenMaDonViTinh(dvt.get().getId());
+            Optional<DonViTinhs> dvtThuNguyen = donViTinhsRepository.findByTenDonViTinhAndMaNhaThuoc(bs.getTenDonViTinhThuNguyen(), this.getLoggedUser().getNhaThuoc().getMaNhaThuoc());
+            Optional<DonViTinhs> dvtLe = donViTinhsRepository.findByTenDonViTinhAndMaNhaThuoc(bs.getTenDonViTinhXuatLe(), this.getLoggedUser().getNhaThuoc().getMaNhaThuoc());
+            if (dvtThuNguyen.isPresent()) {
+                bs.setDonViThuNguyenMaDonViTinh(dvtThuNguyen.get().getId());
+                bs.setDonViXuatLeMaDonViTinh(dvtLe.get().getId());
                 bs.setFlag(false);
                 bs.setGroupIdMapping(0L);
             }
