@@ -53,4 +53,6 @@ public interface SampleNoteDetailRepository extends BaseRepository<SampleNoteDet
   List<SampleNoteDetail> findByNoteID(Long noteId);
 
   void deleteAllByNoteID(Long noteID);
+
+  List<SampleNoteDetail> findByNoteIDIn(List<Long> noteIds);
 }

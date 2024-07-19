@@ -13,6 +13,8 @@ import vn.com.gsoft.products.entity.*;
 import vn.com.gsoft.products.model.dto.InventoryReq;
 import vn.com.gsoft.products.model.dto.ReportImage;
 import vn.com.gsoft.products.model.dto.SampleNoteReq;
+import vn.com.gsoft.products.model.dto.TranSampleNote;
+import vn.com.gsoft.products.model.system.ApplicationSetting;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.service.SampleNoteService;
@@ -24,6 +26,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -300,6 +303,56 @@ public class SampleNoteServiceImpl extends BaseServiceImpl<SampleNote, SampleNot
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public Page<SampleNote> getTranSampleNotes(SampleNoteReq req) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        Pageable pageable = PageRequest.of(req.getPaggingReq().getPage(), req.getPaggingReq().getLimit());
+        Page<SampleNote> sampleNotesPage = hdrRepo.searchPage(req, pageable);
+        List<SampleNote> sampleNotes = sampleNotesPage.getContent();
+        List<Long> noteIds = sampleNotes.stream().map(SampleNote::getId).collect(Collectors.toList());
+        List<SampleNoteDetail> sampleNoteDetails = sampleNoteDetailRepository.findByNoteIDIn(noteIds);
+
+        Map<Long, Thuocs> thuocMap = new HashMap<>();
+        thuocsRepository.findAllById(
+                sampleNoteDetails.stream().map(SampleNoteDetail::getDrugID).collect(Collectors.toList())
+        ).forEach(thuoc -> thuocMap.put(thuoc.getId(), thuoc));
+
+        Map<Long, DonViTinhs> donViTinhMap = new HashMap<>();
+        donViTinhsRepository.findAllById(
+                sampleNoteDetails.stream().map(SampleNoteDetail::getDrugUnitID).collect(Collectors.toList())
+        ).forEach(donViTinh -> donViTinhMap.put(donViTinh.getId(), donViTinh));
+
+        Map<Long, BacSies> bacSyMap = new HashMap<>();
+        bacSiesRepository.findAllById(
+                sampleNotes.stream().map(SampleNote::getDoctorId).collect(Collectors.toList())
+        ).forEach(bacSy -> bacSyMap.put(bacSy.getId(), bacSy));
+
+        sampleNotesPage.forEach( note -> {
+            List<SampleNoteDetail> details = sampleNoteDetails.stream()
+                    .filter(detail -> detail.getNoteID().equals(note.getId()))
+                    .collect(Collectors.toList());
+
+            note.setDoctorName(bacSyMap.containsKey(note.getDoctorId()) ? bacSyMap.get(note.getDoctorId()).getTenBacSy() : "");
+
+            details.forEach(detail -> {
+                Thuocs thuoc = thuocMap.get(detail.getDrugID());
+                DonViTinhs donViTinh = donViTinhMap.get(detail.getDrugUnitID());
+                if(thuoc != null){
+                    detail.setThuocs(thuoc);
+                    detail.setDrugNameText(thuoc.getTenThuoc());
+                    detail.setDrugCodeText(thuoc.getMaThuoc());
+                }
+                if(donViTinh != null){
+                    detail.setDrugUnitText(donViTinh.getTenDonViTinh());
+                }
+            });
+            note.setChiTiets(details);
+        });
+        return  sampleNotesPage;
     }
 
     private Integer handleInKhachQuen(SampleNote sampleNote, Boolean isConnectSampleNote) {
