@@ -89,4 +89,10 @@ public class SampleNoteController {
   public ResponseEntity<BaseResponse> preview(@RequestBody HashMap<String, Object> body) throws Exception {
     return ResponseEntity.ok(ResponseUtils.ok(service.preview(body)));
   }
+
+  @PostMapping(value = "/get-tran-sample-notes", produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<BaseResponse> getTranSampleNotes(@Valid @RequestBody SampleNoteReq objReq) throws Exception {
+    return ResponseEntity.ok(ResponseUtils.ok(service.getTranSampleNotes(objReq)));
+  }
 }
