@@ -9,17 +9,14 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import vn.com.gsoft.products.constant.*;
 import org.springframework.web.multipart.MultipartFile;
-import vn.com.gsoft.products.entity.*;
-import vn.com.gsoft.products.model.dto.FileDto;
-import vn.com.gsoft.products.model.dto.InventoryReq;
-import vn.com.gsoft.products.model.dto.ThuocsReq;
-import vn.com.gsoft.products.model.dto.dataBarcode;
+import vn.com.gsoft.products.constant.*;
 import vn.com.gsoft.products.entity.Process;
+import vn.com.gsoft.products.entity.*;
 import vn.com.gsoft.products.model.dto.*;
 import vn.com.gsoft.products.model.system.PaggingReq;
 import vn.com.gsoft.products.model.system.Profile;
@@ -28,6 +25,7 @@ import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.repository.feign.InventoryFeign;
 import vn.com.gsoft.products.service.KafkaProducer;
 import vn.com.gsoft.products.service.ThuocsService;
+import vn.com.gsoft.products.util.system.DataUtils;
 import vn.com.gsoft.products.util.system.ExportExcel;
 import vn.com.gsoft.products.util.system.FileUtils;
 
@@ -37,10 +35,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Supplier;
@@ -103,6 +97,9 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
     @Autowired
     public NhaCungCapsRepository nhaCungCapsRepository;
 
+    @Autowired
+    private  ConnectivityDrugRepository connectivityDrugRepository;
+
 
     //region Public Methods
     @Override
@@ -135,6 +132,10 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
                     Optional<WarehouseLocation> byIdNt = warehouseLocationRepository.findById(item.getIdWarehouseLocation());
                     byIdNt.ifPresent(warehouseLocations -> item.setTenViTri(warehouseLocations.getNameWarehouse()));
                 }
+            }
+            Optional<ConnectivityDrug> connectivityDrug = connectivityDrugRepository.findByDrugIdAndDrugStoreIdAndRecordStatusId(item.getId(), item.getNhaThuocMaNhaThuoc(), RecordStatusContains.ACTIVE);
+            if(connectivityDrug.isPresent()){
+                item.setConnectivityDrugBaId(connectivityDrug.get().getId());
             }
         });
         return thuocs;
@@ -927,6 +928,62 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         }
         return null;
     }
+
+    @Override
+    public Page<Thuocs> searchPageSell(ThuocsReq req) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        Pageable pageable = PageRequest.of(req.getPaggingReq().getPage(), req.getPaggingReq().getLimit());
+        req.setNhaThuocMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+        req.setNhaThuocMaNhaThuocCha(userInfo.getNhaThuoc().getMaNhaThuocCha());
+        if (req.getDataDelete() != null) {
+            req.setRecordStatusId(req.getDataDelete() ? RecordStatusContains.DELETED : RecordStatusContains.ACTIVE);
+        }
+        Page<Thuocs> thuocs = searchPageSell(req, pageable);
+        thuocs.getContent().forEach(item -> {
+            if (item.getNhomThuocMaNhomThuoc() != null) {
+                Optional<NhomThuocs> byIdNt = nhomThuocsRepository.findById(item.getNhomThuocMaNhomThuoc());
+                byIdNt.ifPresent(nhomThuocs -> item.setTenNhomThuoc(nhomThuocs.getTenNhomThuoc()));
+            }
+            if (req.getTypeService() != null && req.getTypeService() == 0) { //kiểm tra nếu là thuốc thì mới fill dữ liệu bên dưới
+                if (item.getDonViThuNguyenMaDonViTinh() != null) {
+                    Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViThuNguyenMaDonViTinh());
+                    byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhThuNguyen(donViTinhs.getTenDonViTinh()));
+                }
+                if (item.getDonViXuatLeMaDonViTinh() != null) {
+                    Optional<DonViTinhs> byIdNt = donViTinhsRepository.findById(item.getDonViXuatLeMaDonViTinh());
+                    byIdNt.ifPresent(donViTinhs -> item.setTenDonViTinhXuatLe(donViTinhs.getTenDonViTinh()));
+                }
+                if (item.getIdWarehouseLocation() != null) {
+                    Optional<WarehouseLocation> byIdNt = warehouseLocationRepository.findById(item.getIdWarehouseLocation());
+                    byIdNt.ifPresent(warehouseLocations -> item.setTenViTri(warehouseLocations.getNameWarehouse()));
+                }
+            }
+            Optional<ConnectivityDrug> connectivityDrug = connectivityDrugRepository.findByDrugIdAndDrugStoreIdAndRecordStatusId(item.getId(), item.getNhaThuocMaNhaThuoc(), RecordStatusContains.ACTIVE);
+            if(connectivityDrug.isPresent()){
+                item.setConnectivityDrugBaId(connectivityDrug.get().getId());
+            }
+        });
+        return thuocs;
+    }
+
+    public Page<Thuocs> searchPageSell(ThuocsReq param, Pageable pageable) {
+        List<Thuocs> result1 = hdrRepo.findByCondition(param);
+        List<Thuocs> result2 = hdrRepo.findBySampleNoteDetail(param);
+
+        Set<Thuocs> combinedResults = new LinkedHashSet<>();
+        combinedResults.addAll(result1);
+        combinedResults.addAll(result2);
+
+        List<Thuocs> paginatedList = new ArrayList<>(combinedResults);
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), paginatedList.size());
+
+        Page<Thuocs> page = new PageImpl<>(paginatedList.subList(start, end), pageable, combinedResults.size());
+        return page;
+    }
+
 
     @Override
     public Process importExcel(MultipartFile file) throws Exception {

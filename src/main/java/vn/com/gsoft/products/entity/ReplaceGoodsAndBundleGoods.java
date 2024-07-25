@@ -30,5 +30,9 @@ public class ReplaceGoodsAndBundleGoods{
     private String maThuoc;
     @Transient
     private String tenThuoc;
+    @Transient
+    private Double giaBanLe;
+    @Transient
+    private Double giaBanBuon;
 }
 

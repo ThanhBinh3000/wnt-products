@@ -64,6 +64,16 @@ class ThuocsServiceImplTest {
         Page<Thuocs> sampleNotes = thuocsService.searchPage(sampleNoteReq);
         assert sampleNotes != null;
     }
+    @Test
+    void searchPageSell() throws Exception {
+        ThuocsReq sampleNoteReq = new ThuocsReq();
+        PaggingReq paggingReq = new PaggingReq();
+        paggingReq.setPage(0);
+        paggingReq.setLimit(10);
+        sampleNoteReq.setPaggingReq(paggingReq);
+        Page<Thuocs> sampleNotes = thuocsService.searchPageSell(sampleNoteReq);
+        assert sampleNotes != null;
+    }
 
     @Test
     void colectionPageHangDuTru() throws Exception {

@@ -1,5 +1,6 @@
 package vn.com.gsoft.products.repository;
 
+import jakarta.persistence.Tuple;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -466,4 +467,26 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
     Optional<Thuocs> findByIdAndRecordStatusId(Long id, Long recordStatusId);
 
     List<Thuocs> findAllByNhomThuocMaNhomThuoc(Long idNhomThuoc);
+    @Query(
+            "SELECT c FROM Thuocs c " +
+                    "WHERE (c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuoc} OR c.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuocCha}) " +
+                    "AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) " +
+                    "AND (:#{#param.textSearch} IS NULL OR lower(c.maThuoc) LIKE lower(concat('%', :#{#param.textSearch}, '%')) " +
+                    "OR lower(c.tenThuoc) LIKE lower(concat('%', :#{#param.textSearch}, '%')) " +
+                    "OR lower(c.thongTin) LIKE lower(concat('%', :#{#param.textSearch}, '%')))"
+    )
+    List<Thuocs> findByCondition(@Param("param") ThuocsReq param);
+
+    @Query(
+            "SELECT d FROM Thuocs d " +
+                    "WHERE (d.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuoc} OR d.nhaThuocMaNhaThuoc = :#{#param.nhaThuocMaNhaThuocCha}) " +
+                    "AND d.id IN (" +
+                    "    SELECT sd.drugID FROM SampleNoteDetail sd " +
+                    "    JOIN SampleNote s ON s.id = sd.noteID " +
+                    "    WHERE (:#{#param.textSearch} IS NULL OR lower(s.noteName) LIKE lower(concat('%', :#{#param.textSearch}, '%'))) " +
+                    ")"
+    )
+    List<Thuocs> findBySampleNoteDetail(@Param("param") ThuocsReq param);
+
+
 }

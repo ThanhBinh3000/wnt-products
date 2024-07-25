@@ -46,4 +46,6 @@ public interface ThuocsService extends BaseService<Thuocs, ThuocsReq, Long> {
     List<dataBarcode> getDataBarcode(HashMap<String, Object> hashMap) throws Exception;
 
     ReportTemplateResponse preview(List<dataBarcode> dataBarcodes) throws Exception;
+
+    Page<Thuocs> searchPageSell(ThuocsReq objReq) throws Exception;
 }

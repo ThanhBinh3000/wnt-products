@@ -279,7 +279,10 @@ public class Thuocs extends BaseEntity{
     private List<ReplaceGoodsAndBundleGoods> replaceGoods;
     @Transient
     private double lastValue;
-    // @Override
+
+    @Transient
+    private Long connectivityDrugBaId;
+
     @Override
     public int hashCode() {
         int result = maThuoc == null || maThuoc.isEmpty() ? 0 : maThuoc.hashCode();
@@ -303,7 +306,7 @@ public class Thuocs extends BaseEntity{
         result = (result * 397) ^ (maNhaCungCap == null ? 0 : maNhaCungCap.hashCode());
         result = (int) ((result * 397) ^ super.getRecordStatusId());
         result = (result * 397) ^ discount.hashCode();
-        result = (result * 397) ^ discountByRevenue.hashCode();
+        result = (result * 397) ^ (discountByRevenue == null ? 0 : discountByRevenue.hashCode());
         result = (result * 397) ^ (hanDung == null ? LocalDateTime.MIN.hashCode() : hanDung.hashCode());
 
         return result;

@@ -13,8 +13,6 @@ import vn.com.gsoft.products.entity.*;
 import vn.com.gsoft.products.model.dto.InventoryReq;
 import vn.com.gsoft.products.model.dto.ReportImage;
 import vn.com.gsoft.products.model.dto.SampleNoteReq;
-import vn.com.gsoft.products.model.dto.TranSampleNote;
-import vn.com.gsoft.products.model.system.ApplicationSetting;
 import vn.com.gsoft.products.model.system.Profile;
 import vn.com.gsoft.products.repository.*;
 import vn.com.gsoft.products.service.SampleNoteService;
@@ -26,7 +24,6 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
