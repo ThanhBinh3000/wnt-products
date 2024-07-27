@@ -488,5 +488,8 @@ public interface ThuocsRepository extends BaseRepository<Thuocs, ThuocsReq, Long
     )
     List<Thuocs> findBySampleNoteDetail(@Param("param") ThuocsReq param);
 
+    List<Thuocs> findByNhaThuocMaNhaThuocAndReferenceId(String nhaThuocMaNhaThuoc, Long referenceId);
 
+    List<Thuocs> findByNhaThuocMaNhaThuocAndTenThuocContainingAndReferenceIdNotAndRecordStatusIdNot(
+            String nhaThuocMaNhaThuoc, String tenThuoc, Long referenceId, Long recordStatusID);
 }

@@ -200,4 +200,8 @@ public interface PhieuXuatChiTietsRepository extends BaseRepository<PhieuXuatChi
     void deleteByThuocThuocId(Long thuocThuocId);
 
     List<PhieuXuatChiTiets> findAllByPhieuXuatMaPhieuXuatAndRecordStatusId(Long phieuXuatMaPhieuXuat, Long status);
+
+    List<PhieuXuatChiTiets> findByPhieuXuatMaPhieuXuatInAndThuocThuocIdAndRecordStatusIdIn(List<Long> maPhieuXuat, Long thuocId, List<Long> recordStatusIds);
+
+    List<PhieuXuatChiTiets> findByThuocThuocId(Long thuocId);
 }
