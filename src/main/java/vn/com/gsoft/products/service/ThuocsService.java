@@ -9,10 +9,7 @@ import vn.com.gsoft.products.entity.Inventory;
 import vn.com.gsoft.products.entity.Process;
 import vn.com.gsoft.products.entity.ReportTemplateResponse;
 import vn.com.gsoft.products.entity.Thuocs;
-import vn.com.gsoft.products.model.dto.FileDto;
-import vn.com.gsoft.products.model.dto.InventoryReq;
-import vn.com.gsoft.products.model.dto.ThuocsReq;
-import vn.com.gsoft.products.model.dto.dataBarcode;
+import vn.com.gsoft.products.model.dto.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,4 +45,13 @@ public interface ThuocsService extends BaseService<Thuocs, ThuocsReq, Long> {
     ReportTemplateResponse preview(List<dataBarcode> dataBarcodes) throws Exception;
 
     Page<Thuocs> searchPageSell(ThuocsReq objReq) throws Exception;
+
+    //cập nhật giá của thuốc
+    Boolean updateDrugPrice(ThuocsReq req) throws Exception;
+
+    //cập nhật giá nhập thuốc cho nhà con
+    Boolean updateDrugPriceForChildStore(ThuocsReq req) throws Exception;
+
+    //lưu nháp thuốc danh mục chung
+    Boolean saveDraftListDrug(DraftListDrugReq req) throws Exception;
 }

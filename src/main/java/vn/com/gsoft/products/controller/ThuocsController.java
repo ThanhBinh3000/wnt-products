@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.com.gsoft.products.constant.PathContains;
+import vn.com.gsoft.products.model.dto.DraftListDrugReq;
 import vn.com.gsoft.products.model.dto.FileDto;
 import vn.com.gsoft.products.model.dto.ThuocsReq;
 import vn.com.gsoft.products.model.dto.dataBarcode;
@@ -178,5 +179,23 @@ public class ThuocsController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<BaseResponse> importExcel(@RequestParam("file") MultipartFile file) throws Exception {
         return ResponseEntity.ok(ResponseUtils.ok(service.importExcel(file)));
+    }
+
+    @PostMapping(value = PathContains.URL_UPDATE_DRUG_PRICE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<BaseResponse> updateDrugPrice(@Valid @RequestBody ThuocsReq objReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.updateDrugPrice(objReq)));
+    }
+
+    @PostMapping(value = PathContains.URL_UPDATE_DRUG_PRICE_FOR_CHILD_STORE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<BaseResponse> updateDrugPriceForChildStore(@Valid @RequestBody ThuocsReq objReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.updateDrugPriceForChildStore(objReq)));
+    }
+
+    @PostMapping(value = PathContains.URL_SAVE_DRAFT_LIST_DRUG, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<BaseResponse> saveDraftListDrug(@Valid @RequestBody DraftListDrugReq objReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.saveDraftListDrug(objReq)));
     }
 }

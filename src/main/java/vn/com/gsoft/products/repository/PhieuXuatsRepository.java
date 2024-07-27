@@ -146,4 +146,7 @@ public interface PhieuXuatsRepository extends BaseRepository<PhieuXuats, PhieuXu
     List<PhieuXuats> findByNhaThuocMaNhaThuocAndIdInAndMaLoaiXuatNhapAndSynStatusIdIn(String nhaThuocMaNhaThuoc, List<Long> listIds, Integer delivery, List<Long> synStatusIds);
 
     List<PhieuXuats> findByNhaThuocMaNhaThuocAndKhachHangMaKhachHangAndMaLoaiXuatNhapInAndRecordStatusIdIn(String maNhaThuoc, Long customerId, List<Integer> typePx, List<Long> statusPx);
+
+    List<PhieuXuats> findByMaLoaiXuatNhapNotAndThuocThuocIdAndRecordStatusIdIn(Long maLoaiXuatNhap, Long thuocId, List<Long> recordStatusIds);
+
 }

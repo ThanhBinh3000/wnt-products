@@ -130,5 +130,9 @@ public class ThuocsReq extends BaseRequest {
     private Long nhaCungCapMaNhaCungCap;
     private List<ReplaceGoodsAndBundleGoodsReq> bundleGoods;
     private List<ReplaceGoodsAndBundleGoodsReq> replaceGoods;
+
+    private Long maDonViTinhDaChon;
+    private List<String> storeCodes;
+    private Boolean isUpdateInPrice;
 }
 

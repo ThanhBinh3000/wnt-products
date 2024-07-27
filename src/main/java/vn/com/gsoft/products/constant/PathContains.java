@@ -31,6 +31,7 @@ public class PathContains {
     public static final String URL_PRODUCT_TYPES = "/product-types";
     public static final String URL_CONNECTIVITY_DRUG = "/connectivity-drug";
     public static final String URL_DETAIL_CONNECTIVITY_DRUG = "/detail-thuoc-lien-thong/{drugId}";
-
-
+    public static final String URL_UPDATE_DRUG_PRICE = "/update-drug-price";
+    public static final String URL_UPDATE_DRUG_PRICE_FOR_CHILD_STORE = "/update-drug-price-for-child-store";
+    public static final String URL_SAVE_DRAFT_LIST_DRUG = "/save-draft-list-drug";
 }

@@ -41,6 +41,7 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Log4j2
@@ -52,6 +53,10 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
     private KafkaProducer kafkaProducer;
     @Value("${wnt.kafka.internal.consumer.topic.import-master}")
     private String topicName;
+    @Autowired
+    private PhieuXuatsRepository phieuXuatsRepository;
+    @Autowired
+    private PhieuNhapsRepository phieuNhapsRepository;
 
     @Autowired
     public ThuocsServiceImpl(ThuocsRepository hdrRepo) {
@@ -100,6 +105,8 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
     @Autowired
     private  ConnectivityDrugRepository connectivityDrugRepository;
 
+    @Autowired
+    private DraftListDrugRepository draftListDrugRepository;
 
     //region Public Methods
     @Override
@@ -311,6 +318,21 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
             String maThuoc = req.getMaThuoc();
             String tenThuoc = req.getTenThuoc();
             String barCode = req.getBarCode();
+            //check đơn vị
+            boolean canChangeUnits = canChangeUnits(parentStoreCode, req.getId(), req.getDonViXuatLeMaDonViTinh(), req.getDonViThuNguyenMaDonViTinh());
+            if(!canChangeUnits) {
+                if(req.getDonViXuatLeMaDonViTinh() > 0 && req.getDonViThuNguyenMaDonViTinh() == 0) {
+                    boolean isHaveTran = checkUnitTran(req.getId());
+                    if(isHaveTran) {
+                        throw new Exception("Thuốc này đã tồn tại giao dịch nếu bạn cập nhật thì các giao dịch sẽ bị thay đổi.");
+                    }
+                    else {
+                        throw new Exception("Thuốc này đã tồn tại 2 giao dịch không được cập nhật.");
+                    }
+                } else if (req.getDonViXuatLeMaDonViTinh() > 0 && req.getDonViThuNguyenMaDonViTinh() > 0) {
+                    throw new Exception("Bạn không thể cập nhật với đơn vị tính này.");
+                }
+            }
             //check trùng mã
             if (!optional.get().getMaThuoc().equals(maThuoc) && !maThuoc.isEmpty()) {
                 Optional<Thuocs> byMaThuocAndRecordStatusId = hdrRepo.findByMaThuoc(maThuoc, storeCode, parentStoreCode, RecordStatusContains.ACTIVE);
@@ -655,11 +677,11 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         return  lstInventory;
     }
 
-	@Override
-	public Thuocs detail(Long id) throws Exception {
-		Profile userInfo = this.getLoggedUser();
-		if (userInfo == null)
-			throw new Exception("Bad request.");
+    @Override
+    public Thuocs detail(Long id) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
         String storeCode = userInfo.getNhaThuoc().getMaNhaThuoc();
 
         Optional<Thuocs> optional = hdrRepo.findById(id);
@@ -731,6 +753,118 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         thuocs.setReplaceGoods(replaceGoods);
         thuocs.setBundleGoods(bundleGoods);
         return thuocs;
+    }
+
+    @Override
+    public Boolean updateDrugPrice(ThuocsReq req) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        Optional<Thuocs> optional = hdrRepo.findById(req.getId());
+        if (optional.isEmpty()) {
+            throw new Exception("Không tìm thấy dữ liệu.");
+        } else {
+            var drug = optional.get();
+            var settings = userInfo.getApplicationSettings();
+            var settingOwnerPrices = settings.stream().filter(x -> x.getSettingKey().equals("SETTING_OWNER_PRICES")).findFirst();
+            // nếu nhà thuốc là nhà con và thiết lập khác biệt giá thì cập nhật giá bán lẻ trên thuốc của nhà con
+            if(settingOwnerPrices.isPresent() && settingOwnerPrices.get().getActivated()
+                    && (!userInfo.getNhaThuoc().getMaNhaThuoc().equals(userInfo.getNhaThuoc().getMaNhaThuocCha()))){
+                if (drug.getDonViThuNguyenMaDonViTinh().equals(req.getMaDonViTinhDaChon()) && drug.getHeSo() != 0) {
+                    req.setGiaBanLe(req.getGiaBanLe().divide(BigDecimal.valueOf(drug.getHeSo()), RoundingMode.HALF_UP));
+                }
+                List<String> storeCodes = new ArrayList<>();
+                storeCodes.add(userInfo.getNhaThuoc().getMaNhaThuoc());
+                inventoryRepository.updateOutPriceInventory(drug.getId(), storeCodes, req.getGiaBanLe(), req.getGiaBanLe(), Date.from(Instant.now()));
+                //BackgroundServiceJobHelper.EnqueueCreateInitialInventoryReceiptNote(drugStoreCode, drug.ThuocId);
+                return true;
+            }
+            if (drug.getDonViThuNguyenMaDonViTinh().equals(req.getMaDonViTinhDaChon()) && drug.getHeSo() != 0) {
+                drug.setGiaBanLe(req.getGiaBanLe().divide(BigDecimal.valueOf(drug.getHeSo()), RoundingMode.HALF_UP));
+                drug.setGiaNhap(req.getGiaNhap().divide(BigDecimal.valueOf(drug.getHeSo()), RoundingMode.HALF_UP));
+                drug.setGiaBanBuon(req.getGiaBanBuon().setScale(0, RoundingMode.HALF_UP));
+            }
+            else {
+                drug.setGiaBanLe(req.getGiaBanLe());
+                drug.setGiaNhap(req.getGiaNhap());
+                drug.setGiaBanBuon(req.getGiaBanBuon().multiply(drug.getHeSo() > 0 ? BigDecimal.valueOf(drug.getHeSo()) : BigDecimal.ONE));
+            }
+            hdrRepo.save(drug);
+            return true;
+        }
+    }
+
+    @Override
+    public Boolean updateDrugPriceForChildStore(ThuocsReq req) throws Exception {
+        var result = true;
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        if(req.getStoreCodes().isEmpty()) return false;
+        if (req.getDonViThuNguyenMaDonViTinh().equals(req.getMaDonViTinhDaChon()) && req.getHeSo() != 0) {
+            req.setGiaBanLe(req.getGiaBanLe().divide(BigDecimal.valueOf(req.getHeSo()), RoundingMode.HALF_UP));
+            req.setGiaNhap(req.getGiaNhap().divide(BigDecimal.valueOf(req.getHeSo()), RoundingMode.HALF_UP));
+        }
+        if(req.getIsUpdateInPrice() && req.getGiaNhap().compareTo(BigDecimal.ZERO) > 0){
+            inventoryRepository.updateInPriceInventory(req.getId(), req.getStoreCodes(), req.getGiaNhap(), Date.from(Instant.now()));
+        } else if (!req.getIsUpdateInPrice() && req.getGiaBanLe().compareTo(BigDecimal.ZERO) > 0) {
+            inventoryRepository.updateOutPriceInventory(req.getId(), req.getStoreCodes(), req.getGiaBanLe(), req.getGiaBanLe(), Date.from(Instant.now()));
+        }
+        return result;
+    }
+
+    @Override
+    public Boolean saveDraftListDrug(DraftListDrugReq req) throws Exception {
+        var result = true;
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        var storeCode = userInfo.getNhaThuoc().getMaNhaThuocCha();
+        List<DraftListDrug> drugExit = draftListDrugRepository.findByDrugId(req.getDrugId());
+        List<Thuocs> drugs = hdrRepo.findByNhaThuocMaNhaThuocAndReferenceId(storeCode, req.getDrugId());
+        if (!drugs.isEmpty()) {
+            boolean canChangeUnit = canChangeUnits(storeCode, drugs.get(0).getId(), req.getRetailUnitId(), req.getUnitId());
+            if (!canChangeUnit) {
+                throw new Exception("Bạn không thể cập nhật với đơn vị tính này.");
+            }
+        }
+
+        List<Thuocs> checkExitNameDrug = hdrRepo.findByNhaThuocMaNhaThuocAndTenThuocContainingAndReferenceIdNotAndRecordStatusIdNot(
+                storeCode, req.getDrugName(), req.getDrugId(), RecordStatusContains.DELETED_FOREVER);
+
+        if (!checkExitNameDrug.isEmpty()) {
+            throw new Exception("Tên thuốc đã tồn tại.");
+        }
+
+        DraftListDrug draftListDrug = new DraftListDrug();
+        BeanUtils.copyProperties(req, draftListDrug, "id");
+        if (!drugExit.isEmpty()) {
+            draftListDrug.setId(drugExit.get(0).getId());
+            draftListDrug = draftListDrugRepository.save(draftListDrug);
+        } else {
+            draftListDrug.setStoreCode(storeCode);
+            draftListDrug = draftListDrugRepository.save(draftListDrug);
+        }
+
+        if (draftListDrug.getId() > 0) {
+            if (!drugs.isEmpty()) {
+                drugs.forEach(x -> {
+                    x.setGiaNhap(req.getNoteType().equals(ENoteType.Delivery) ? BigDecimal.ZERO : req.getInPrice());
+                    x.setGiaBanLe(req.getOutPrice());
+                    x.setGiaBanBuon(req.getOutBatchPrice());
+                    x.setHeSo(req.getFactors());
+                    x.setTenThuoc(req.getDrugName());
+                    x.setThongTin(req.getDecscription());
+                    x.setBarCode(req.getBarcode());
+                    x.setNhomThuocMaNhomThuoc(req.getGroupId());
+                    x.setDonViThuNguyenMaDonViTinh(req.getUnitId());
+                    x.setDonViXuatLeMaDonViTinh(req.getRetailUnitId());
+                    x.setProductTypeId(req.getProductTypeId());
+                });
+                hdrRepo.saveAll(drugs);
+            }
+        }
+        return result;
     }
 
     //endregion
@@ -843,7 +977,6 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
 
         return dataList;
     }
-    //endregion
 
     @Override
     public List<dataBarcode> getDataBarcode(HashMap<String, Object> hashMap) throws Exception {
@@ -857,20 +990,20 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         List<dataBarcode> barcodeDataList = new ArrayList<>();
         if (loaiPhieu != null && loaiPhieu == 1L && idPhieu != null) {
             List<PhieuNhapChiTiets> phieuNhapChiTiets = phieuNhapChiTietsRepository.findByPhieuNhapMaPhieuNhapAndRecordStatusId(idPhieu, RecordStatusContains.ACTIVE);
-          if (!phieuNhapChiTiets.isEmpty()) {
-              for (PhieuNhapChiTiets chiTiet : phieuNhapChiTiets) {
-                  Optional<Thuocs> optional = Optional.ofNullable(this.detail(chiTiet.getThuocThuocId()));
-                  optional.ifPresent(thuocs -> barcodeDataList.add(createDataBarcode(thuocs)));
-              }
-          }
+            if (!phieuNhapChiTiets.isEmpty()) {
+                for (PhieuNhapChiTiets chiTiet : phieuNhapChiTiets) {
+                    Optional<Thuocs> optional = Optional.ofNullable(this.detail(chiTiet.getThuocThuocId()));
+                    optional.ifPresent(thuocs -> barcodeDataList.add(createDataBarcode(thuocs)));
+                }
+            }
         } else if (loaiPhieu != null && loaiPhieu == 2L && idPhieu != null) {
             List<PhieuXuatChiTiets> phieuXuatChiTiets = phieuXuatChiTietsRepository.findAllByPhieuXuatMaPhieuXuatAndRecordStatusId(idPhieu, RecordStatusContains.ACTIVE);
-           if (!phieuXuatChiTiets.isEmpty()) {
-               for (PhieuXuatChiTiets chiTiet : phieuXuatChiTiets) {
-                   Optional<Thuocs> optional = Optional.ofNullable(this.detail(chiTiet.getThuocThuocId()));
-                   optional.ifPresent(thuocs -> barcodeDataList.add(createDataBarcode(thuocs)));
-               }
-           }
+            if (!phieuXuatChiTiets.isEmpty()) {
+                for (PhieuXuatChiTiets chiTiet : phieuXuatChiTiets) {
+                    Optional<Thuocs> optional = Optional.ofNullable(this.detail(chiTiet.getThuocThuocId()));
+                    optional.ifPresent(thuocs -> barcodeDataList.add(createDataBarcode(thuocs)));
+                }
+            }
         }
         if (idNhomThuoc != null) {
             List<Thuocs> thuocList = hdrRepo.findAllByNhomThuocMaNhomThuoc(idNhomThuoc);
@@ -1038,4 +1171,74 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         }
         return process;
     }
+
+    private boolean canChangeUnits(String storeCode, Long prodId, Long retailUnitId, Long unitId) throws Exception {
+        if (retailUnitId <= 0) return false;
+
+        List<Long> validRecordStatusIds = Arrays.asList(
+                RecordStatusContains.ACTIVE,
+                RecordStatusContains.ARCHIVED
+        );
+
+        // Truy vấn các đơn vị tính từ PhieuXuatChiTiet
+        List<PhieuXuatChiTiets> dItems = phieuXuatChiTietsRepository.findByPhieuXuatMaPhieuXuatInAndThuocThuocIdAndRecordStatusIdIn(
+                phieuXuatsRepository.findByMaLoaiXuatNhapNotAndThuocThuocIdAndRecordStatusIdIn(ENoteType.InitialInventory.longValue(), prodId, validRecordStatusIds)
+                        .stream().map(PhieuXuats::getId).collect(Collectors.toList()),
+                prodId,
+                validRecordStatusIds
+        );
+
+        // Truy vấn các đơn vị tính từ PhieuNhapChiTiet
+        List<PhieuNhapChiTiets> rItems = phieuNhapChiTietsRepository.findByPhieuNhapMaPhieuNhapInAndThuocThuocIdAndRecordStatusIdIn(
+                phieuNhapsRepository.findByLoaiXuatNhapMaLoaiXuatNhapNotAndThuocThuocIdAndRecordStatusIdIn(ENoteType.InitialInventory.longValue(), prodId, validRecordStatusIds)
+                        .stream().map(PhieuNhaps::getId).collect(Collectors.toList()),
+                prodId,
+                validRecordStatusIds
+        );
+
+        // Lấy danh sách các đơn vị tính đã sử dụng
+        List<Long> usedUnitIds = Stream.concat(
+                dItems.stream().map(PhieuXuatChiTiets::getDonViTinhMaDonViTinh),
+                rItems.stream().map(PhieuNhapChiTiets::getDonViTinhMaDonViTinh)
+        ).distinct().toList();
+
+        if (usedUnitIds.isEmpty()) return true;
+
+        if (usedUnitIds.size() > 1) return usedUnitIds.contains(retailUnitId) && usedUnitIds.contains(unitId);
+
+        return usedUnitIds.contains(retailUnitId) || usedUnitIds.contains(unitId);
+    }
+
+    public boolean checkUnitTran(Long id) throws Exception {
+        boolean result = true;
+        List<Long> units = new ArrayList<>();
+
+        List<Long> unitReceipt = phieuNhapChiTietsRepository.findByThuocThuocId(id).stream()
+                .map(PhieuNhapChiTiets::getDonViTinhMaDonViTinh)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .toList();
+
+        List<Long> unitDelivery = phieuXuatChiTietsRepository.findByThuocThuocId(id).stream()
+                .map(PhieuXuatChiTiets::getDonViTinhMaDonViTinh)
+                .distinct()
+                .toList();
+
+        if (!unitReceipt.isEmpty()) {
+            units.addAll(unitReceipt);
+        }
+        if (!unitDelivery.isEmpty()) {
+            units.addAll(unitDelivery);
+        }
+
+        if (!units.isEmpty()) {
+            List<Long> unitFinal = units.stream().distinct().toList();
+            if (unitFinal.size() > 1) {
+                return false;
+            }
+        }
+        return result;
+    }
+
+    //endregion
 }

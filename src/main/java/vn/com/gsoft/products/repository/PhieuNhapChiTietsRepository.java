@@ -185,4 +185,8 @@ public interface PhieuNhapChiTietsRepository extends BaseRepository<PhieuNhapChi
     void deleteByThuocThuocId(Long thuocThuocId);
 
     List<PhieuNhapChiTiets> findByPhieuNhapMaPhieuNhapAndRecordStatusId(Long phieuXuatMaPhieuXuat, Long status);
+
+    List<PhieuNhapChiTiets> findByPhieuNhapMaPhieuNhapInAndThuocThuocIdAndRecordStatusIdIn(List<Long> maPhieuNhap, Long thuocId, List<Long> recordStatusIds);
+
+    List<PhieuNhapChiTiets> findByThuocThuocId(Long thuocId);
 }

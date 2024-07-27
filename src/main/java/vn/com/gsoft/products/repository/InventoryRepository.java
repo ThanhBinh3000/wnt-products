@@ -2,13 +2,18 @@ package vn.com.gsoft.products.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import vn.com.gsoft.products.entity.Inventory;
 import vn.com.gsoft.products.model.dto.InventoryReq;
 
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -101,4 +106,15 @@ public interface InventoryRepository extends BaseRepository<Inventory, Inventory
     List<Object[]> findInventoryDetails(@Param("codeDrugStores") List<String> codeDrugStores,
                                         @Param("id") long id,
                                         @Param("recordStatusID") long recordStatusID);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Inventory i SET i.lastOutPrice = :lastOutPrice, i.outPrice = :outPrice, i.lastUpdated = :lastUpdated WHERE i.drugID = :drugId AND i.drugStoreID IN :storeCodes")
+    void updateOutPriceInventory(@Param("drugId") Long drugId, @Param("storeCodes") List<String> storeCodes, @Param("lastOutPrice") BigDecimal lastOutPrice, @Param("outPrice") BigDecimal outPrice, @Param("lastUpdated") Date lastUpdated);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Inventory i SET i.lastInPrice = :inPrice, i.lastUpdated = :lastUpdated WHERE i.drugID = :drugId AND i.drugStoreID IN :storeCodes")
+    void updateInPriceInventory(@Param("drugId") Long drugId, @Param("storeCodes") List<String> storeCodes, @Param("inPrice") BigDecimal inPrice, @Param("lastUpdated") Date lastUpdated);
+
 }
