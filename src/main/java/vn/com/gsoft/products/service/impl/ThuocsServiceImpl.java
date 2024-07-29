@@ -1182,7 +1182,7 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
 
         // Truy vấn các đơn vị tính từ PhieuXuatChiTiet
         List<PhieuXuatChiTiets> dItems = phieuXuatChiTietsRepository.findByPhieuXuatMaPhieuXuatInAndThuocThuocIdAndRecordStatusIdIn(
-                phieuXuatsRepository.findByMaLoaiXuatNhapNotAndThuocThuocIdAndRecordStatusIdIn(ENoteType.InitialInventory.longValue(), prodId, validRecordStatusIds)
+                phieuXuatsRepository.findByMaLoaiXuatNhapNotAndRecordStatusIdIn(ENoteType.InitialInventory.longValue(), validRecordStatusIds)
                         .stream().map(PhieuXuats::getId).collect(Collectors.toList()),
                 prodId,
                 validRecordStatusIds
@@ -1190,7 +1190,7 @@ public class ThuocsServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
 
         // Truy vấn các đơn vị tính từ PhieuNhapChiTiet
         List<PhieuNhapChiTiets> rItems = phieuNhapChiTietsRepository.findByPhieuNhapMaPhieuNhapInAndThuocThuocIdAndRecordStatusIdIn(
-                phieuNhapsRepository.findByLoaiXuatNhapMaLoaiXuatNhapNotAndThuocThuocIdAndRecordStatusIdIn(ENoteType.InitialInventory.longValue(), prodId, validRecordStatusIds)
+                phieuNhapsRepository.findByLoaiXuatNhapMaLoaiXuatNhapNotAndRecordStatusIdIn(ENoteType.InitialInventory.longValue(), validRecordStatusIds)
                         .stream().map(PhieuNhaps::getId).collect(Collectors.toList()),
                 prodId,
                 validRecordStatusIds
