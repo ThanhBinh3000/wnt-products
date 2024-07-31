@@ -524,13 +524,13 @@ public class DichVuServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
             }
         }
         thuocs.setListDonViTinhs(dviTinh);
-        //fill vi tri tu/kho
-        if (thuocs.getIdWarehouseLocation() > 0) {
-            Optional<WarehouseLocation> byId = warehouseLocationRepository.findById(thuocs.getIdWarehouseLocation());
-            if (byId.isPresent()) {
-                thuocs.setTenViTri(byId.get().getNameWarehouse());
-            }
-        }
+//        //fill vi tri tu/kho
+//        if (thuocs.getIdWarehouseLocation() > 0) {
+//            Optional<WarehouseLocation> byId = warehouseLocationRepository.findById(thuocs.getIdWarehouseLocation());
+//            if (byId.isPresent()) {
+//                thuocs.setTenViTri(byId.get().getNameWarehouse());
+//            }
+//        }
         if (thuocs.getNhomThuocMaNhomThuoc() != null) {
             Optional<NhomThuocs> byIdNt = nhomThuocsRepository.findById(thuocs.getNhomThuocMaNhomThuoc());
             byIdNt.ifPresent(nhomThuocs -> thuocs.setTenNhomThuoc(nhomThuocs.getTenNhomThuoc()));
