@@ -268,6 +268,10 @@ public class Thuocs extends BaseEntity{
     @Transient
     private String tenPhongKham;
 
+    public void setServiceCombo(boolean serviceCombo) {
+        isServiceCombo = serviceCombo;
+    }
+
     @Transient
     private boolean isServiceCombo;
 

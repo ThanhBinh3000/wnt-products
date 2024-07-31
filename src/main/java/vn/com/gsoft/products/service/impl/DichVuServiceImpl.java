@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import vn.com.gsoft.products.constant.AppConstants;
 import vn.com.gsoft.products.constant.RecordStatusContains;
 import vn.com.gsoft.products.constant.StatusConfirmDrugContains;
 import vn.com.gsoft.products.constant.TypeServiceContains;
@@ -62,6 +63,9 @@ public class DichVuServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
 
 	@Autowired
 	public InventoryFeign inventoryFeign;
+
+    @Autowired
+    private GroupComboRepository groupComboRepository;
 
 
     @Override
@@ -533,7 +537,16 @@ public class DichVuServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
 //        }
         if (thuocs.getNhomThuocMaNhomThuoc() != null) {
             Optional<NhomThuocs> byIdNt = nhomThuocsRepository.findById(thuocs.getNhomThuocMaNhomThuoc());
-            byIdNt.ifPresent(nhomThuocs -> thuocs.setTenNhomThuoc(nhomThuocs.getTenNhomThuoc()));
+
+            if(byIdNt.isPresent()){
+                thuocs.setTenNhomThuoc(byIdNt.get().getTenNhomThuoc());
+                if(byIdNt.get().getTenNhomThuoc().equals(AppConstants.DefaultGroupNameCombo)){
+                    List<GroupCombo> allByDrugId = groupComboRepository.findAllByDrugId(id);
+                    if(!allByDrugId.isEmpty()){
+                        thuocs.setServiceCombo(true);
+                    }
+                }
+            }
         }
         InventoryReq inventoryReq = new InventoryReq();
         inventoryReq.setDrugID(thuocs.getId());
@@ -541,6 +554,8 @@ public class DichVuServiceImpl extends BaseServiceImpl<Thuocs, ThuocsReq, Long> 
         inventoryReq.setRecordStatusID(RecordStatusContains.ACTIVE);
         Optional<Inventory> inventory = inventoryRepository.searchDetail(inventoryReq);
         inventory.ifPresent(thuocs::setInventory);
+
+
         return thuocs;
     }
 }
