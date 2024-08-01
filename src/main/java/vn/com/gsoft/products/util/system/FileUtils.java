@@ -64,7 +64,7 @@ public class FileUtils {
             ReportTemplateResponse reportTemplateResponse = new ReportTemplateResponse();
             IXDocReport report = XDocReportRegistry.getRegistry().loadReport(inputFile, TemplateEngineKind.Velocity);
             FieldsMetadata metadata = new FieldsMetadata();
-            if (barcode != null) {
+            if (barcode != null && !barcode.isEmpty()) {
                 metadata.addFieldAsImage("imageBarcode");
                 if (amountPrint != null && amountPrint > 1) {
                     metadata.addFieldAsImage("imageBarcode1");
@@ -90,7 +90,7 @@ public class FileUtils {
                 }
             }
             String base64Image = null;
-            if (barcode != null) {
+            if (barcode != null && !barcode.isEmpty()) {
                 base64Image = generateBarcodeBase64(barcode);
                 processBase64Image(base64Image, "imageBarcode", context);
                 if (amountPrint != null && amountPrint > 1) {
