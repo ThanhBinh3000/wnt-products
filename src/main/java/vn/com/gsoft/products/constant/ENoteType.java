@@ -65,6 +65,6 @@ public class ENoteType {
     public static final Integer SampleForm = 16;
     //Phiếu kiểu kê
     public static final Integer InventoryForm = 17;
-
+    //Mã vạch
     public static final Integer MedicineBarcodeSample = 18;
 }
