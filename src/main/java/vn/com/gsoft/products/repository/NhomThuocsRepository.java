@@ -45,6 +45,8 @@ public interface NhomThuocsRepository extends BaseRepository<NhomThuocs, NhomThu
     )
     List<NhomThuocs> searchList(@Param("param") NhomThuocsReq param);
 
+    Optional<NhomThuocs> findByTenNhomThuocAndMaNhaThuocAndRecordStatusId(String tenNhomThuoc,String maNhaThuoc,Long recordStatusId);
+
 //    Optional<NhomThuocs> findByI
 
 }

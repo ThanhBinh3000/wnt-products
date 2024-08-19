@@ -37,4 +37,6 @@ public interface WarehouseLocationRepository extends BaseRepository<WarehouseLoc
   )
   List<WarehouseLocation> searchList(@Param("param") WarehouseLocationReq param);
 
+  List<WarehouseLocation> findAllByCodeAndNameWarehouseAndStoreCodeAndRecordStatusId(String code,String nameWarehouse,String storeCode,Long recordStatusId);
+
 }

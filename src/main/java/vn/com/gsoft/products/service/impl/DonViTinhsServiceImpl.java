@@ -35,6 +35,11 @@ public class DonViTinhsServiceImpl extends BaseServiceImpl<DonViTinhs, DonViTinh
 		Profile userInfo = this.getLoggedUser();
 		if (userInfo == null)
 			throw new Exception("Bad request.");
+
+		Optional<DonViTinhs> byTenDonViTinhAndMaNhaThuoc = hdrRepo.findByTenDonViTinhAndMaNhaThuocAndRecordStatusId(req.getTenDonViTinh(), req.getMaNhaThuoc(),RecordStatusContains.ACTIVE);
+		if(byTenDonViTinhAndMaNhaThuoc.isPresent()){
+			throw new Exception("Tên đơn vị tính đã trùng, vui lòng nhập tên khác");
+		}
 		DonViTinhs hdr = new DonViTinhs();
 		BeanUtils.copyProperties(req, hdr, "id");
 		if(req.getRecordStatusId() == null){
@@ -56,6 +61,13 @@ public class DonViTinhsServiceImpl extends BaseServiceImpl<DonViTinhs, DonViTinh
 			throw new Exception("Không tìm thấy dữ liệu.");
 		}
 		DonViTinhs hdr = optional.get();
+
+		if(!hdr.getTenDonViTinh().equals(req.getTenDonViTinh())){
+			Optional<DonViTinhs> byTenDonViTinhAndMaNhaThuoc = hdrRepo.findByTenDonViTinhAndMaNhaThuocAndRecordStatusId(req.getTenDonViTinh(), req.getMaNhaThuoc(),RecordStatusContains.ACTIVE);
+			if(byTenDonViTinhAndMaNhaThuoc.isPresent()){
+				throw new Exception("Tên đơn vị tính đã trùng, vui lòng nhập tên khác");
+			}
+		}
 		BeanUtils.copyProperties(req, hdr, "id");
 		if(hdr.getRecordStatusId() == null){
 			hdr.setRecordStatusId(RecordStatusContains.ACTIVE);

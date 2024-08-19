@@ -41,4 +41,5 @@ public interface DonViTinhsRepository extends BaseRepository<DonViTinhs, DonViTi
   List<DonViTinhs> searchList(@Param("param") DonViTinhsReq param);
 
   Optional<DonViTinhs> findByTenDonViTinhAndMaNhaThuoc(String tenDviTinh, String maNhaThuoc);
+  Optional<DonViTinhs> findByTenDonViTinhAndMaNhaThuocAndRecordStatusId(String tenDviTinh, String maNhaThuoc,Long recordStatusId);
 }

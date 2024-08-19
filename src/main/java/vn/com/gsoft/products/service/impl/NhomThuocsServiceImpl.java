@@ -51,6 +51,12 @@ public class NhomThuocsServiceImpl extends BaseServiceImpl<NhomThuocs, NhomThuoc
 		Profile userInfo = this.getLoggedUser();
 		if (userInfo == null)
 			throw new Exception("Bad request.");
+
+		Optional<NhomThuocs> validData = hdrRepo.findByTenNhomThuocAndMaNhaThuocAndRecordStatusId(req.getTenNhomThuoc(), userInfo.getNhaThuoc().getMaNhaThuoc(), RecordStatusContains.ACTIVE);
+		if(validData.isPresent()){
+			throw new Exception("Tên nhóm thuốc đã tồn tại, vui lòng nhập tên khác");
+		}
+
 		NhomThuocs hdr = new NhomThuocs();
 		BeanUtils.copyProperties(req, hdr, "id");
 		if(req.getRecordStatusId() == null){
@@ -73,6 +79,14 @@ public class NhomThuocsServiceImpl extends BaseServiceImpl<NhomThuocs, NhomThuoc
 			throw new Exception("Không tìm thấy dữ liệu.");
 		}
 		NhomThuocs hdr = optional.get();
+		if(!req.getTenNhomThuoc().equals(hdr.getTenNhomThuoc())){
+			Optional<NhomThuocs> validData = hdrRepo.findByTenNhomThuocAndMaNhaThuocAndRecordStatusId(req.getTenNhomThuoc(), userInfo.getNhaThuoc().getMaNhaThuoc(), RecordStatusContains.ACTIVE);
+			if(validData.isPresent()){
+				throw new Exception("Tên nhóm thuốc đã tồn tại, vui lòng nhập tên khác");
+			}
+		}
+
+
 		BeanUtils.copyProperties(req, hdr, "id");
 		if(hdr.getRecordStatusId() == null){
 			hdr.setRecordStatusId(RecordStatusContains.ACTIVE);
